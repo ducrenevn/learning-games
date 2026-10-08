@@ -32,7 +32,7 @@ These are **owner-supplied terminal outputs**, not independently reproduced by t
 ## Known gaps / cautions
 
 - Initial port is **not verified parity** with the latest working Canva version. Browser QA, two-client race tests, refresh/reconnect UX, teacher recovery, responsive layout and completion flow still need proof.
-- Dependency audit findings must be triaged using `npm audit` and `npm audit --omit=dev` before deployment; review security fixes without automatic forced major upgrades.
+- Dependency audit (owner-reported): full install has 5 advisories (3 moderate, 2 critical); production-only audit has 2 moderate findings in React Router; critical findings are in Vitest/tinypool test tooling. `package.json` now proposes React Router DOM `^7.18.4` and Vitest `^4.1.11` on the feature branch. **Upgrade is unverified until a fresh install, audit, typecheck, tests, build and browser smoke pass.** The package lock has not yet been generated/committed; do not use `npm audit fix --force` blindly.
 - `sessionStorage` stores temporary bearer game capability: refreshed same-tab session can recover; new devices require a new join. Leaving removes local capability, not server membership.
 - `game_poc_memory_join` accepts anonymous guests only while lobby is open. Rooms expire; no permanent results/history linkage.
 - One hosted response revision may be unchanged while another client UI rerenders; rely on the server for authority.
@@ -42,7 +42,7 @@ These are **owner-supplied terminal outputs**, not independently reproduced by t
 ## Next work
 
 1. Open `http://localhost:5173/` and smoke-test local Memory UI with matches and mismatches.
-2. Collect `npm audit` and `npm audit --omit=dev` output; prioritize critical vulnerabilities and determine whether they affect shipped code.
+2. Pull latest feature branch, run `npm install` to regenerate `package-lock.json`, then `npm audit`, `npm audit --omit=dev`, `npm run typecheck`, `npm test`, `npm run build`. Report any React Router v7 or Vitest v4 compatibility issues; commit the generated lockfile after verification.
 3. Set public-only `.env.local` values for online use; test real browser two-player flow with synthetic names.
 4. Fix discovered issues in bounded commits; rerun typecheck, tests and build.
 5. Only after parity, consider Vercel deployment.
