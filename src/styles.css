@@ -1,1 +1,37 @@
 :root{font-family:"Work Sans",sans-serif;color:#29312d;background:#f8f4eb;font-synthesis:none}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 95% 5%,#f4e7de,transparent 30%),radial-gradient(circle at 5% 90%,#e3eee7,transparent 26%),#f8f4eb}h1,h2,h3,.room-code{font-family:"Fraunces",Georgia,serif}h1{font-size:clamp(2.4rem,5vw,3.5rem);margin:.3rem 0}h2{font-size:1.5rem;margin:.3rem 0 .8rem}p{line-height:1.5}.app-header{display:flex;justify-content:space-between;align-items:center;padding:20px max(24px,calc((100vw - 1140px)/2));border-bottom:1px solid #ded8cc;background:#fffdf8b8}.wordmark{font-weight:700;text-decoration:none;color:#315b4a}.header-note,.muted{color:#607168}.small{font-size:.83rem}.page{width:min(1120px,calc(100% - 28px));margin:26px auto}.page.narrow{max-width:620px}.home-page{padding-top:3vw}.intro{text-align:center;margin:24px 0 30px}.lead{font-size:1.12rem;color:#596c61}.eyebrow{font-size:.75rem;letter-spacing:.16em;font-weight:800;color:#b9664e}.panel{background:#fffdf8;border:1px solid #ded8cc;border-radius:20px;box-shadow:0 10px 28px #29312d0d}.padded{padding:clamp(18px,3vw,28px)}.catalog-grid,.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.game-tile,.choice{padding:26px;display:flex;flex-direction:column;align-items:flex-start;text-align:left}.game-tile p,.choice p{flex:1;color:#607168}.choice{cursor:pointer;color:inherit;font:inherit}.choice:hover{outline:2px solid #315b4a}.tile-icon{font-size:3rem;color:#315b4a}.button{border-radius:11px;padding:.78rem 1rem;border:1px solid #315b4a;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;font:inherit;font-weight:700;cursor:pointer}.button.primary{background:#315b4a;color:white}.button.secondary{background:#fffdf8;color:#315b4a}.button.subtle{border-color:#b9664e;color:#a35b48;background:#fffdf8}.button:disabled{opacity:.55;cursor:default}.stretch{width:100%}.form{display:grid;gap:16px;margin-top:20px}.form label{display:grid;gap:7px;font-weight:700}.field{padding:12px;border-radius:10px;border:1px solid #cfc7ba;background:white;color:inherit;width:100%;font:inherit}.pairs-input{height:250px;resize:vertical;line-height:1.55}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:15px}.setup-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr);gap:18px;margin-top:18px}.text-button{border:0;background:none;color:#315b4a;font-weight:700;cursor:pointer}.error{padding:12px;background:#f6e4dc;color:#8f4034;border-left:4px solid #b9664e;border-radius:8px;word-break:break-word}.room-code{letter-spacing:.1em;font-size:1.65rem}.share-panel{padding:24px;min-width:0}.qr{background:#fff;padding:24px;margin:16px auto;display:grid;place-items:center;width:fit-content;border:1px solid #ded8cc;border-radius:16px}.score-list{display:grid;gap:7px;margin:14px 0}.score-row{display:flex;justify-content:space-between;padding:10px 12px;border-radius:10px;background:#f8f4eb;border:1px solid #ded8cc}.score-row.active{background:#315b4a;color:white}.play-layout{display:grid;grid-template-columns:minmax(190px,245px) minmax(0,1fr);gap:18px;width:min(1480px,calc(100% - 24px));margin:24px auto;min-height:calc(100dvh - 120px)}.play-sidebar{display:flex;flex-direction:column;padding:16px;gap:12px}.scoreboard h2{font-size:1.55rem;overflow-wrap:anywhere}.progress-pill{background:#e3eee7;padding:12px;border-radius:10px;font-weight:700;color:#244438}.sidebar-actions{margin-top:auto;display:grid;gap:8px}.board-panel{min-width:0;position:relative;background:#fffdf899;border:1px solid #ded8cc;border-radius:20px;padding:12px;min-height:520px}.memory-grid{display:grid;gap:8px;grid-auto-rows:minmax(96px,1fr);height:100%;min-height:490px}.memory-card{position:relative;min-width:0;min-height:0;border:0;background:none;padding:0;perspective:1000px;cursor:pointer}.memory-card:disabled{cursor:default}.card-inner{position:absolute;inset:0;transition:transform .42s cubic-bezier(.2,.72,.3,1);transform-style:preserve-3d}.memory-card.revealed .card-inner{transform:rotateY(180deg)}.card-face{position:absolute;inset:0;display:grid;place-items:center;border-radius:12px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 3px 10px #29312d1f}.card-back{background:linear-gradient(135deg,#315b4a,#244438)}.card-mark{width:34%;aspect-ratio:1;border:2px solid #fffdF8ba;border-radius:100%}.card-front{background:#fffdf8;transform:rotateY(180deg);border:2px solid #ded8cc;padding:6px;text-align:center}.memory-card.matched .card-front{background:#fff4ea;border-color:#b9664e}.card-emoji{font-size:clamp(1.6rem,4vw,3rem)}.card-word{font-size:clamp(.7rem,1.25vw,1.06rem);font-weight:700;overflow-wrap:anywhere}.feedback{position:absolute;z-index:3;top:24px;left:50%;transform:translateX(-50%);max-width:90%;padding:12px 18px;background:#315b4a;color:white;border-radius:20px;box-shadow:0 7px 18px #0002;font-weight:700;text-align:center;pointer-events:none}.feedback-wrong{background:#b9664e}.results{text-align:center;max-width:720px;padding:40px;margin:40px auto}.result-grid{display:grid;gap:12px;margin:26px 0}.result-item{display:flex;justify-content:space-between;background:#f8f4eb;padding:15px;border-radius:10px}.local-play{margin-top:15px}.local-play .board-panel{min-height:460px}.local-play .memory-grid{min-height:430px}@media(max-width:800px){.catalog-grid,.choices{grid-template-columns:1fr}.setup-grid,.play-layout{grid-template-columns:1fr}.game-tile{min-height:180px}.play-layout{min-height:0}.play-sidebar{gap:8px}.play-sidebar .score-list{grid-template-columns:repeat(2,minmax(0,1fr))}.board-panel{min-height:450px}.memory-grid{min-height:425px;grid-auto-rows:minmax(82px,1fr)}.header-note{display:none}}@media(max-width:480px){.memory-grid{gap:5px;grid-auto-rows:minmax(64px,1fr)}.board-panel{min-height:350px}.memory-grid{min-height:340px}.play-layout{width:calc(100% - 16px);margin:8px auto}.page{width:calc(100% - 16px)}.wordmark{font-size:.9rem}.card-word{font-size:.64rem}.play-sidebar .score-list{font-size:.8rem}}
+
+/* Memory cards stay fully legible when a revealed card cannot be clicked.
+   Browsers otherwise apply disabled-button text styling (GrayText). */
+.memory-card,
+.memory-card:disabled {
+  color: #29312d;
+  opacity: 1;
+}
+.memory-card .card-front,
+.memory-card:disabled .card-front {
+  color: #29312d;
+  opacity: 1;
+}
+.memory-card .card-word {
+  font-size: clamp(0.875rem, 1.5vw, 1.5rem);
+  line-height: 1.2;
+}
+.memory-card .card-emoji {
+  font-size: clamp(2rem, 4.5vw, 4rem);
+  line-height: 1;
+}
+.memory-card:focus-visible {
+  outline: 3px solid #b9664e;
+  outline-offset: 3px;
+}
+
+/* Lobby cards size themselves to their own content, not the QR panel. */
+.setup-grid {
+  align-items: start;
+}
+.setup-grid > .panel.padded > .button {
+  margin-top: 12px;
+}
+.setup-grid > .panel.padded > .button.subtle {
+  margin-top: 14px;
+}
