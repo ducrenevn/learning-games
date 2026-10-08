@@ -1,7 +1,15 @@
 # Learning Games
 
-A standalone, modular classroom-games web app, starting with **Memory-Spiel**. Future game formats can reuse room joining, content, and design primitives without sharing one monolithic game engine.
+A modular, independent classroom-games web app. **Memory-Spiel** is the first game; future formats may include live quizzes, flashcards and other interactive activities.
 
-Read [AGENTS.md](AGENTS.md) and [docs/START_HERE.md](docs/START_HERE.md) before changing the project. The initial application work is built on a feature branch; the reference Canva version remains separate.
+## Get started
 
-The app will use React, TypeScript and Vite. Supabase multiplayer uses isolated existing `game_poc_memory_*` RPCs during the first port. SPP's speaking and Homework systems are outside scope.
+- Node.js 20.19+ or 22+
+- `npm install`
+- `npm run dev`
+- Local Memory works without any backend.
+- For online Memory, copy `.env.example` to `.env.local` and configure the **public** SPP Supabase URL and publishable key. Never use a service-role or secret key.
+
+`npm run typecheck`, `npm test`, and `npm run build` are intended checks. **Live multiplayer and Vercel are not yet verified.**
+
+Read `AGENTS.md` → `docs/START_HERE.md` → `docs/CURRENT_STATE.md` before changes. The source of the original Canva prototype is preserved outside this repository; this port is independent of that published version.
