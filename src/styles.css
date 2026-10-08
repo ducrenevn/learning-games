@@ -15,6 +15,8 @@
 .memory-card .card-word {
   font-size: clamp(0.875rem, 1.5vw, 1.5rem);
   line-height: 1.2;
+  hyphens: auto;
+  overflow-wrap: anywhere;
 }
 .memory-card .card-emoji {
   font-size: clamp(2rem, 4.5vw, 4rem);
@@ -23,6 +25,29 @@
 .memory-card:focus-visible {
   outline: 3px solid #b9664e;
   outline-offset: 3px;
+}
+
+/* Base link and back-link styling consistent with design system */
+a {
+  color: #315b4a;
+}
+a:hover {
+  color: #244438;
+}
+.choice {
+  text-decoration: none;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #315b4a;
+  text-decoration: none;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.back-link:hover {
+  text-decoration: underline;
 }
 
 /* Lobby cards size themselves to their own content, not the QR panel. */
@@ -34,4 +59,14 @@
 }
 .setup-grid > .panel.padded > .button.subtle {
   margin-top: 14px;
+}
+
+/* Full-width container during active local gameplay */
+.page.page-wide {
+  width: min(1480px, calc(100% - 24px));
+  max-width: 1480px;
+}
+.local-playing-wrap,
+.local-playing-panel {
+  display: contents;
 }
