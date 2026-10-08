@@ -40,12 +40,19 @@ After pulling the React Router DOM 7.18.4 / Vitest 4.1.11 manifest update (GitHu
 - `npm test`: **PASS, 7/7**, Vitest **4.1.11**.
 - `npm run build`: **PASS**, Vite **6.4.4**, 101 modules transformed, output JS 298.68 kB (95.78 kB gzip).
 
-This is owner-provided terminal evidence, not separately reproduced via a local runner. The generated `package-lock.json` is expected locally but is **not committed to GitHub yet**. Browser/gameplay verification remains outstanding.
+This is owner-provided terminal evidence, not separately reproduced via a local runner. The generated `package-lock.json` has subsequently been confirmed present on the feature branch in GitHub. Browser/gameplay verification remains outstanding.
+
+## Browser evidence and UI polish — owner screenshots 2026-10-08
+
+- The owner reports online Memory is working through the React app and existing Supabase backend. Screenshots show an active 12-card board (one matched pair, player turn and score visible) and a generated multiplayer lobby/QR, establishing meaningful **manual browser smoke evidence**.
+- This does **not** yet establish complete two-client turn progression, mobile support, disconnect recovery, or full end-of-game parity.
+- Screenshot review identified low-contrast revealed card values (disabled button default text rendering) and overstretched lobby panels with tight action spacing.
+- UI-only fix committed in `ee6e4ed`: explicit foreground/opacity for disabled revealed cards, slightly larger face content, lobby alignment to content, and action spacing. Requires owner browser refresh and visual verification.
 
 ## Known gaps / cautions
 
 - Initial port is **not verified parity** with the latest working Canva version. Browser QA, two-client race tests, refresh/reconnect UX, teacher recovery, responsive layout and completion flow still need proof.
-- Dependency audit (owner-reported): full install has 5 advisories (3 moderate, 2 critical); production-only audit has 2 moderate findings in React Router; critical findings are in Vitest/tinypool test tooling. `package.json` now proposes React Router DOM `^7.18.4` and Vitest `^4.1.11` on the feature branch. **Upgrade is unverified until a fresh install, audit, typecheck, tests, build and browser smoke pass.** The package lock has not yet been generated/committed; do not use `npm audit fix --force` blindly.
+- Dependency update verified by the owner: `npm audit` and production-only audit both report zero findings, with passing typecheck, 7/7 unit tests and build. Lockfile is committed; recheck after subsequent changes.
 - `sessionStorage` stores temporary bearer game capability: refreshed same-tab session can recover; new devices require a new join. Leaving removes local capability, not server membership.
 - `game_poc_memory_join` accepts anonymous guests only while lobby is open. Rooms expire; no permanent results/history linkage.
 - One hosted response revision may be unchanged while another client UI rerenders; rely on the server for authority.
@@ -55,7 +62,7 @@ This is owner-provided terminal evidence, not separately reproduced via a local 
 ## Next work
 
 1. Open `http://localhost:5173/` and smoke-test local Memory UI with matches and mismatches.
-2. Commit and push the locally generated `package-lock.json` (after checking `git status`); confirm the repo tracks the audited versions.
+2. Pull `ee6e4ed` UI fix and verify clear card text, lobby height and action spacing on desktop/mobile.
 3. Set public-only `.env.local` values for online use; test real browser two-player flow with synthetic names.
 4. Fix discovered issues in bounded commits; rerun typecheck, tests and build.
 5. Only after parity, consider Vercel deployment.
