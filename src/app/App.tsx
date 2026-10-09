@@ -10,7 +10,7 @@ export function App() {
   const {pathname}=useLocation();
   const inOnlineMemoryRoom=pathname.startsWith('/games/memory/room/') || pathname==='/games/memory/join';
   return <div className="app-shell">
-    <header className="app-header"><Link to="/" className="wordmark">◈ Learning Games</Link><div className="header-controls"><span className="header-note">{t('tagline')}</span>{!inOnlineMemoryRoom && <LanguageSwitcher />}</div></header>
+    <header className="app-header"><Link to="/" className="wordmark">◈ Learning Games</Link><div className="header-controls"><span className="header-note">{t('tagline')}</span>{!inOnlineMemoryRoom && <LanguageSwitcher appearance="flags" />}</div></header>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/games/memory" element={<MemoryHome />} />
