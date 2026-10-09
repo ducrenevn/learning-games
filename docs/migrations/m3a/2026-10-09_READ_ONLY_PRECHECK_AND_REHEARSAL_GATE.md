@@ -1,6 +1,6 @@
 # M3a read-only baseline and isolated-rehearsal gate — 2026-10-09
 
-**Status: READ-ONLY BASELINE VERIFIED; ISOLATED REHEARSAL NOT EXECUTED; PRODUCTION MIGRATION ON HOLD.**
+**Status: READ-ONLY PRE PASSED; SPP CONTROL ROOM CONDITIONALLY WAIVED THE ISOLATED REHEARSAL; PRODUCTION MIGRATION STILL ON HOLD.**
 
 Repository `ducrenevn/learning-games`. Migration-review branch `review/m3a-migration-safety-20261009`. Target shared Supabase project `iizsyphqlezesbvaiztd` (SPP). These observations are a point-in-time snapshot, not a waiver of PRE checks at rollout.
 
@@ -33,8 +33,8 @@ Initial checks were direct SQL SELECT/catalog inspections. The **exact full PRE 
 
 1. **Reconcile SPP control-room authority.** Confirm current SPP main/release, active database change freeze, migration ledger ownership and canonical new version from its accepted migration tooling. Do not guess a version or execute untracked DDL via dashboard.
 2. **Backup and recovery.** Verify an approved backup / PITR snapshot and actual restore procedure suitable for this shared production DB. A local unencrypted dump is not an assumed safe recovery solution.
-3. **Isolated SQL rehearsal.** On a disposable PG17/Supabase-compatible database constructed from a *sanitized* or synthetic baseline matching the seven legacy RPCs and tables, execute the full `00_PRE_READ_ONLY.sql` → `01_m3a_room_language_UP_DRAFT.sql` → `02_POST_AND_ROLLBACK_SMOKE.sql` sequence. Verify exact function creation, privilege isolation, legacy compatibility, student state, null/invalid input, hidden cards, and rollback of synthetic tests. Confirm no leaked test records.
-4. **Rehearsal of operational fallback.** Simulate an UP failure and confirm atomic transaction rollback; review `03_MANUAL_DB_ROLLBACK_DRAFT.sql` separately, never run it on production as a convenience.
+3. **Isolated SQL rehearsal waiver (conditional).** The SPP control room allows skipping a separate disposable-database rehearsal **only after** verified SPP/Memory development freeze, refreshed encrypted transaction-consistent backup covering the present **65 tables** (older backup covers 58), canonical atomic SQL+ledger artifact, and explicit owner GO. Preserve full fresh PRE and POST/role-accurate client testing. Without these conditions, this is NO-GO for deployment.
+4. **Operational fallback review.** Confirm the reviewed UP uses one atomic transaction, any error aborts cleanly, and legacy production frontend remains available. Review `03_MANUAL_DB_ROLLBACK_DRAFT.sql` separately; never run it on production as a convenience.
 5. **Fresh production PRE.** Immediately before any owner-approved production migration, verify project ID, latest migration history, drift hashes, table/RLS/grants, unexpired rooms, backup readiness, and clean SPP app status.
 6. **Owner-approved application.** Only the SPP owner/control room initiates the canonically tracked, atomic migration. A read-only audit or this document is **not** approval to apply it.
 7. **POST and real anonymous-client QA.** After migration, perform structural POST, transactional synthetic smoke, then full role-accurate anon/browser host + two students testing (locked DE/EN/VI, individual language choice, refresh/rejoin, match/mismatch, auto-next, scoring, completion, no hidden-value/token leakage, legacy client). Hand step 3 testing to Antigravity only after migration gates pass and its environment is authorized.
@@ -59,4 +59,4 @@ The repository's exact `00_PRE_READ_ONLY.sql` at blob `4a98c7e6ae8483b74f59f5976
 
 These checks supersede this file's earlier statement that the full PRE script had not been executed. **They do not validate UP execution, POST behavior, backup restoration, or anonymous-client tests.** Run PRE again immediately before any authorized migration, since state can change.
 
-The owner is considering a leaner rollout without an isolated SQL rehearsal. This is a **proposal only, not an approved gate change**: a fresh PRE, SPP freeze/recovery point, canonically tracked atomic UP, immediate POST/anon acceptance and safe frontend rollback are still necessary. The existing rehearsal requirement remains until the owner/authorized SPP control room approves a revised runbook.
+**Updated coordination decision:** The SPP control room issued **CONDITIONAL GO** for a streamlined rollout without a separate isolated SQL rehearsal, but explicitly maintained **NO-GO for execution** until an SPP/Memory development freeze is confirmed, a new verified encrypted 65-table backup covers Homework, and an atomic canonical SPP migration artifact is finalized. The fresh PRE, immediate independent POST/security checks and later Antigravity anon-client acceptance remain mandatory. SPP `main@bca04ca` and 14 applied migrations are the reported baseline. No production write was authorized.
