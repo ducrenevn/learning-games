@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '../../shared/i18n';
 import { Link, useNavigate } from 'react-router-dom';
 import { parsePairs, examplePairs, validateForRoom } from './engine/pairs';
 import { createMemoryRoom } from './api/memoryRpc';
@@ -8,6 +9,7 @@ import { LocalMemory } from './LocalMemory';
 type Mode = 'choose' | 'create' | 'local';
 
 export function MemoryHome() {
+  const {t}=useLanguage();
   const [mode, setMode] = useState<Mode>('choose');
   const [isLocalPlaying, setIsLocalPlaying] = useState(false);
   const [text, setText] = useState(examplePairs);
@@ -44,11 +46,11 @@ export function MemoryHome() {
     <main className={isLocalPlaying ? 'page page-wide' : 'page'}>
       {!isLocalPlaying && (
         <>
-          <Link className="back-link" to="/">← Alle Spiele</Link>
+          <Link className="back-link" to="/">← {t('allGames')}</Link>
           <div className="intro">
-            <div className="eyebrow">GEMEINSAM LERNEN</div>
-            <h1>Memory-Spiel</h1>
-            <p className="lead">Finde die passenden Paare!</p>
+            <div className="eyebrow">{t('learnTogether')}</div>
+            <h1>{t('memoryTitle')}</h1>
+            <p className="lead">{t('findPairs')}</p>
           </div>
         </>
       )}
@@ -56,42 +58,42 @@ export function MemoryHome() {
       {mode === 'choose' ? (
         <div className="choices">
           <button className="panel choice" onClick={() => handleModeChange('create')}>
-            <h2>Spiel erstellen</h2>
-            <p>Eigene Paare eingeben und einen gemeinsamen Raum starten.</p>
+            <h2>{t('createGame')}</h2>
+            <p>{t('createDesc')}</p>
           </button>
           <Link className="panel choice" to="/games/memory/join">
-            <h2>Raum beitreten</h2>
-            <p>Mit Raumcode und Namen zusammen spielen.</p>
+            <h2>{t('joinRoom')}</h2>
+            <p>{t('joinDesc')}</p>
           </Link>
           <button className="panel choice" onClick={() => handleModeChange('local')}>
-            <h2>Lokal spielen</h2>
-            <p>Gemeinsam an einem Gerät spielen.</p>
+            <h2>{t('localPlay')}</h2>
+            <p>{t('localDesc')}</p>
           </button>
         </div>
       ) : (
         <>
           {!isLocalPlaying && (
             <button className="text-button" onClick={() => handleModeChange('choose')}>
-              ← Zurück zur Auswahl
+              ← {t('back')}
             </button>
           )}
           <div className={isLocalPlaying ? 'local-playing-wrap' : 'setup-grid'}>
             {!isLocalPlaying && (
               <section className="panel padded">
-                <h2>Paare vorbereiten</h2>
-                <p className="muted">Eine Zeile je Paar: LINKS | RECHTS | KATEGORIE (optional)</p>
+                <h2>{t('preparePairs')}</h2>
+                <p className="muted">{t('pairInstructions')}</p>
                 <textarea
                   className="field pairs-input"
                   value={text}
                   onChange={e => setText(e.target.value)}
                 />
                 <div className="row">
-                  <strong>{result.pairs.length} Paare</strong>
+                  <strong>{result.pairs.length} {t('pairs')}</strong>
                   <button className="button secondary" onClick={() => setText(examplePairs)}>
-                    Beispiel laden
+                    {t('loadExample')}
                   </button>
                   <button className="button subtle" onClick={() => setText('')}>
-                    Leeren
+                    {t('clear')}
                   </button>
                 </div>
                 {result.errors.map((e, i) => (
@@ -102,15 +104,15 @@ export function MemoryHome() {
             <section className={isLocalPlaying ? 'local-playing-panel' : 'panel padded'}>
               {mode === 'create' ? (
                 <>
-                  <h2>Online-Raum erstellen</h2>
-                  <p>Teile den Raumcode und starte, sobald alle da sind.</p>
+                  <h2>{t('createOnline')}</h2>
+                  <p>{t('shareRoom')}</p>
                   {error && <p role="alert" className="error">{error}</p>}
                   <button
                     className="button primary stretch"
                     disabled={busy || !!validateForRoom(result)}
                     onClick={() => void create()}
                   >
-                    {busy ? 'Erstelle …' : 'Raum erstellen'}
+                    {busy ? t('creating') : t('createRoom')}
                   </button>
                 </>
               ) : (
