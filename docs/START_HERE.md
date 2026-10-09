@@ -6,7 +6,10 @@ Read order:
 3. `docs/SYSTEM_OVERVIEW.md` — app and backend boundaries.
 4. `docs/GAME_CONTRACTS.md` — rules and API seams.
 5. `docs/BACKEND_BASELINE.md` — current prototype authorization.
-6. `docs/ROADMAP.md` and `docs/IMMEDIATE_NEXT_PROMPT.md` — staged future work.
+6. `docs/LEARNING_ACTIVITY_LIBRARY.md` — future adult-language classroom activity catalog and modes (planning only).
+7. `docs/PORTABLE_ACTIVITY_FILES.md` — future local-first JSON exchange and AI authoring requirements (proposal, not implemented).
+8. `docs/activity-specs/GAME_SPEC_information-gap.md` and `docs/activity-specs/GAME_SPEC_conversation-cards.md` — proposed detailed game behavior and illustrative JSON (not implemented).
+9. `docs/ROADMAP.md` and `docs/IMMEDIATE_NEXT_PROMPT.md` — staged future work.
 
 ## Setup
 
