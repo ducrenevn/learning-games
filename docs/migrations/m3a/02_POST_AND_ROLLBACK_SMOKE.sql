@@ -8,7 +8,7 @@ BEGIN
  THEN RAISE EXCEPTION 'v2 is not SECURITY DEFINER'; END IF;
  IF NOT has_function_privilege('anon','public.game_poc_memory_create_v2(text,jsonb,text,boolean)','EXECUTE')
  OR has_function_privilege('authenticated','public.game_poc_memory_create_v2(text,jsonb,text,boolean)','EXECUTE')
- OR has_function_privilege('public','public.game_poc_memory_create_v2(text,jsonb,text,boolean)','EXECUTE')
+ OR EXISTS (SELECT 1 FROM aclexplode((SELECT proacl FROM pg_proc WHERE oid='public.game_poc_memory_create_v2(text,jsonb,text,boolean)'::regprocedure)) WHERE grantee=0 AND privilege_type='EXECUTE')
  THEN RAISE EXCEPTION 'v2 grants wrong'; END IF;
  SELECT count(*),count(*) FILTER(WHERE interface_language NOT IN ('de','en','vi') OR interface_language IS NULL OR allow_student_language_choice IS NULL)
  INTO v_total,v_bad FROM private.game_poc_memory_rooms;
