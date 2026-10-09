@@ -7,7 +7,7 @@
 - Seven `public.game_poc_memory_*` RPCs, SECURITY DEFINER with empty search_path.
 - Old `create(text,jsonb)` MD5 `5e9d605fe596a4a6ce7679ac28a30ad5`; `state(text,text)` MD5 `acf655257ca78625a460ab01945190a7`.
 - Original `create` and `state`: EXECUTE anon, service_role and postgres; NOT authenticated. Preserve.
-- Original Supabase migration history has 13 SPP migrations through `20261004160000`. This is a *new* Learning Games migration proposal, NOT an existing SPP migration.
+- At the original drafting inspection, migration history showed 13 SPP migrations through `20261004160000`. **Read-only recheck on 2026-10-09 found 14**, latest `20261007071753_p2a1_homework_sql_rls_rpc_foundation`. This is a *new* Learning Games migration proposal, NOT an existing SPP migration. See [2026-10-09 read-only precheck and rehearsal gate](2026-10-09_READ_ONLY_PRECHECK_AND_REHEARSAL_GATE.md); never assume the old ledger is still current.
 
 ## Review adjustments — 2026-10-09
 
