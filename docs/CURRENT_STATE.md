@@ -47,6 +47,19 @@
    - `npm run build`: **PASS** (Vite 6.4.4, bundle emitted in `dist/`).
    - SPA route rewrites: `vercel.json` verified present.
 
+## Initial Vercel deployment — 2026-10-09
+
+- GitHub PR #1 merged `feat/memory-foundation` into `main`: merge commit `498742c3d761e8366e33be6deb10d286e3dcc5a4`.
+- Vercel project `learning-games` created under team `ducrene's projects`; project ID `prj_QmqtNMpIys26I5ma6jikz6EE3lKq`.
+- First **production** deployment from `main@498742c` is **READY**: deployment `dpl_ByT5UZYrEC4ZHZSyCDLf6vTWhgjj`.
+- Production alias: https://learning-games-rho.vercel.app/
+- Framework Vite; install `npm ci`; build `npm run build`; output `dist`; Node 24.x selected by Vercel.
+- Vercel production + preview env keys `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` configured (publishable only; values omitted in docs).
+- Deployment protection set to `preview` only: production public, preview protected.
+- Vercel project Git **auto-link remains unconfirmed / blocked by integration access**: the automatic Git-linked project-create request failed for missing GitHub integration or repo access. First deployment was explicitly created from GitHub `main`; future pushes must not be assumed to auto-deploy until integration is linked.
+- **Hosted browser and phone multiplayer smoke remains unverified.** Vercel READY verifies build/deployment, not application behavior. Do not call M2 fully closed until host/phone checks pass.
+- Speak Practice Pro application, project and Supabase schema untouched.
+
 ## Remaining Considerations for Future Milestones
 
 - **Prototype Capabilities vs. Auth (M3 / M5):** Prototype bearer tokens in `sessionStorage` are suitable for a limited pilot with synthetic identities. Production classroom use with permanent records requires formal SPP Auth integration.
