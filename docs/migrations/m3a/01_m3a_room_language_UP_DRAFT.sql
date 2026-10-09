@@ -30,6 +30,16 @@ BEGIN
     ) THEN
     RAISE EXCEPTION 'M3a already present or partially installed: stop and reconcile';
   END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+    WHERE n.nspname='public' AND p.proname LIKE 'game_poc_memory_%'
+      AND (NOT p.prosecdef
+        OR NOT ('search_path=""' = ANY(coalesce(p.proconfig, ARRAY[]::text[])))
+        OR NOT has_function_privilege('anon',p.oid,'EXECUTE')
+        OR has_function_privilege('authenticated',p.oid,'EXECUTE'))
+  ) THEN
+    RAISE EXCEPTION 'M3a baseline RPC security/grant drift: stop';
+  END IF;
   IF NOT EXISTS (
     SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
     WHERE n.nspname='private' AND c.relname='game_poc_memory_rooms'
@@ -63,6 +73,7 @@ AS $function$
 DECLARE
   v_created jsonb;
   v_code text;
+  v_updated integer;
 BEGIN
   IF p_language IS NULL OR p_language NOT IN ('de','en','vi') THEN
     RAISE EXCEPTION 'Language must be de, en or vi' USING errcode='22023';
@@ -78,8 +89,9 @@ BEGIN
   SET interface_language=p_language,
       allow_student_language_choice=p_allow_student_language_choice
   WHERE room_code=v_code;
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
 
-  IF NOT FOUND THEN
+  IF v_updated <> 1 THEN
     RAISE EXCEPTION 'New Memory room disappeared before configuring language';
   END IF;
 
