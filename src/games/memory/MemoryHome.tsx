@@ -9,7 +9,8 @@ import { LocalMemory } from './LocalMemory';
 type Mode = 'choose' | 'create' | 'local';
 
 export function MemoryHome() {
-  const {t}=useLanguage();
+  const {t,language}=useLanguage();
+  const [allowStudentLanguageChoice,setAllowStudentLanguageChoice]=useState(false);
   const [mode, setMode] = useState<Mode>('choose');
   const [isLocalPlaying, setIsLocalPlaying] = useState(false);
   const [text, setText] = useState(examplePairs);
@@ -27,7 +28,7 @@ export function MemoryHome() {
     setBusy(true);
     setError('');
     try {
-      const data = await createMemoryRoom(result.pairs);
+      const data = await createMemoryRoom(result.pairs,language,allowStudentLanguageChoice);
       saveRoomIdentity({ roomCode: data.roomCode, token: data.hostToken, role: 'host' });
       navigate('/games/memory/room/' + data.roomCode);
     } catch (e) {
@@ -106,6 +107,10 @@ export function MemoryHome() {
                 <>
                   <h2>{t('createOnline')}</h2>
                   <p>{t('shareRoom')}</p>
+                  <fieldset className="room-language-options"><legend>{t('roomLanguagePolicy')}</legend>
+                    <label><input type="radio" name="room-language-mode" checked={!allowStudentLanguageChoice} onChange={()=>setAllowStudentLanguageChoice(false)} /> {t('everyoneSameLanguage')}</label>
+                    <label><input type="radio" name="room-language-mode" checked={allowStudentLanguageChoice} onChange={()=>setAllowStudentLanguageChoice(true)} /> {t('studentsChooseLanguage')}</label>
+                  </fieldset>
                   {error && <p role="alert" className="error">{error}</p>}
                   <button
                     className="button primary stretch"
