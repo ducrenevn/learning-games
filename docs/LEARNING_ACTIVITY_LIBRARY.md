@@ -100,4 +100,4 @@ Before calling a future game ready:
 - **Then:** select and implement **one** additional game with genuine teacher testing before extracting cross-game authoring components.
 - **Later:** add optional collections, richer media bundles, and optional SPP integration on separate authorization.
 
-See [PORTABLE_ACTIVITY_FILES.md](PORTABLE_ACTIVITY_FILES.md) for the proposed file design. Existing Memory's `LEFT | RIGHT | OPTIONAL_CATEGORY` text input and its server validation remain as documented in [GAME_CONTRACTS.md](GAME_CONTRACTS.md).
+Detailed future game contracts: [Information Gap](activity-specs/GAME_SPEC_information-gap.md) and [Conversation Cards](activity-specs/GAME_SPEC_conversation-cards.md). These specify agreed behavior and illustrative, **non-final** JSON examples; neither game is implemented.\n\nSee [PORTABLE_ACTIVITY_FILES.md](PORTABLE_ACTIVITY_FILES.md) for the proposed file design. Existing Memory's `LEFT | RIGHT | OPTIONAL_CATEGORY` text input and its server validation remain as documented in [GAME_CONTRACTS.md](GAME_CONTRACTS.md).
