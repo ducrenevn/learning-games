@@ -18,7 +18,7 @@ Supabase connected project: `speak-practice-pro-preview`, project ref `iizsyphql
 - Unexpired Memory rooms at observation time: 0. **Recheck immediately before change; this count can change.**
 - Supabase migration history contained **14 migrations**, most recent `20261007071753_p2a1_homework_sql_rls_rpc_foundation`. Older runbook references to 13 migrations ending `20261004160000` are historical, not current; no new version has been reserved.
 
-These are direct SQL SELECT/catalog inspections and API migration listings, **not** execution of the `00_PRE_READ_ONLY.sql` DO block itself. That entire script must still run at the approved change window.
+Initial checks were direct SQL SELECT/catalog inspections. The **exact full PRE script was subsequently executed successfully** in a read-only transaction; see dated execution evidence below. Re-run PRE at the approved change window.
 
 ## Migration scope reviewed
 
@@ -45,3 +45,18 @@ These are direct SQL SELECT/catalog inspections and API migration listings, **no
 This control-room environment did **not** have a Docker daemon or `psql` client available, so **no executable isolated PostgreSQL test was run**. No migrations, DDL, POST synthetic writes, backups, restores, or SPP changes were performed. Do not mark M3a database-ready solely on the read-only observations.
 
 See `README_DRAFT.md` and the numbered PRE / UP / POST / ROLLBACK scripts in this directory.
+
+## Exact PRE script executed — 2026-10-09 23:15 ICT (16:15 UTC)
+
+The repository's exact `00_PRE_READ_ONLY.sql` at blob `4a98c7e6ae8483b74f59f5976224c0d0233b0c9f` was executed on Supabase project `iizsyphqlezesbvaiztd`, wrapped in `BEGIN TRANSACTION READ ONLY; ... COMMIT;`. **No error was returned (PASS).** Connector output did not include `RAISE NOTICE` text. A follow-up read-only SELECT at `2026-10-09 16:15:04 UTC` confirmed:
+
+- Unexpired Memory rooms: **0**
+- Current Memory RPCs: **7**
+- New v2 function: **absent**
+- New room language columns: **0**
+- Create fingerprint: `5e9d605fe596a4a6ce7679ac28a30ad5`
+- State fingerprint: `acf655257ca78625a460ab01945190a7`
+
+These checks supersede this file's earlier statement that the full PRE script had not been executed. **They do not validate UP execution, POST behavior, backup restoration, or anonymous-client tests.** Run PRE again immediately before any authorized migration, since state can change.
+
+The owner is considering a leaner rollout without an isolated SQL rehearsal. This is a **proposal only, not an approved gate change**: a fresh PRE, SPP freeze/recovery point, canonically tracked atomic UP, immediate POST/anon acceptance and safe frontend rollback are still necessary. The existing rehearsal requirement remains until the owner/authorized SPP control room approves a revised runbook.
