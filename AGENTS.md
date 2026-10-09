@@ -10,3 +10,11 @@
 8. Never claim tests, Vercel, Realtime, or SPP integration passed unless they were actually performed.
 9. Source changes should include relevant documentation updates and tests; review `docs/IMMEDIATE_NEXT_PROMPT.md` when handing off.
 10. Development order: local runnable app → Memory parity → multi-browser proof → Vercel → optimization → other games / SPP integration.
+
+## Shared agent execution conventions (configuration alignment, 2026-10-09)
+
+The reusable engineering procedure, skill sources and model/harness routing are maintained in `ducrenevn/ai-agent-config` (`docs/EXECUTION_PROTOCOL.md`, `docs/AGENT_ROUTING.md`, and `docs/HARNESS_CONFIGURATION_AND_VALIDATION.md`). This repository remains authoritative for its own architecture, product invariants, verified commands, provider topology and approval gates. Normal implementation agents must **not** fetch the global repository as a runtime prerequisite; they operate from this checkout, their task handoff and whichever user-level skills are actually installed and recognized by their harness.
+
+Use a lightweight consistent loop: identify this repo and task; inspect branch/HEAD/worktree without discarding user changes; read only task-relevant instructions/code; discover actual OS/shell/CLI commands or use known-good project scripts; verify available and authenticated tools separately from authorization; perform bounded approved work; run proportional checks; report exact evidence and stop. Never assume a `.cmd` shim, Bash/PowerShell quoting, unverified CLI flag, MCP login or release target will work merely because an earlier chat mentioned it. Diagnose failed commands from help/output rather than repeatedly guessing. Do not claim source tests, hosted browser checks, deployment and production behavior are interchangeable.
+
+Roles/subagents are optional execution capabilities, not mandatory ceremony: delegate only for genuine specialist tooling, isolated context or independent review. Model and provider bindings remain global/harness-level rather than being duplicated here. A repository documentation update does **not** install skills or change VS Code settings, local MCP, credentials, application code, or deployment approval.
