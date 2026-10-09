@@ -11,6 +11,8 @@
 9. Source changes should include relevant documentation updates and tests; review `docs/IMMEDIATE_NEXT_PROMPT.md` when handing off.
 10. Development order: local runnable app → Memory parity → multi-browser proof → Vercel → optimization → other games / SPP integration.
 
+Preserve unrelated and uncommitted work. Commit, push, merge to `main` or other deployment-linked branches, deploy, or write to hosted systems only with explicit task approval; a push may initiate a Vercel production deployment.
+
 ## Tool and environment entrypoint
 
 - This Vercel site uses **SPP's Supabase prototype RPCs**, not its own database or Supabase Auth. No SPP production migration, Auth or Homework write is authorized by a Learning Games task; see `docs/BACKEND_BASELINE.md`.
