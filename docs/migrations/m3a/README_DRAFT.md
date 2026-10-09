@@ -17,6 +17,18 @@
 - Rollback now refuses to run while **any unexpired Memory room exists**, or when installation is partial or historical non-default room language settings would be lost. It is still a destructive, owner-approved last resort.
 - Changes are limited to migration drafts and operational documentation on a review branch. **No deployment, database write, migration-ledger entry, application implementation, or SPP change has been made.**
 
+## SPP control-room decision — CONDITIONAL GO, execution HOLD (2026-10-09)
+
+SPP control-room inspection approved a **streamlined migration without a separate isolated database rehearsal**, conditional on all three controls below. This is **not** approval to run UP now, and does not waive the PRE or POST tests.
+
+1. **Confirm SPP/Memory development freeze:** P2a-6c owner-only browser testing is handed off but not confirmed inactive. Explicitly pause overlapping SPP/Memory agent activity, browser test writes and schema changes for the migration window. Zero observed queries/locks does **not** prove a freeze.
+2. **Refresh recovery coverage:** The previously encrypted backup covers **58 tables**, while the current shared database contains **65** after Homework. Create and independently verify a fresh **encrypted, transaction-consistent** snapshot covering the current 65-table state, with recovery credentials stored separately. A full isolated restore rehearsal can remain deferred; retaining only the old archive is not sufficient.
+3. **Canonical SPP migration:** SPP GitHub `main@bca04ca729a6e07794f9c160a963bc111c9eac45` is the observed baseline. The applied Supabase ledger has **14** entries through `20261007071753_p2a1_homework_sql_rls_rpc_foundation`; no later migration recorded at inspection. Through the **SPP-owned migration process**, create/review the versioned artifact, lock its exact checksum and confirm an atomic execution path in which this SQL's `BEGIN/COMMIT` cannot separate application from its migration ledger entry. Reconcile changes against current Learning Games `main` before finalizing. Do not choose a version here or copy an untracked SQL snippet into a live editor.
+
+**Release sequence after explicit owner/authorized SPP GO:** confirm fresh backup/freeze → repeat full read-only `00_PRE_READ_ONLY.sql` → apply one canonically tracked atomic UP → independent POST structural/security + rolled-back synthetic tests → Antigravity real anon-client multiplayer QA → separate frontend release decision. Keep legacy production Memory available as fallback. Do **not** automatically run destructive SQL rollback. No SPP write gate change is part of M3a.
+
+**Scope note:** SPP Homework migration installation is complete, but P2a-6c owner browser dogfood and production Homework activation are separate gates. This M3a GO does not authorize either of them.
+
 ## Planned UP
 1. Add `interface_language text NOT NULL DEFAULT 'de' CHECK IN ('de','en','vi')` and `allow_student_language_choice boolean NOT NULL DEFAULT false` to **private.game_poc_memory_rooms only**. Existing rooms are locked German (safe compatibility). No data deletions.
 2. Add new `public.game_poc_memory_create_v2(text,jsonb,text,boolean)`, retaining legacy `create` untouched. It validates policy, calls legacy create to preserve token issuance and validation, sets room policy in the same transaction, and returns the original capabilities.
@@ -24,8 +36,8 @@
 4. Exact-function fingerprints guard against drift; schema guard stops partial re-application. Use a transaction with `SET LOCAL lock_timeout='5s'`, `SET LOCAL statement_timeout='60s'`; fail closed.
 
 ## Freeze and review gate — owner action
-- Stop concurrent SPP development and migrations, ensure clean SPP `main` and deployment baseline, verify no app errors.
-- Verify correct Supabase project reference in dashboard; take a confirmed DB snapshot / PITR recovery point as available, restore-test according to the SPP control-room policy, retain the original `state()` definition, and record the exact migration ledger and applicable owner approvals.
+- Obtain **explicit confirmation** that competing SPP/Memory development, owner browser dogfood, backend test writes and migrations are paused. Check SPP `main`, actual project and deployment baseline; verify no app errors. An empty lock/query snapshot is insufficient.
+- Verify the exact Supabase project reference, obtain and verify a **fresh encrypted, transaction-consistent 65-table backup** covering newly installed Homework (previous 58-table backup is stale), and keep recovery credentials separately. An isolated full restore may be deferred under SPP's documented risk acceptance. Retain the original `state()` definition and verify the current migration ledger and owner approvals.
 - Review exact SQL files and diff; obtain explicit owner GO to apply. Any drift/failure = STOP, do not force.
 - Current production Vercel still uses older `create` and still works after additive migration.
 
