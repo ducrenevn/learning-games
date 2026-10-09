@@ -41,3 +41,25 @@ npm run build
 npm run dev
 ```
 Then test each language through selection, join, local Memory and online play; verify overlays, responsive behavior, existing server gameplay parity, and correct no-account behavior.
+
+
+## 2026-10-09 follow-on room-language integration — implementation branch
+
+Review branch: `feat/m3a-room-policy-ui-reviewed-20261009` (based on migration-safety review branch, NOT main). **Source changes committed; not built or deployed.**
+
+- Added teacher room-creation radio choices: everyone shares teacher-selected DE/EN/VI language, or students choose their own.
+- Wired new room creation to `game_poc_memory_create_v2`, passing both server-owned policy values.
+- Validated the authorized `game_poc_memory_state` payload. Missing/invalid policy fails closed instead of inferring teacher intent from a browser toggle.
+- Removed the global language switch from online Memory join and room routes; students get a switch inside a room **only when server permits choice**. Locked rooms enforce the server-selected language.
+- Added tests of the pure policy validator and locked / selectable language resolution.
+- Preserved a previously validated room policy when older Memory turn mutation RPCs return snapshots lacking the new language keys.
+- Existing Memory card content remains unmodified and is not translated with the UI.
+
+**Outstanding gates / limitations:**
+1. **Do not merge or deploy before M3a backend migration.** New-room creation intentionally calls v2; current production has no such RPC.
+2. Run `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, and actual local/browser flow testing in a proper checkout. Connector review did **not** execute these.
+3. Smoke the 3-browser full game, old legacy client, DE/EN/VI locked/choice, refresh/rejoin, and view-state policy under all mutation RPCs against an isolated migrated DB or approved controlled hosted test.
+4. Student chooses language in **lobby after joining** (not before entry); this honors the agreed join/lobby option without introducing an unauthenticated room-metadata endpoint.
+5. Teacher-selected room language is captured at room creation. The local app language can still change elsewhere; room policy is authoritative after authorized state loading.
+6. User-facing PostgREST errors and announcement behavior still require browser review.
+7. No database changes, production deployment, Supabase migration ledger changes, or SPP changes were made in this branch.
