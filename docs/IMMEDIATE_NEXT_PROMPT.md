@@ -1,33 +1,26 @@
-# Immediate Next Handoff — Milestone M2 (Vercel Deployment)
+# Immediate Next Handoff — Milestone M3 (Multiplayer Polish & Hardening)
 
-Scope: Connect `ducrenevn/learning-games` to Vercel, deploy, and perform hosted phone smoke testing.
+Scope: Implement per-player claim coloring, refine turn responsiveness, address cross-platform assets, and evaluate room lifecycle / abuse protections.
 
-## Prerequisites (Verified in M1)
-- Branch `feat/memory-foundation` is tested and verified.
-- 20/20 unit tests pass (`npm test`).
-- Production build succeeds (`npm run build`).
-- `vercel.json` rewrite configuration is in place for SPA routing.
-- Audit report available in `docs/audits/2026-10-09-m1-qa-report.md`.
+## Status (Verified in M2 Acceptance)
+- Live production deployment at `https://learning-games-rho.vercel.app/` verified with real smartphone user.
+- 3-participant live multiplayer test passed cleanly (turns, auto-advance, scoring, winner screen, phone refresh recovery).
+- Full audit report recorded in `docs/audits/2026-10-09-m2-hosted-acceptance.md`.
 
-## Step-by-Step Next Actions
+## Recommended M3 Action Items
 
-1. **Review and Merge/Deploy Branch:**
-   - Commit and push `feat/memory-foundation` to GitHub.
-   - Review changes or open PR into `main` (owner decision).
-   - In Vercel, import `ducrenevn/learning-games`.
+1. **Per-Player Claim Coloring (UX feedback from owner):**
+   - Assign distinct, accessible colors or badges per player in the lobby/game (e.g. Player 1: Teal, Player 2: Coral/Terracotta, Player 3: Indigo, etc.).
+   - When cards are matched, style the revealed borders/backgrounds with the claiming player's assigned color instead of the uniform terracotta frame.
 
-2. **Configure Vercel Project Settings:**
-   - Framework Preset: `Vite`
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-   - Environment Variables:
-     - `VITE_SUPABASE_URL`: `https://iizsyphqlezesbvaiztd.supabase.co`
-     - `VITE_SUPABASE_PUBLISHABLE_KEY`: *(Set public publishable key only; NEVER add secret/service-role keys)*
+2. **Cross-Platform Emoji / Asset Evaluation:**
+   - Observe that system emojis render differently across OS fonts (e.g. Windows vs. iOS/Android emoji color/glyphs).
+   - If uniform appearance is desired across platforms, consider adopting an open emoji font/SVG set (e.g. Twemoji) or allow text-only/image asset pairs.
 
-3. **Deploy & Smoke Test:**
-   - Trigger initial deployment.
-   - Test hosted URL:
-     - Check homepage `/` and Memory `/games/memory`.
-     - Test deep link refresh (e.g. `/games/memory/join`) to confirm `vercel.json` rewrite serves `index.html`.
-     - Teacher creates a test room on desktop; student joins by scanning the QR code on a mobile phone.
-     - Play one full game to completion to verify hosted WebSocket/polling and turn advancement.
+3. **Multiplayer Transport & Realtime Evaluation:**
+   - Benchmark polling traffic (currently 1 Hz per client) vs. Supabase Realtime Broadcast.
+   - Profile egress and connection behavior for larger groups (e.g. 10–20 students).
+
+4. **Abuse Hardening & Room Lifecycle:**
+   - Implement client-side and RPC-level rate limiting or CAPTCHA for anonymous room creation.
+   - Clean up abandoned or inactive rooms on a regular schedule.
