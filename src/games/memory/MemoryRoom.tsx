@@ -47,7 +47,6 @@ function ActiveRoom({identity}:{identity:NonNullable<ReturnType<typeof loadRoomI
  </main>;
  const matched=state.cards.filter(c=>c.matched).length/2;
  const myTurn=state.myPlayerId!==null&&state.myPlayerId===state.currentPlayerId&&state.canFlip;
- const notice=state.phase==='resolve'?(state.lastMatch?t('correct'):t('wrong')):null;
  // Revision advances on each server mutation. Restrict attention messages to
  // turn-entry (first phase) and resolve, not every 1 Hz polling response.
  const event:Announcement|null=state.phase==='resolve'?
@@ -69,6 +68,6 @@ function ActiveRoom({identity}:{identity:NonNullable<ReturnType<typeof loadRoomI
     <button className="button subtle" onClick={leave}>{t('leaveGame')}</button>
    </div>
   </aside>
-  <MemoryBoard cards={state.cards} canFlip={myTurn&&!busy} onFlip={flip} notice={notice} wrong={state.lastMatch===false}/>
+  <MemoryBoard cards={state.cards} canFlip={myTurn&&!busy} onFlip={flip} notice={null} wrong={state.lastMatch===false}/>
  </main>;
 }
