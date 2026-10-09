@@ -4,6 +4,10 @@
 -- A reviewed migration runner must execute this file atomically in one transaction.
 -- No credentials or synthetic users are embedded in this migration.
 
+BEGIN;
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '60s';
+
 -- Fail closed if underlying shared-prototype functions or structure changed since review.
 DO $guard$
 DECLARE
@@ -175,3 +179,4 @@ $function$;
 
 -- Existing state() signature/owner/grants are preserved by CREATE OR REPLACE.
 -- Nothing here changes game turns, players, tokens, scoring, or SPP tables.
+COMMIT;
