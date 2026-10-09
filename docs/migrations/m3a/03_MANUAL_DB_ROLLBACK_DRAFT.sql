@@ -1,6 +1,7 @@
 -- M3a rollback, MANUAL / DESTRUCTIVE. NOT TO EXECUTE WITHOUT OWNER APPROVAL.
 -- This discards v2 policy columns; never apply while v2 rooms/clients active.
--- Favor rolling back the frontend first. Run only after PRE + explicit GO.
+-- Favor rolling back the frontend first. Run only after dedicated rollback PRE + explicit GO.
+-- Safe default: require ALL Memory rooms to expire, not only non-default v2 rooms.
 BEGIN;
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
@@ -9,9 +10,17 @@ BEGIN
  IF to_regprocedure('public.game_poc_memory_create_v2(text,jsonb,text,boolean)') IS NULL
  OR NOT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='private' AND table_name='game_poc_memory_rooms' AND column_name='interface_language')
  THEN RAISE EXCEPTION 'M3a absent/partially applied, refusing manual rollback'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM information_schema.columns
+               WHERE table_schema='private' AND table_name='game_poc_memory_rooms'
+                 AND column_name='allow_student_language_choice')
+ THEN RAISE EXCEPTION 'Partial M3a installation: missing allow_student_language_choice'; END IF;
+ IF EXISTS(SELECT 1 FROM private.game_poc_memory_rooms WHERE expires_at > now())
+ THEN RAISE EXCEPTION 'Active/unexpired Memory rooms exist: rollback prohibited'; END IF;
  IF EXISTS(SELECT 1 FROM private.game_poc_memory_rooms
            WHERE interface_language <> 'de' OR allow_student_language_choice)
- THEN RAISE EXCEPTION 'Rooms contain non-default policies. Do not drop language columns without explicit data-loss approval'; END IF;
+ THEN RAISE EXCEPTION 'Historical rooms contain non-default policies. Destructive rollback requires a separately documented archive/waiver and new review'; END IF;
+ IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid='private.game_poc_memory_rooms'::regclass)
+ THEN RAISE EXCEPTION 'Room RLS drift: stop'; END IF;
 END
 $guard$;
 -- Restore the prior state projection, verbatim apart from normalized formatting.
