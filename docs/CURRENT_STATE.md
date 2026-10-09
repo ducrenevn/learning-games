@@ -3,9 +3,9 @@
 ## Source work
 
 - Repository: `ducrenevn/learning-games`.
-- Branch: `feat/memory-foundation`.
+- Production branch: `main` (M1 merged through PR #1); prior implementation branch: `feat/memory-foundation`.
 - Architecture: Standalone Vite + React 19 + TypeScript + React Router app connecting to existing Supabase prototype RPCs via public client.
-- No Vercel deployment, hosted DB migration, SPP table changes, or authenticated learner flows have been executed.
+- Vercel first production deployment is READY; hosted gameplay/phone smoke pending. No hosted DB migration, SPP table changes, or authenticated learner flows have been executed.
 
 ## Verified Implementation & QA (2026-10-09)
 
@@ -56,7 +56,7 @@
 - Framework Vite; install `npm ci`; build `npm run build`; output `dist`; Node 24.x selected by Vercel.
 - Vercel production + preview env keys `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` configured (publishable only; values omitted in docs).
 - Deployment protection set to `preview` only: production public, preview protected.
-- Vercel project Git **auto-link remains unconfirmed / blocked by integration access**: the automatic Git-linked project-create request failed for missing GitHub integration or repo access. First deployment was explicitly created from GitHub `main`; future pushes must not be assumed to auto-deploy until integration is linked.
+- Vercel's linked-project inspection on 2026-10-09 **confirmed the GitHub connection** to `ducrenevn/learning-games`. The first deployment was explicitly created from GitHub `main`. This documentation-only commit is intended to verify whether future pushes trigger builds automatically; deployment observation is pending.
 - **Hosted browser and phone multiplayer smoke remains unverified.** Vercel READY verifies build/deployment, not application behavior. Do not call M2 fully closed until host/phone checks pass.
 - Speak Practice Pro application, project and Supabase schema untouched.
 
