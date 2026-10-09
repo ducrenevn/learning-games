@@ -13,6 +13,8 @@ BEGIN
  SELECT count(*),count(*) FILTER(WHERE interface_language NOT IN ('de','en','vi') OR interface_language IS NULL OR allow_student_language_choice IS NULL)
  INTO v_total,v_bad FROM private.game_poc_memory_rooms;
  IF v_bad<>0 THEN RAISE EXCEPTION 'Invalid language settings in % rooms',v_bad; END IF;
+ IF EXISTS (SELECT 1 FROM pg_proc p WHERE p.oid='public.game_poc_memory_create_v2(text,jsonb,text,boolean)'::regprocedure AND NOT ('search_path=""'=ANY(coalesce(p.proconfig,ARRAY[]::text[])))) THEN RAISE EXCEPTION 'v2 search_path insecure'; END IF;
+ IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid='private.game_poc_memory_players'::regclass) THEN RAISE EXCEPTION 'Player RLS disabled'; END IF;
  IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid='private.game_poc_memory_rooms'::regclass)
  THEN RAISE EXCEPTION 'Memory RLS disabled'; END IF;
  RAISE NOTICE 'M3a POST structural PASS; rooms=%',v_total;
@@ -23,7 +25,7 @@ $post$;
 -- BACK synthetic rooms. Run as a single transaction in an SQL editor/session.
 BEGIN;
 DO $smoke$
-DECLARE v jsonb; s jsonb; old_room jsonb; old_state jsonb;
+DECLARE v jsonb; s jsonb; old_room jsonb; old_state jsonb; locked jsonb; locked_state jsonb; joined jsonb; student_state jsonb;
 BEGIN
  v := public.game_poc_memory_create_v2('M3a TEMP test', '[{"left":"A","right":"B"},{"left":"C","right":"D"}]'::jsonb, 'vi', true);
  s := public.game_poc_memory_state(v->>'roomCode',v->>'hostToken');
@@ -31,10 +33,26 @@ BEGIN
  THEN RAISE EXCEPTION 'v2 state did not reflect room policy'; END IF;
  IF s ? 'hostToken' OR s ? 'pairs' OR s ? 'host_token_hash'
  THEN RAISE EXCEPTION 'Sensitive data in state'; END IF;
+ -- Locked EN policy must be authoritative for a student's view.
+ locked := public.game_poc_memory_create_v2('M3a locked TEMP','[{"left":"A","right":"B"},{"left":"C","right":"D"}]'::jsonb,'en',false);
+ locked_state := public.game_poc_memory_state(locked->>'roomCode',locked->>'hostToken');
+ IF locked_state->>'roomLanguage'<>'en' OR locked_state->>'allowStudentLanguageChoice'<>'false'
+ THEN RAISE EXCEPTION 'Locked policy failed'; END IF;
+ joined := public.game_poc_memory_join(locked->>'roomCode','Synthetic Student');
+ student_state := public.game_poc_memory_state(locked->>'roomCode',joined->>'playerToken');
+ IF student_state->>'roomLanguage'<>'en' OR student_state->>'allowStudentLanguageChoice'<>'false'
+ THEN RAISE EXCEPTION 'Student policy projection failed'; END IF;
+ IF student_state->>'isHost'<>'false' OR student_state ? 'hostToken' OR student_state ? 'pairs'
+ THEN RAISE EXCEPTION 'Student state privilege leak'; END IF;
  old_room := public.game_poc_memory_create('M3a legacy TEMP', '[{"left":"A","right":"B"},{"left":"C","right":"D"}]'::jsonb);
  old_state := public.game_poc_memory_state(old_room->>'roomCode',old_room->>'hostToken');
  IF old_state->>'roomLanguage'<>'de' OR old_state->>'allowStudentLanguageChoice'<>'false'
  THEN RAISE EXCEPTION 'Legacy default failed'; END IF;
+ BEGIN
+   PERFORM public.game_poc_memory_create_v2('Reject null TEMP','[{"left":"A","right":"B"},{"left":"C","right":"D"}]'::jsonb,'de',null);
+   RAISE EXCEPTION 'Null choice unexpectedly accepted';
+ EXCEPTION WHEN sqlstate '22023' THEN NULL;
+ END;
  BEGIN
    PERFORM public.game_poc_memory_create_v2('Reject TEMP','[{"left":"A","right":"B"},{"left":"C","right":"D"}]'::jsonb,'xx',false);
    RAISE EXCEPTION 'Invalid language unexpectedly accepted';
@@ -50,5 +68,8 @@ END
 $smoke$;
 ROLLBACK;
 
--- FOLLOW UP OUTSIDE SQL: test anon RPC via real hosted preview client,
--- joining as two synthetic students; confirm no token in QR or logs.
+-- FOLLOW UP OUTSIDE SQL: run real ANON API (not privileged SQL editor) hosted smoke:
+-- two students, DE/EN/VI locked and choice rooms, refresh/rejoin, full
+-- join/start/flip/resolve/next/score/finish, hidden cards, legacy create client,
+-- and verify role rights, no token in QR/logs, no SPP regression.
+-- SQL-editor smoke tests validate function behavior but do NOT prove anon grants.
