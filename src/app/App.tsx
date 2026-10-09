@@ -1,4 +1,4 @@
-import { Link, Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import { Home } from './Home';
 import { MemoryHome } from '../games/memory/MemoryHome';
 import { MemoryJoin } from '../games/memory/MemoryJoin';
@@ -7,8 +7,10 @@ import { LanguageSwitcher, useLanguage } from '../shared/i18n';
 
 export function App() {
   const {t}=useLanguage();
+  const {pathname}=useLocation();
+  const inOnlineMemoryRoom=pathname.startsWith('/games/memory/room/') || pathname==='/games/memory/join';
   return <div className="app-shell">
-    <header className="app-header"><Link to="/" className="wordmark">◈ Learning Games</Link><div className="header-controls"><span className="header-note">{t('tagline')}</span><LanguageSwitcher /></div></header>
+    <header className="app-header"><Link to="/" className="wordmark">◈ Learning Games</Link><div className="header-controls"><span className="header-note">{t('tagline')}</span>{!inOnlineMemoryRoom && <LanguageSwitcher />}</div></header>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/games/memory" element={<MemoryHome />} />
