@@ -70,3 +70,14 @@ a:hover {
 .local-playing-panel {
   display: contents;
 }
+
+/* M3a: language control and short-lived event attention */
+.header-controls{display:flex;align-items:center;gap:18px}
+.language-switcher select{font:inherit;font-weight:700;cursor:pointer;border:1px solid #bbcbbf;border-radius:9px;padding:8px 10px;background:#fffdf8;color:#244438;min-height:40px}
+.language-switcher select:focus-visible{outline:3px solid #b9664e;outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.game-announcement{position:fixed;left:50%;top:28%;transform:translateX(-50%);z-index:30;max-width:min(460px,calc(100vw - 32px));min-width:min(300px,calc(100vw - 32px));padding:22px 26px;border-radius:20px;background:#315b4a;color:#fff;text-align:center;font-size:clamp(1.2rem,3vw,1.7rem);box-shadow:0 10px 38px #1d372d66;pointer-events:none;animation:announcement-in .22s ease-out}
+.game-announcement.wrong{background:#b9664e}
+.game-announcement strong{font-weight:800}
+@keyframes announcement-in{from{opacity:0;transform:translate(-50%,-12px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.game-announcement{animation:none}}
