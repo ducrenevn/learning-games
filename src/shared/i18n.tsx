@@ -33,4 +33,45 @@ export function useLanguage() {
   if(!context) throw new Error('LanguageProvider missing');
   return context;
 }
-export function LanguageSwitcher(){const {language,setLanguage,t}=useLanguage();return <label className="language-switcher"><span className="sr-only">{t('language')}</span><select aria-label={t('language')} value={language} onChange={e=>setLanguage(e.target.value as Language)}><option value="de">DE</option><option value="en">EN</option><option value="vi">VI</option></select></label>;}
+const languageOptions: ReadonlyArray<{code:Language;label:string}> = [
+  {code:'de',label:'Deutsch'},
+  {code:'en',label:'English'},
+  {code:'vi',label:'Tiếng Việt'},
+];
+
+// Inline flag artwork ensures correct rendering on Windows, where flag emoji
+// can appear as two-letter codes instead of images.
+function LanguageFlag({code}:{code:Language}) {
+  return <svg viewBox="0 0 60 36" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    {code==='de' ? <>
+      <path fill="#171717" d="M0 0h60v12H0z"/>
+      <path fill="#dd1d26" d="M0 12h60v12H0z"/>
+      <path fill="#ffce00" d="M0 24h60v12H0z"/>
+    </> : code==='en' ? <>
+      <path fill="#012169" d="M0 0h60v36H0z"/>
+      <path stroke="#fff" strokeWidth="9" d="M0 0 60 36M60 0 0 36"/>
+      <path stroke="#c8102e" strokeWidth="3.5" d="M0 0 60 36M60 0 0 36"/>
+      <path fill="#fff" d="M0 12h60v12H0zM24 0h12v36H24z"/>
+      <path fill="#c8102e" d="M0 15h60v6H0zM27 0h6v36h-6z"/>
+    </> : <>
+      <path fill="#da251d" d="M0 0h60v36H0z"/>
+      <path fill="#ffea00" d="m30 7 2.7 7.3 7.7.3-6.1 4.8 2.2 7.4-6.5-4.3-6.5 4.3 2.2-7.4-6.1-4.8 7.7-.3z"/>
+    </>}
+  </svg>;
+}
+
+export function LanguageSwitcher({appearance='select'}:{appearance?:'select'|'flags'}) {
+  const {language,setLanguage,t}=useLanguage();
+  if(appearance==='flags') return <div className="language-switcher language-switcher--flags" role="group" aria-label={t('language')}>
+    {languageOptions.map(({code,label})=><button
+      key={code}
+      className="language-flag-button"
+      type="button"
+      aria-label={label}
+      aria-pressed={language===code}
+      title={label}
+      onClick={()=>setLanguage(code)}
+    ><span className="language-flag-icon"><LanguageFlag code={code}/></span></button>)}
+  </div>;
+  return <label className="language-switcher"><span className="sr-only">{t('language')}</span><select aria-label={t('language')} value={language} onChange={e=>setLanguage(e.target.value as Language)}><option value="de">DE</option><option value="en">EN</option><option value="vi">VI</option></select></label>;
+}
