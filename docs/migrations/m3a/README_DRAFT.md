@@ -29,6 +29,15 @@ SPP control-room inspection approved a **streamlined migration without a separat
 
 **Scope note:** SPP Homework migration installation is complete, but P2a-6c owner browser dogfood and production Homework activation are separate gates. This M3a GO does not authorize either of them.
 
+## Updated SPP handoff — 2026-10-10 (planning GO, SQL execution HOLD)
+
+- SPP `main@72656c6ada22a1fc80e71541f15fc850ba8b4288`: P2a-1 through P2a-6d complete; Homework ON in production with authenticated teacher/student smoke. No competing SPP schema work planned, but SPP remains writable for ordinary usage.
+- Live Supabase read-only inspection at **2026-10-10 16:30:39 UTC**: full `00_PRE_READ_ONLY.sql` completed without error in `BEGIN TRANSACTION READ ONLY`; 65 tables in `public/private/auth/supabase_migrations`, 17 historical Memory rooms, 20 players, zero unexpired rooms, no M3a columns, no create_v2, and 14 migration ledger entries ending `20261007071753`. This is point-in-time evidence; always rerun PRE.
+- The migration scripts were copied unchanged into the clean **database-only** review branch `review/m3a-database-release-ready-20261010` based on Learning Games `main@f8ac534`. Unlike the older stacked M3a branches, this branch introduces no frontend changes. `main` remains untouched.
+- The new encrypted transaction-consistent **65-table backup remains unverified**. Do not substitute the older 58-table archive. Confirm recoverability and separately stored encryption credentials through the SPP control room.
+- **Canonical migration filename/version and atomic ledger method remain pending SPP operator confirmation.** SPP owns `supabase/migrations/`. Generate the version through the approved local CLI process, then verify the exact final bytes and checksum. Do not invent a version here or apply untracked SQL to production.
+- The isolated rehearsal remains conditionally waived. Owner-specific production GO is still required. The release chain is verified backup + quiet window → fresh read-only PRE → one canonically tracked atomic UP → independent POST/security → Antigravity real anon browser QA. Legacy Memory frontend is the first rollback lever; never automatically run destructive DB rollback.
+
 ## Planned UP
 1. Add `interface_language text NOT NULL DEFAULT 'de' CHECK IN ('de','en','vi')` and `allow_student_language_choice boolean NOT NULL DEFAULT false` to **private.game_poc_memory_rooms only**. Existing rooms are locked German (safe compatibility). No data deletions.
 2. Add new `public.game_poc_memory_create_v2(text,jsonb,text,boolean)`, retaining legacy `create` untouched. It validates policy, calls legacy create to preserve token issuance and validation, sets room policy in the same transaction, and returns the original capabilities.
