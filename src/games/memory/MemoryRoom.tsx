@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { clearRoomIdentity, loadRoomIdentity } from '../../shared/classroom/identity';
 import { RoomShare } from '../../shared/classroom/RoomShare';
@@ -7,7 +7,8 @@ import { MemoryBoard } from './components/MemoryBoard';
 import { MemoryScoreboard } from './components/MemoryScoreboard';
 import { MemoryResults } from './components/MemoryResults';
 import { GameAnnouncement, type Announcement } from '../../shared/feedback/GameAnnouncement';
-import { useLanguage } from '../../shared/i18n';
+import { LanguageSwitcher, useLanguage } from '../../shared/i18n';
+import { resolveRoomLanguage } from '../../shared/classroom/roomLanguagePolicy';
 
 export function MemoryRoom(){
  const {t}=useLanguage();const {roomCode=''}=useParams();
@@ -19,8 +20,15 @@ export function MemoryRoom(){
  return <ActiveRoom key={identity.roomCode+identity.role} identity={identity}/>;
 }
 function ActiveRoom({identity}:{identity:NonNullable<ReturnType<typeof loadRoomIdentity>>}){
- const {t}=useLanguage();
+ const {t,language,setLanguage}=useLanguage();
  const {state,busy,error,refresh,start,flip,skip,recover}=useMemoryRoom(identity);
+ const roomLanguage=state?.roomLanguage;
+ const learnerChoice=state?.allowStudentLanguageChoice;
+ useEffect(()=>{
+   if(!roomLanguage || learnerChoice===undefined) return;
+   const next=resolveRoomLanguage({roomLanguage,allowStudentLanguageChoice:learnerChoice},language);
+   if(next!==language)setLanguage(next);
+ },[roomLanguage,learnerChoice,language,setLanguage]);
  const isHost=identity.role==='host',roomCode=identity.roomCode;
  function leave(){clearRoomIdentity(roomCode);window.location.assign('/games/memory')}
  if(!state)return <main className="page panel padded">
@@ -28,8 +36,9 @@ function ActiveRoom({identity}:{identity:NonNullable<ReturnType<typeof loadRoomI
   {error&&<p role="alert" className="error">{error}</p>}
   <button className="button secondary" onClick={()=>void refresh()}>{t('retry')}</button>
  </main>;
- if(state.status==='finished')return <MemoryResults players={state.players}/>;
+ if(state.status==='finished')return <><div className="room-language-toolbar">{state.allowStudentLanguageChoice && <LanguageSwitcher />}</div><MemoryResults players={state.players}/></>;
  if(state.status==='lobby')return <main className="page">
+  {state.allowStudentLanguageChoice && <div className="room-language-toolbar"><LanguageSwitcher /></div>}
   <div className="intro"><div className="eyebrow">{t('playingTogether')}</div>
    <h1>{isHost?t('yourRoom'):t('waitingStart')}</h1>
    <p className="lead">{t('room')} <strong className="room-code">{roomCode}</strong></p>
@@ -53,7 +62,7 @@ function ActiveRoom({identity}:{identity:NonNullable<ReturnType<typeof loadRoomI
   {id:`resolve:${state.revision}`,text:state.lastMatch?t('correct'):t('wrong'),tone:state.lastMatch?'success':'wrong'}:
   state.phase==='first'&&state.myPlayerId===state.currentPlayerId?
   {id:`turn:${state.revision}:${state.currentPlayerId}`,text:t('yourTurn'),tone:'turn'}:null;
- return <main className="play-layout">
+ return <><div className="room-language-toolbar">{state.allowStudentLanguageChoice && <LanguageSwitcher />}</div><main className="play-layout">
   <GameAnnouncement event={event}/>
   <aside className="panel play-sidebar">
    <MemoryScoreboard players={state.players} activeId={state.currentPlayerId} myId={state.myPlayerId}/>
@@ -69,5 +78,5 @@ function ActiveRoom({identity}:{identity:NonNullable<ReturnType<typeof loadRoomI
    </div>
   </aside>
   <MemoryBoard cards={state.cards} canFlip={myTurn&&!busy} onFlip={flip} notice={null} wrong={state.lastMatch===false}/>
- </main>;
+ </main></>;
 }

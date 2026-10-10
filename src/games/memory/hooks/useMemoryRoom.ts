@@ -16,6 +16,16 @@ export function useMemoryRoom(identity: RoomIdentity) {
   const accept = useCallback((incoming: MemoryRoomState) => {
     if (!incoming || incoming.roomCode !== roomCode || typeof incoming.revision !== 'number') return;
     const previous = currentRef.current;
+    // Legacy mutation RPC responses omit the new room policy fields. Preserve
+    // the validated policy from an earlier authorized state() response.
+    if (previous && (incoming.roomLanguage === undefined || incoming.allowStudentLanguageChoice === undefined)) {
+      incoming = { ...incoming, roomLanguage: previous.roomLanguage,
+        allowStudentLanguageChoice: previous.allowStudentLanguageChoice };
+    }
+    if (!incoming.roomLanguage || typeof incoming.allowStudentLanguageChoice !== 'boolean') {
+      setError('ROOM_LANGUAGE_POLICY_MISSING');
+      return;
+    }
     if (previous && incoming.revision < previous.revision) return;
     if (previous && incoming.revision === previous.revision &&
         incoming.status === previous.status && incoming.phase === previous.phase &&
