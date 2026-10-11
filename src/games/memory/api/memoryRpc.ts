@@ -1,5 +1,7 @@
 import { getSupabase } from '../../../shared/lib/supabase';
 import type { MemoryPair, MemoryRoomState } from '../types';
+import type { Language } from '../../../shared/i18n';
+import { assertRoomLanguagePolicy } from '../../../shared/classroom/roomLanguagePolicy';
 
 async function call<T>(name: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await getSupabase().rpc(name, args);
@@ -8,9 +10,10 @@ async function call<T>(name: string, args: Record<string, unknown>): Promise<T> 
   return data as T;
 }
 
-export function createMemoryRoom(pairs: MemoryPair[], title = 'Memory-Spiel') {
-  return call<{ roomCode: string; hostToken: string }>('game_poc_memory_create', {
+export function createMemoryRoom(pairs: MemoryPair[], language: Language, allowStudentLanguageChoice: boolean, title = 'Memory-Spiel') {
+  return call<{ roomCode: string; hostToken: string }>('game_poc_memory_create_v2', {
     p_title: title, p_pairs: pairs.map(({ left, right }) => ({ left, right })),
+    p_language: language, p_allow_student_language_choice: allowStudentLanguageChoice,
   });
 }
 export function joinMemoryRoom(roomCode: string, name: string) {
@@ -18,8 +21,10 @@ export function joinMemoryRoom(roomCode: string, name: string) {
     p_room_code: roomCode, p_display_name: name,
   });
 }
-export function fetchMemoryRoom(roomCode: string, token: string) {
-  return call<MemoryRoomState>('game_poc_memory_state', { p_room_code: roomCode, p_token: token });
+export async function fetchMemoryRoom(roomCode: string, token: string) {
+  const state = await call<MemoryRoomState>('game_poc_memory_state', { p_room_code: roomCode, p_token: token });
+  assertRoomLanguagePolicy(state);
+  return state;
 }
 export function startMemoryRoom(roomCode: string, hostToken: string) {
   return call<MemoryRoomState>('game_poc_memory_start', { p_room_code: roomCode, p_host_token: hostToken });
