@@ -6,7 +6,7 @@ import { assertRoomLanguagePolicy } from '../../../shared/classroom/roomLanguage
 async function call<T>(name: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await getSupabase().rpc(name, args);
   if (error) throw new Error(error.message);
-  if (!data) throw new Error('Keine Antwort vom Spielserver.');
+  if (!data) throw new Error('NO_GAME_SERVER_RESPONSE');
   return data as T;
 }
 
