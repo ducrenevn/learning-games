@@ -9,6 +9,6 @@ export function localizeGameError(error: unknown, t: Translate, fallback: Fallba
   if (message === 'ROOM_LANGUAGE_POLICY_MISSING') return t('roomPolicyMissing');
   if (/room unavailable|game already started/i.test(message)) return t('roomUnavailable');
   if (/failed to fetch|network|fetch failed|connection|timeout/i.test(message)) return t('serverError');
-  if (/no response|keine antwort/i.test(message)) return t('noResponse');
+  if (/NO_GAME_SERVER_RESPONSE|no response|keine antwort/i.test(message)) return t('noResponse');
   return t(fallback);
 }
