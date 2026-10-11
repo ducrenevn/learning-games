@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '../../shared/i18n';
+import { GameAnnouncement } from '../../shared/feedback/GameAnnouncement';
 import {
   calculateWinners,
   hideCards,
@@ -19,6 +21,8 @@ interface Props {
 }
 
 export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
+  const {t}=useLanguage();
+  const [announcementId,setAnnouncementId]=useState(0);
   const [names, setNames] = useState('Spieler 1, Spieler 2');
   const [deck, setDeck] = useState<LocalCard[] | null>(null);
   const [scores, setScores] = useState<number[]>([]);
@@ -55,6 +59,7 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
     setNotice(null);
     setLastMatch(null);
     setFinished(false);
+    setAnnouncementId(n=>n+1);
     onPlayingChange?.(true);
   }
 
@@ -97,7 +102,8 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
 
     const isMatch = firstCard.pairId === card.pairId;
     setLastMatch(isMatch);
-    setNotice(isMatch ? 'Richtig! Ein Paar gefunden!' : 'Das passt leider nicht!');
+    setNotice(isMatch ? t('correct') : t('wrong'));
+    setAnnouncementId(n=>n+1);
 
     if (isMatch) {
       const updatedDeck = matchCards(deck, [firstId, id]);
@@ -126,6 +132,7 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
         setLocked(false);
         setNotice(null);
         setLastMatch(null);
+        setAnnouncementId(n=>n+1);
         timerRef.current = null;
       }, 1800);
     }
@@ -134,9 +141,9 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
   if (!deck) {
     return (
       <div className="form">
-        <h2>Lokal spielen</h2>
+        <h2>{t('localPlay')}</h2>
         <label>
-          Spielernamen (durch Komma getrennt)
+          {t('localNames')}
           <input
             className="field"
             value={names}
@@ -148,7 +155,7 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
           disabled={errors.length > 0 || pairs.length < 1 || players.length < 1}
           onClick={start}
         >
-          Spiel starten
+          {t('startGame')}
         </button>
       </div>
     );
@@ -159,27 +166,27 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
       players.map((name, i) => ({ name, score: scores[i] ?? 0 }))
     );
     const winnerLead = players.length === 1
-      ? 'Alle Paare gefunden!'
+      ? t('allFound')
       : winners.length === 1
-        ? `${winners[0]} gewinnt mit ${bestScore} ${bestScore === 1 ? 'Punkt' : 'Punkten'}!`
-        : `Gleichstand (${bestScore} Punkte): ${winners.join(', ')}`;
+        ? t('winWith',{name:winners[0],score:bestScore,unit:bestScore===1?t('point'):t('points')})
+        : t('tieWith',{score:bestScore,names:winners.join(', ')});
 
     return (
       <div className="panel results">
-        <div className="eyebrow">GESCHAFFT</div>
-        <h1>Spiel beendet!</h1>
+        <div className="eyebrow">{t('finishedEyebrow')}</div>
+        <h1>{t('gameOver')}</h1>
         <p className="lead">{winnerLead}</p>
         <div className="result-grid">
           {players.map((name, i) => (
             <div className="result-item" key={name + i}>
               <span>{name}</span>
-              <strong>{scores[i] ?? 0} {scores[i] === 1 ? 'Punkt' : 'Punkte'}</strong>
+              <strong>{scores[i] ?? 0} {scores[i] === 1 ? t('point') : t('points')}</strong>
             </div>
           ))}
         </div>
         <div className="row" style={{ justifyContent: 'center' }}>
-          <button className="button primary" onClick={start}>Nochmal spielen</button>
-          <button className="button secondary" onClick={exitGame}>Einstellungen</button>
+          <button className="button primary" onClick={start}>{t('again')}</button>
+          <button className="button secondary" onClick={exitGame}>{t('settings')}</button>
         </div>
       </div>
     );
@@ -195,17 +202,18 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
           activeId={String(turn)}
         />
         <div className="progress-pill">
-          Paare gefunden: {matchedPairs} / {pairs.length}
+          {t('pairsFound',{count:matchedPairs,total:pairs.length})}
         </div>
         <div className="sidebar-actions">
-          <button className="button subtle" onClick={exitGame}>Spiel beenden</button>
+          <button className="button subtle" onClick={exitGame}>{t('finishLocal')}</button>
         </div>
       </aside>
+      <GameAnnouncement event={notice ? {id:'local:'+announcementId,text:notice,tone:lastMatch?'success':'wrong'} : !locked && picks.length===0 ? {id:'turn:'+announcementId,text:t('yourTurn'),tone:'turn'} : null} />
       <MemoryBoard
         cards={deck}
         canFlip={!locked && !finished}
         onFlip={flip}
-        notice={notice}
+        notice={null}
         wrong={lastMatch === false}
       />
     </div>
