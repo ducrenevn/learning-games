@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MemoryRoomState, RoomIdentity } from '../types';
+import { useLanguage } from '../../../shared/i18n';
+import { localizeGameError } from '../../../shared/classroom/gameErrorLocalization';
 import {
   advanceMemoryTurn, fetchMemoryRoom, flipMemoryCard, skipMemoryTurn, startMemoryRoom,
 } from '../api/memoryRpc';
 
 export function useMemoryRoom(identity: RoomIdentity) {
+  const { t } = useLanguage();
   const [state, setState] = useState<MemoryRoomState | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +19,16 @@ export function useMemoryRoom(identity: RoomIdentity) {
   const accept = useCallback((incoming: MemoryRoomState) => {
     if (!incoming || incoming.roomCode !== roomCode || typeof incoming.revision !== 'number') return;
     const previous = currentRef.current;
+    // Legacy mutation RPC responses omit the new room policy fields. Preserve
+    // the validated policy from an earlier authorized state() response.
+    if (previous && (incoming.roomLanguage === undefined || incoming.allowStudentLanguageChoice === undefined)) {
+      incoming = { ...incoming, roomLanguage: previous.roomLanguage,
+        allowStudentLanguageChoice: previous.allowStudentLanguageChoice };
+    }
+    if (!incoming.roomLanguage || typeof incoming.allowStudentLanguageChoice !== 'boolean') {
+      setError(t('roomPolicyMissing'));
+      return;
+    }
     if (previous && incoming.revision < previous.revision) return;
     if (previous && incoming.revision === previous.revision &&
         incoming.status === previous.status && incoming.phase === previous.phase &&
@@ -23,13 +36,13 @@ export function useMemoryRoom(identity: RoomIdentity) {
     currentRef.current = incoming;
     setState(incoming);
     setError(null);
-  }, [roomCode]);
+  }, [roomCode, t]);
 
   const refresh = useCallback(async () => {
     if (fetchBusy.current) return;
     fetchBusy.current = true;
     try { accept(await fetchMemoryRoom(roomCode, token)); }
-    catch (e) { setError(e instanceof Error ? e.message : 'Verbindung fehlgeschlagen.'); }
+    catch (e) { setError(localizeGameError(e,t,'serverError')); }
     finally { fetchBusy.current = false; }
   }, [accept, roomCode, token]);
 
@@ -46,7 +59,7 @@ export function useMemoryRoom(identity: RoomIdentity) {
       if (msg.includes('Stale revision')) {
         await refresh();
       } else if (!quietStale) {
-        setError(msg);
+        setError(localizeGameError(e,t,'actionFailed'));
       }
       return false;
     } finally {

@@ -17,6 +17,8 @@ export interface MemoryRoomState {
   lastMatch: boolean | null;
   canFlip: boolean;
   expiresAt: string;
+  roomLanguage: import('../../shared/i18n').Language;
+  allowStudentLanguageChoice: boolean;
 }
 export type RoomRole = 'host' | 'student';
 export interface RoomIdentity { roomCode: string; token: string; role: RoomRole }
