@@ -4,6 +4,7 @@ import { joinMemoryRoom } from './api/memoryRpc';
 import { normalizeRoomCode } from './engine/pairs';
 import { saveRoomIdentity } from '../../shared/classroom/identity';
 import { useLanguage } from '../../shared/i18n';
+import { localizeGameError } from '../../shared/classroom/gameErrorLocalization';
 
 export function MemoryJoin(){
  const {t}=useLanguage();
@@ -21,7 +22,7 @@ export function MemoryJoin(){
    const data=await joinMemoryRoom(room,name.trim());
    saveRoomIdentity({roomCode:data.roomCode,token:data.playerToken,role:'student'});
    navigate('/games/memory/room/'+data.roomCode);
-  } catch(e){setError(e instanceof Error?e.message:t('joinFailed'))}
+  } catch(e){setError(e instanceof Error && e.message===t('invalidCode') ? t('invalidCode') : localizeGameError(e,t,'joinFailed'))}
   finally{setBusy(false)}
  }
  return <main className="page narrow">
