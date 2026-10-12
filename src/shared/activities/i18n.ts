@@ -2,7 +2,7 @@ import type { Locale, ValidationCode, Issue } from './contract';
 
 export const messages = {
   de: {
-    language: 'Sprache', create: 'Neu', import: 'JSON importieren', export: 'JSON herunterladen',
+    language: 'Sprache', create: 'Neu', import: 'Aktivität importieren', export: 'Aktivität herunterladen',
     edit: 'Bearbeiten', preview: 'Vorschau', present: 'Präsentieren', practice: 'Allein üben',
     unsaved: 'Nicht exportierte Änderungen', saved: 'Datei zum Export bereit',
     unsavedWarn: 'Nicht exportierte Änderungen verwerfen?', noCloud: 'Nur in diesem Browser. Keine Cloud-Speicherung oder Abgabe.',
@@ -47,7 +47,7 @@ export const messages = {
     }
   },
   en: {
-    language: 'Language', create: 'New', import: 'Import JSON', export: 'Download JSON',
+    language: 'Language', create: 'New', import: 'Import activity', export: 'Download activity',
     edit: 'Edit', preview: 'Preview', present: 'Present', practice: 'Independent practice',
     unsaved: 'Unexported changes', saved: 'Ready to export',
     unsavedWarn: 'Discard unexported changes?', noCloud: 'Only in this browser. No cloud storage or submissions.',
@@ -92,7 +92,7 @@ export const messages = {
     }
   },
   vi: {
-    language: 'Ngôn ngữ', create: 'Tạo mới', import: 'Nhập JSON', export: 'Tải JSON',
+    language: 'Ngôn ngữ', create: 'Tạo mới', import: 'Nhập hoạt động', export: 'Tải hoạt động',
     edit: 'Chỉnh sửa', preview: 'Xem thử', present: 'Trình chiếu', practice: 'Tự luyện tập',
     unsaved: 'Thay đổi chưa xuất tệp', saved: 'Có thể xuất tệp',
     unsavedWarn: 'Bỏ các thay đổi chưa xuất tệp?', noCloud: 'Chỉ trên trình duyệt này. Không lưu đám mây hoặc nộp bài.',
