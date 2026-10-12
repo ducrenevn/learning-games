@@ -20,3 +20,7 @@ No new Supabase tables, functions, policies, migrations or hosting edits; no net
 - Should the interface language be remembered between pages/reloads (it defaults to German each time)?
 - Do you want teachers to be able to rename category/card ids, or keep them generated?
 - Stage 2 (networked rooms) remains separately gated; nothing here prepares or authorises it.
+
+
+## After Memory unification — Antigravity handoff (2026-10-12)
+Verify the stacked isolated branch `feat/wave-f-memory-unified-20261012` against its corpus parent. Read docs/architecture/UNIFIED_GAME_EXPERIENCE_PROPOSAL.md and docs/audits/2026-10-12-wave-f-antigravity-intake.md. Run full npm ci/typecheck/test/build, correct old step-editor DOM tests and run browser automation for four game types with 48 fixtures, DE/EN/VI, keyboard/touch, mobile, presentation and independent gameplay, and local Memory multiplayer scores. Do NOT execute hosted Memory online room RPCs, run migrations, merge, deploy or modify SPP. Owner subsequently performs visual and pedagogical review; report exact evidence and failures.

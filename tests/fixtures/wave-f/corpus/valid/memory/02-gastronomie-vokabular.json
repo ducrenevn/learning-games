@@ -1,0 +1,49 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "memory",
+  "id": "gastro-vokabeln",
+  "title": "Gastronomie – Arbeitsmittel",
+  "targetLanguage": "de",
+  "instructions": "Finde die passenden Paare.",
+  "content": {
+    "pairs": [
+      {
+        "id": "pair-1",
+        "left": "Messer",
+        "right": "knife",
+        "category": "Küche"
+      },
+      {
+        "id": "pair-2",
+        "left": "Teller",
+        "right": "plate",
+        "category": "Service"
+      },
+      {
+        "id": "pair-3",
+        "left": "Löffel",
+        "right": "spoon",
+        "category": "Service"
+      },
+      {
+        "id": "pair-4",
+        "left": "Rechnung",
+        "right": "bill",
+        "category": "Service"
+      },
+      {
+        "id": "pair-5",
+        "left": "Koch",
+        "right": "chef",
+        "category": "Berufe"
+      },
+      {
+        "id": "pair-6",
+        "left": "Gast",
+        "right": "guest",
+        "category": "Berufe"
+      }
+    ]
+  }
+}

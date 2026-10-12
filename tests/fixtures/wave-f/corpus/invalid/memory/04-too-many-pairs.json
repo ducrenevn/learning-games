@@ -1,0 +1,98 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "memory",
+  "id": "deutsch-englisch",
+  "title": "Wörter im Alltag",
+  "targetLanguage": "de",
+  "instructions": "Finde die passenden Paare.",
+  "content": {
+    "pairs": [
+      {
+        "id": "pair-1",
+        "left": "Left 1",
+        "right": "Right 1"
+      },
+      {
+        "id": "pair-2",
+        "left": "Left 2",
+        "right": "Right 2"
+      },
+      {
+        "id": "pair-3",
+        "left": "Left 3",
+        "right": "Right 3"
+      },
+      {
+        "id": "pair-4",
+        "left": "Left 4",
+        "right": "Right 4"
+      },
+      {
+        "id": "pair-5",
+        "left": "Left 5",
+        "right": "Right 5"
+      },
+      {
+        "id": "pair-6",
+        "left": "Left 6",
+        "right": "Right 6"
+      },
+      {
+        "id": "pair-7",
+        "left": "Left 7",
+        "right": "Right 7"
+      },
+      {
+        "id": "pair-8",
+        "left": "Left 8",
+        "right": "Right 8"
+      },
+      {
+        "id": "pair-9",
+        "left": "Left 9",
+        "right": "Right 9"
+      },
+      {
+        "id": "pair-10",
+        "left": "Left 10",
+        "right": "Right 10"
+      },
+      {
+        "id": "pair-11",
+        "left": "Left 11",
+        "right": "Right 11"
+      },
+      {
+        "id": "pair-12",
+        "left": "Left 12",
+        "right": "Right 12"
+      },
+      {
+        "id": "pair-13",
+        "left": "Left 13",
+        "right": "Right 13"
+      },
+      {
+        "id": "pair-14",
+        "left": "Left 14",
+        "right": "Right 14"
+      },
+      {
+        "id": "pair-15",
+        "left": "Left 15",
+        "right": "Right 15"
+      },
+      {
+        "id": "pair-16",
+        "left": "Left 16",
+        "right": "Right 16"
+      },
+      {
+        "id": "pair-17",
+        "left": "Left 17",
+        "right": "Right 17"
+      }
+    ]
+  }
+}

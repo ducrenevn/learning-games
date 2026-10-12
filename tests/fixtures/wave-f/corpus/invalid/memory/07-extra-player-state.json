@@ -1,0 +1,48 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "memory",
+  "id": "deutsch-englisch",
+  "title": "Wörter im Alltag",
+  "targetLanguage": "de",
+  "instructions": "Finde die passenden Paare.",
+  "content": {
+    "pairs": [
+      {
+        "id": "pair-1",
+        "left": "Haus",
+        "right": "house",
+        "category": "Wohnen",
+        "score": 10
+      },
+      {
+        "id": "pair-2",
+        "left": "Tisch",
+        "right": "table",
+        "category": "Wohnen"
+      },
+      {
+        "id": "pair-3",
+        "left": "Buch",
+        "right": "book",
+        "category": "Lernen"
+      },
+      {
+        "id": "pair-4",
+        "left": "Stuhl",
+        "right": "chair",
+        "category": "Wohnen"
+      },
+      {
+        "id": "pair-5",
+        "left": "Lampe",
+        "right": "lamp"
+      },
+      {
+        "id": "pair-6",
+        "left": "Tür",
+        "right": "door"
+      }
+    ]
+  }
+}

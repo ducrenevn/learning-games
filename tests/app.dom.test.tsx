@@ -28,10 +28,11 @@ describe('catalog and routing', () => {
       unmount();
     }
   });
-  it('mounts Memory without the Wave F workspace and leaves <html lang> alone', () => {
+  it('mounts Memory using the unified guided workspace', () => {
     document.documentElement.lang = 'de';
     const { container } = renderAt('/games/memory');
-    expect(container.querySelector('.activity-page')).toBeNull();
+    expect(container.querySelector('.activity-ux-page')).not.toBeNull();
+    expect(screen.getByRole('link', { name: /Raum beitreten/ })).toBeTruthy();
     expect(document.documentElement.lang).toBe('de');
   });
   it('shows the German 404 for an unknown route', () => {
