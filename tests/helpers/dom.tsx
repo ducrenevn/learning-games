@@ -1,6 +1,8 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { AppShell } from '../../src/app/App';
+import { LocaleProvider } from '../../src/shared/locale/LocaleProvider';
 import { afterEach, vi } from 'vitest';
 import type { ReactElement } from 'react';
 
@@ -9,7 +11,7 @@ afterEach(() => cleanup());
 export type Locale = 'de' | 'en' | 'vi';
 export function renderPage(ui: ReactElement) {
   const user = userEvent.setup();
-  const view = render(<MemoryRouter>{ui}</MemoryRouter>);
+  const view = render(<MemoryRouter><LocaleProvider><AppShell>{ui}</AppShell></LocaleProvider></MemoryRouter>);
   return { user, ...view };
 }
 export function jsonFile(name: string, data: unknown): File {
@@ -35,23 +37,10 @@ export async function importActivity(user: UserEvent, data: unknown, name = 'act
   const accept = await screen.findByRole('button', {name: /Im Editor öffnen|Open in editor|Mở trong trình chỉnh sửa/});
   await user.click(accept);
 }
-/** The reviewed flow exposes game modes only on the Review step. */
-export async function openReview(user: UserEvent) {
-  const nav = document.querySelector<HTMLElement>('.activity-ux-navigation');
-  if (!nav) throw new Error('Guided editor navigation not mounted');
-  const steps = within(nav).getAllByRole('button');
-  await user.click(steps[steps.length - 1]);
-}
-/** Select an authored content step through the same real step navigator the teacher uses. */
-export async function openAuthorStep(user: UserEvent, step: number) {
-  const nav = document.querySelector<HTMLElement>('.activity-ux-navigation');
-  if (!nav) throw new Error('Guided editor navigation not mounted');
-  const steps = within(nav).getAllByRole('button');
-  if (!steps[step]) throw new Error('No guided editor step ' + step);
-  await user.click(steps[step]);
-}
+const FLAG_LABEL: Record<Locale, string> = { de: 'Deutsch', en: 'English', vi: 'Tiếng Việt' };
+/** Switches the interface language through the real flag toggle in the app bar. */
 export async function chooseLocale(user: UserEvent, locale: Locale) {
-  await user.selectOptions(document.querySelector('select')!, locale);
+  await user.click(screen.getByRole('button', { name: FLAG_LABEL[locale] }));
 }
 /** Captures the JSON file the Download action would save instead of touching the browser's download machinery. */
 export function captureDownload() {

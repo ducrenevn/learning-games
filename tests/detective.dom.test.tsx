@@ -3,16 +3,15 @@ import { describe, expect, it } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { DetectivePage } from '../src/games/language-detective/DetectivePage';
-import { chooseLocale, importActivity, openReview, playText, renderPage } from './helpers/dom';
+import { chooseLocale, importActivity,  playText  , renderPage } from './helpers/dom';
 import { detectiveCleanFixture, detectiveFixture } from './helpers/fixtures';
 
 type Fixture = ReturnType<typeof detectiveFixture>;
-async function play(user: UserEvent, mode: 'Allein üben' | 'Präsentieren' | 'Vorschau' = 'Allein üben', make: () => Fixture = detectiveFixture, mutate?: (a: Fixture) => void) {
+async function play(user: UserEvent, mode: 'Ausprobieren' | 'Präsentieren' | 'Ausprobieren' = 'Ausprobieren', make: () => Fixture = detectiveFixture, mutate?: (a: Fixture) => void) {
   const a = make(); mutate?.(a);
   await importActivity(user, a);
   await waitFor(() => expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe(a.title));
-  await openReview(user);
-  await user.click(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button', { name: mode }));
+  await user.click(screen.getByRole('button', { name: mode }));
 }
 const segment = (text: string) => screen.getByRole('button', { name: new RegExp('^' + text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![a-zäöüß])') }) as HTMLButtonElement;
 const pick = async (user: UserEvent, ...texts: string[]) => { for (const t of texts) await user.click(segment(t)); };
@@ -43,7 +42,7 @@ describe('Language Detective play: answer secrecy', () => {
   });
   it('does not expose the key through DOM attributes before Check', async () => {
     const { user } = renderPage(<DetectivePage />);
-    await play(user, 'Allein üben', detectiveFixture, a => { a.content.issues[0].explanation = 'GEHEIM-ERKLAERUNG'; });
+    await play(user, 'Ausprobieren', detectiveFixture, a => { a.content.issues[0].explanation = 'GEHEIM-ERKLAERUNG'; });
     const html = document.querySelector('.activity-play')!.innerHTML;
     expect(html).not.toContain('GEHEIM-ERKLAERUNG');
     expect(html).not.toMatch(/data-(issue|answer|correct)/i);
@@ -88,7 +87,7 @@ describe('Language Detective play: identification scoring', () => {
   });
   it('a clean passage needs an explicit "No errors"; flagging anything is wrong; no "0 of 0" wording', async () => {
     const { user } = renderPage(<DetectivePage />);
-    await play(user, 'Allein üben', detectiveCleanFixture);
+    await play(user, 'Ausprobieren', detectiveCleanFixture);
     await user.click(screen.getByLabelText('Keine Fehler'));
     await check(user);
     expect(playText()).toContain('Ergebnis: richtig');
@@ -123,7 +122,7 @@ describe('Language Detective play: identification scoring', () => {
   });
   it('identifies segments by id, so two identical words are independent', async () => {
     const { user } = renderPage(<DetectivePage />);
-    await play(user, 'Allein üben', detectiveFixture, a => {
+    await play(user, 'Ausprobieren', detectiveFixture, a => {
       a.content.segments = ['Ich', 'ging', 'ging', 'nach', 'Hause'].map((text, i) => ({ id: 'w' + (i + 1), text }));
       a.content.issues = [{ segmentId: 'w3', correction: 'ging heim', explanation: 'x' }];
     });
@@ -253,10 +252,9 @@ describe('Language Detective play: focus, retry and modes', () => {
     await check(user); await reveal(user);
     expect(playText()).not.toContain('Eigener Korrekturvorschlag');
     expect(playText()).toContain('haben → habe');
-    for (const mode of ['Allein üben', 'Vorschau'] as const) {
+    for (const mode of ['Ausprobieren', 'Ausprobieren'] as const) {
       await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
-      await openReview(user);
-  await user.click(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button', { name: mode }));
+  await user.click(screen.getByRole('button', { name: mode }));
       await pick(user, 'haben');
       expect(screen.getAllByRole('textbox')).toHaveLength(1);
     }
@@ -281,14 +279,14 @@ describe('Language Detective play: locales and text', () => {
   });
   it('renders markup-like text literally and tags authored text with the target language', async () => {
     const { user } = renderPage(<DetectivePage />);
-    await play(user, 'Allein üben', detectiveFixture, a => { a.targetLanguage = 'vi'; a.content.segments[0].text = '5 < 6 & "x" 🍎'; });
+    await play(user, 'Ausprobieren', detectiveFixture, a => { a.targetLanguage = 'vi'; a.content.segments[0].text = '5 < 6 & "x" 🍎'; });
     expect(segment('5 < 6 & "x" 🍎').querySelector('[lang="vi"]')).toBeTruthy();
     expect(document.querySelector('.activity-play .lead[lang="vi"]')).toBeTruthy();
     expect(document.querySelector('.activity-play img, .activity-play script')).toBeNull();
   });
   it('handles the maximum passage (80 segments, 12 issues) and keeps authored order', async () => {
     const { user } = renderPage(<DetectivePage />);
-    await play(user, 'Allein üben', detectiveFixture, a => {
+    await play(user, 'Ausprobieren', detectiveFixture, a => {
       a.content.segments = Array.from({ length: 80 }, (_, i) => ({ id: 's' + (i + 1), text: 'Wort' + (i + 1) }));
       a.content.issues = Array.from({ length: 12 }, (_, i) => ({ segmentId: 's' + (i * 6 + 1), correction: 'k' + i, explanation: 'e' + i }));
     });

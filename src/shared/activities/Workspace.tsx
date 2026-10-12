@@ -1,79 +1,75 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentType, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { UsersRound } from 'lucide-react';
-import { ArrowLeft, ArrowRight, Check, Download, FileUp, PencilLine, Presentation, UserRound } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Download, FileUp, PencilLine, Presentation, Play, UsersRound, AlertTriangle } from 'lucide-react';
 import type { ActivityBase, ActivityType, Locale, PlayMode, Validator, Issue } from './contract';
 import { MAX_BYTES } from './contract';
 import { downloadActivity, serializeActivity, validateImported } from './portable';
 import { t, issueText } from './i18n';
-import { u, type UXKey } from './uxCopy';
+import { u } from './uxCopy';
+import { friendlyIssue, makeFieldHelpers, type FieldAttrs, type RegionAttrs } from './issues';
+import { AutoTextarea, TargetLanguageField } from './canvasParts';
+import { useLocale } from '../locale/LocaleProvider';
 
-export interface EditorProps<T> { activity: T; onChange: (next: T) => void; locale: Locale; section?: string }
+export interface EditorProps<T> {
+  activity: T; onChange: (next: T) => void; locale: Locale;
+  /** Spread onto inputs: tags the validator path, and marks the input invalid once the teacher tried to play. */
+  field: (path: string) => FieldAttrs;
+  /** Same for list containers and other non-input regions. */
+  region: (path: string) => RegionAttrs;
+}
 export interface PlayerProps<T> { activity: T; mode: PlayMode; locale: Locale }
+export interface PreviewProps<T> { activity: T; locale: Locale }
 interface Props<T extends ActivityBase<ActivityType, unknown>> {
   kind: ActivityType;
   makeBlank: () => T;
   validate: Validator<T>;
   Editor: ComponentType<EditorProps<T>>;
   Player: ComponentType<PlayerProps<T>>;
+  /** Read-only, human-readable rendering of an activity (import review). */
+  Preview: ComponentType<PreviewProps<T>>;
   /** Optional existing Memory-only room flow; never called by local preview or import. */
   onOnline?: (activity: T) => Promise<void>;
   joinHref?: string;
 }
-type Screen = 'choose' | 'import' | 'edit' | PlayMode;
+type Screen = 'choose' | 'import' | 'edit' | 'play';
 const LABELS: Record<ActivityType, string> = { sort:'Sort', sequence:'Sequence', 'language-detective':'Language Detective', memory:'Memory' };
-const STEPS: Record<ActivityType, readonly UXKey[]> = {
-  sort:['details', 'categories', 'cards', 'review'],
-  sequence:['details', 'steps', 'review'],
-  'language-detective':['details', 'passage', 'errors', 'review'],
-  memory:['details', 'pairs', 'review'],
-};
+const RULE: Record<ActivityType, 'ruleSort' | 'ruleSequence' | 'ruleDetective' | 'ruleMemory'> = { sort:'ruleSort', sequence:'ruleSequence', 'language-detective':'ruleDetective', memory:'ruleMemory' };
 const LIMIT = 20;
-export function stepIssues(kind: ActivityType, step: UXKey, issues: readonly Issue[]): Issue[] {
-  if (step === 'review') return [...issues];
-  return issues.filter(issue => {
-    const path = issue.path;
-    if (step === 'details') return ['title', 'instructions', 'targetLanguage', 'id', 'format', 'schemaVersion', 'activityType'].some(p => path === p || path.startsWith(p + '.'));
-    if (kind === 'memory') return path.startsWith('content.pairs');
-    if (kind === 'sort') return step === 'categories' ? path.startsWith('content.categories') : path.startsWith('content.items');
-    if (kind === 'sequence') return path.startsWith('content.');
-    if (step === 'passage') return path.startsWith('content.segments') || path === 'content.prompt';
-    return path.startsWith('content.issues') || path === 'content.summary';
-  });
-}
-/** Teacher-facing field labels; raw schema paths are only shown in import diagnostics. */
-function friendlyIssue(kind:ActivityType,issue:Issue,locale:Locale){
-  const raw=issueText(issue,locale);
-  const description=raw.startsWith(issue.path+': ')?raw.slice(issue.path.length+2):raw;
-  const match=/^content\.(categories|items|segments|issues|pairs)\[(\d+)\](?:\.([a-zA-Z]+))?$/.exec(issue.path);
-  if(match){
-    const collection=match[1],index=Number(match[2])+1,field=match[3];
-    const subject=collection==='pairs'?'pairs':collection==='categories'?'categories':collection==='segments'?'passage':collection==='issues'?'errors':kind==='sort'?'cards':'steps';
-    const label=field==='left'?'leftCard':field==='right'?'rightCard':field==='label'?'title':field==='text'?'passage':field==='categoryId'?'categories':field==='correction'?'errors':field==='explanation'?'instructions':field==='segmentId'?'errors':null;
-    return u(locale,subject)+' '+index+(label?' · '+u(locale,label):'')+': '+description;
-  }
-  const collection=/^content\.(categories|items|segments|issues|pairs)$/.exec(issue.path);
-  if(collection){const subject=collection[1]==='pairs'?'pairs':collection[1]==='items'?(kind==='sort'?'cards':'steps'):collection[1]==='segments'?'passage':collection[1]==='categories'?'categories':'errors';return u(locale,subject)+': '+description;}
-  const label=issue.path==='title'?'title':issue.path==='instructions'?'instructions':issue.path==='targetLanguage'?'language':issue.path==='id'?'activityId':issue.path==='content.prompt'?'details':null;
-  return (label?u(locale,label):issue.path)+': '+description;
-}
+
 function cleanSlug(value: string, fallback: string) {
-  return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 64).replace(/-$/, '') || fallback;
+  return value.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 64).replace(/-$/, '') || fallback;
 }
 function IssueList({ issues, locale }: { issues: readonly Issue[]; locale: Locale }) {
   return <ul>{issues.slice(0,LIMIT).map((i,index) => <li key={index}>{issueText(i,locale)}</li>)}
     {issues.length > LIMIT && <li>+{issues.length-LIMIT}</li>}</ul>;
 }
+/** "9 Karten · 3 Kategorien" — what a teacher expects to see on a file before opening it. */
+function countsOf(kind: ActivityType, content: unknown, locale: Locale) {
+  const c = content as Record<string, unknown[]>;
+  switch (kind) {
+    case 'sort': return u(locale,'nCards',{n:c.items.length}) + ' · ' + u(locale,'nCategories',{n:c.categories.length});
+    case 'sequence': return u(locale,'nSteps',{n:c.items.length});
+    case 'memory': return u(locale,'nPairs',{n:c.pairs.length});
+    default: {
+      const tasks = (c.tasks ?? [{ issues: c.issues }]) as { issues: unknown[] }[];
+      return u(locale,'nSentences',{n:tasks.length}) + ' · ' + u(locale,'nErrors',{n:tasks.reduce((sum,task)=>sum+task.issues.length,0)});
+    }
+  }
+}
 
-/** One local activity, guided from choice -> content -> review -> detached play. No hosted state. */
-export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>({ kind, makeBlank, validate, Editor, Player, onOnline, joinHref }: Props<T>) {
-  const [locale,setLocale] = useState<Locale>('de');
+/** One local activity: choose -> single authoring canvas -> detached play. No hosted state. */
+export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>({ kind, makeBlank, validate, Editor, Player, Preview, onOnline, joinHref }: Props<T>) {
+  const { locale } = useLocale();
   const [screen,setScreen] = useState<Screen>('choose');
+  const [mode,setMode] = useState<PlayMode>('independent');
   const [draft,setDraft] = useState<T>(makeBlank);
   const [dirty,setDirty] = useState(false);
+  const [origin,setOrigin] = useState<'new'|'file'>('new');
+  const [savedAt,setSavedAt] = useState<Date|null>(null);
   const [autoId,setAutoId] = useState(true);
-  const [step,setStep] = useState(0);
-  const [attempted,setAttempted] = useState<Set<number>>(() => new Set());
+  const [attempted,setAttempted] = useState(false);
+  const [attemptToken,setAttemptToken] = useState(0);
+  const [advancedOpen,setAdvancedOpen] = useState(false);
   const [importCandidate,setImportCandidate] = useState<T|null>(null);
   const [importName,setImportName] = useState('');
   const [fileError,setFileError] = useState<Issue[]|null>(null);
@@ -84,14 +80,13 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
   const [onlineError,setOnlineError] = useState('');
   const [playCounter,setPlayCounter] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const edits = useRef(0);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const problemRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
   const importToken = useRef(0);
-  const steps = STEPS[kind];
   const issues = validate(draft).issues;
-  const current = steps[step];
-  const currentProblems = stepIssues(kind,current,issues);
-  const isPlay = screen === 'presentation' || screen === 'preview' || screen === 'independent';
+  const { field, region } = makeFieldHelpers(issues, attempted);
+  const isPlay = screen === 'play';
   const name = LABELS[kind];
 
   useEffect(() => {
@@ -100,13 +95,17 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
     window.addEventListener('beforeunload',warn);
     return () => window.removeEventListener('beforeunload',warn);
   },[dirty,fileBusy,importCandidate]);
-  useEffect(() => {
-    const before=document.documentElement.lang;
-    document.documentElement.lang=locale;
-    return () => {document.documentElement.lang=before;};
-  },[locale]);
-  useLayoutEffect(() => { if (screen === 'edit' && step !== 0) headingRef.current?.focus({preventScroll:true}); },[step,screen]);
-  function change(next:T){edits.current++;setDraft(next);setDirty(true);}
+  // After a play/download attempt on an incomplete activity: focus the first flagged field (DOM order = reading order),
+  // otherwise the problem summary, which names the first problem in the teacher's words.
+  useLayoutEffect(() => {
+    if (attemptToken === 0 || screen !== 'edit') return;
+    const first = canvasRef.current?.querySelector<HTMLElement>('[aria-invalid="true"][data-path], [data-invalid="true"][data-path]');
+    const target = first ?? problemRef.current;
+    target?.focus({ preventScroll: true });
+    target?.scrollIntoView?.({ block: 'center', behavior: 'auto' });
+  },[attemptToken,screen]);
+
+  function change(next:T){setDraft(next);setDirty(true);}
   function titleChange(title:string) {
     change({...draft,title,id:autoId?cleanSlug(title,'new-'+kind):draft.id});
   }
@@ -122,9 +121,10 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
   }
   function startNew() {
     if (!requestDiscard())return;
-    importToken.current++;edits.current++;
-    setDraft(makeBlank());setAutoId(true);setDirty(false);setStep(0);setAttempted(new Set());
-    setFileError(null);setImportCandidate(null);setScreen('edit');
+    importToken.current++;
+    setDraft(makeBlank());setAutoId(true);setDirty(false);setOrigin('new');setSavedAt(null);setAttempted(false);setAdvancedOpen(false);
+    setFileError(null);setImportCandidate(null);setOnlineError('');setScreen('edit');
+    queueMicrotask(() => titleRef.current?.focus());
   }
   function startImport() {
     importToken.current++;
@@ -150,169 +150,146 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
   }
   function acceptFile() {
     if(!importCandidate || !requestDiscard())return;
-    edits.current++;
-    setDraft(structuredClone(importCandidate));setDirty(false);setAutoId(false);setStep(0);
-    setAttempted(new Set());setImportCandidate(null);setFileError(null);setScreen('edit');
+    setDraft(structuredClone(importCandidate));setDirty(false);setAutoId(false);setOrigin('file');setSavedAt(null);
+    setAttempted(false);setAdvancedOpen(false);setImportCandidate(null);setFileError(null);setOnlineError('');setScreen('edit');
   }
-  function goStep(next:number,force=false) {
-    if(next<0 || next>=steps.length)return;
-    if(next>step && !force && current!=='review' && currentProblems.length){
-      setAttempted(old=>new Set([...old,step]));return;
-    }
-    setStep(next);
+  /** Returns the validated activity, or flags the first problem (focus + explanation) and returns null. */
+  function requireValid(): T | null {
+    const result=validate(draft);
+    if(result.value && !result.issues.length) return result.value;
+    if(result.issues.some(issue=>issue.path==='id'))setAdvancedOpen(true);
+    setAttempted(true);setAttemptToken(n=>n+1);
+    return null;
   }
   function play(next:PlayMode) {
-    const result=validate(draft);
-    if(!result.value || result.issues.length){setAttempted(new Set(steps.map((_,i)=>i)));return;}
-    setPlaying(structuredClone(result.value));setPlayCounter(i=>i+1);setScreen(next);
+    const value=requireValid();
+    if(!value)return;
+    setPlaying(structuredClone(value));setPlayCounter(i=>i+1);setMode(next);setScreen('play');
   }
   function download() {
+    if(!requireValid())return;
     const out=serializeActivity(draft,validate);
-    if(!out.value){setAttempted(new Set(steps.map((_,i)=>i)));return;}
+    if(!out.value)return;
     downloadActivity(kind+'_'+draft.id+'.json',out.value);
-    setDirty(false);
+    setDirty(false);setSavedAt(new Date());
   }
-  function restart() {if(isPlay)play(screen as PlayMode);}
-  function statusLabel(index:number) {
-    return stepIssues(kind,steps[index],issues).length ? u(locale,'incomplete') : u(locale,'ready');
+  function createRoom() {
+    if(onlineBusy||!onOnline)return;
+    const value=requireValid();
+    if(!value)return;
+    const pairs=(value.content as {pairs?:unknown[]}).pairs;
+    if(!pairs||pairs.length<2){setOnlineError(u(locale,'roomNeedsPairs'));return;}
+    setOnlineBusy(true);setOnlineError('');
+    void onOnline(structuredClone(value)).catch(e => setOnlineError(e instanceof Error ? e.message : u(locale,'onlineError'))).finally(() => setOnlineBusy(false));
   }
-  function summary() {
-    const c=draft.content as Record<string,unknown>;
-    const list=kind==='memory'?c.pairs:kind==='sort'?c.items:kind==='sequence'?c.items:c.segments;
-    return Array.isArray(list)?list.length:0;
-  }
-  const languageSelect=<label className="activity-language">{t(locale,'language')}
-    <select className="field" aria-label={t(locale,'language')} value={locale} onChange={event=>setLocale(event.target.value as Locale)}>
-      <option value="de">Deutsch</option><option value="en">English</option><option value="vi">Tiếng Việt</option>
-    </select></label>;
+  const time=(date:Date)=>new Intl.DateTimeFormat(locale,{hour:'2-digit',minute:'2-digit'}).format(date);
+  const status = dirty ? {tone:'dirty',text:u(locale,'statusUnsaved')}
+    : savedAt ? {tone:'saved',text:u(locale,'statusDownloaded',{time:time(savedAt)})}
+    : origin==='file' ? {tone:'neutral',text:u(locale,'statusImported')} : {tone:'neutral',text:u(locale,'statusNew')};
+  const firstProblem = issues[0];
+
   const header=<header className="activity-ux-head">
     <div className="activity-ux-heading">
       {screen==='choose'?<Link className="back-link" to="/">← Learning Games</Link>
-        :<button type="button" className="activity-ux-back" onClick={isPlay?()=>setScreen('edit'):screen==='edit'?backToChoice:backFromImport}>
-          <ArrowLeft size={17}/>{isPlay?u(locale,'backEditor'):u(locale,'backChoice')}
-        </button>}
+        :<button type="button" className="activity-ux-back" onClick={backFromImport}><ArrowLeft size={17}/>{u(locale,'backChoice')}</button>}
       <div className="eyebrow">LEARNING GAMES · {u(locale,'defaultType')}</div>
       <h1>{name}</h1>
     </div>
-    {languageSelect}
   </header>;
+  const dropHandlers={
+    onDragOver:(event:DragEvent<HTMLDivElement>)=>{event.preventDefault();setDragging(true);},
+    onDragLeave:()=>setDragging(false),
+    onDrop:(event:DragEvent<HTMLDivElement>)=>{event.preventDefault();setDragging(false);void loadFile(event.dataTransfer.files[0]);},
+  };
 
-  return <main className={'activity-ux-page'+(screen==='edit'?' activity-in-editor':'')+(screen==='presentation'?' activity-projected':'')}>
-    {header}
+  return <main className={'activity-ux-page'+(screen==='edit'?' activity-in-editor':'')+(isPlay&&mode==='presentation'?' activity-projected':'')}>
+    {(screen==='choose'||screen==='import')&&header}
     {screen==='choose' && <section className="activity-ux-entry" aria-labelledby="activity-start-heading">
       <h2 id="activity-start-heading">{u(locale,'startTitle')}</h2>
       <p className="lead">{u(locale,'startLead')}</p>
       <div className="activity-ux-options">
-        <button type="button" className="activity-ux-option" onClick={startNew}><PencilLine aria-hidden="true" size={27}/><strong>{u(locale,'manual')}</strong><span>{u(locale,'manualHint')}</span><ArrowRight className="activity-ux-option-arrow" aria-hidden="true"/></button>
-        <button type="button" className="activity-ux-option" onClick={startImport}><FileUp aria-hidden="true" size={27}/><strong>{u(locale,'importActivity')}</strong><span>{u(locale,'importHint')}</span><ArrowRight className="activity-ux-option-arrow" aria-hidden="true"/></button>
-        {joinHref && <Link className="activity-ux-option" to={joinHref}><UsersRound aria-hidden="true" size={27}/><strong>{u(locale,'joinGame')}</strong><span>{u(locale,'joinHint')}</span><ArrowRight className="activity-ux-option-arrow" aria-hidden="true"/></Link>}
+        <button type="button" className="card-link activity-ux-option" onClick={startNew}><PencilLine aria-hidden="true" size={27}/><strong>{u(locale,'manual')}</strong><span>{u(locale,'manualHint')}</span><ArrowRight className="card-link-arrow" aria-hidden="true"/></button>
+        <button type="button" className="card-link activity-ux-option" onClick={startImport}><FileUp aria-hidden="true" size={27}/><strong>{u(locale,'importActivity')}</strong><span>{u(locale,'importHint')}</span><ArrowRight className="card-link-arrow" aria-hidden="true"/></button>
+        {joinHref && <Link className="card-link activity-ux-option" to={joinHref}><UsersRound aria-hidden="true" size={27}/><strong>{u(locale,'joinGame')}</strong><span>{u(locale,'joinHint')}</span><ArrowRight className="card-link-arrow" aria-hidden="true"/></Link>}
       </div><p className="muted small">{u(locale,'localOnly')}</p>
     </section>}
-    {screen==='import' && <section className="activity-ux-import panel padded" aria-labelledby="activity-import-heading">
-      <div className="activity-section-kicker">02 · {u(locale,'importActivity')}</div>
+    {screen==='import' && <section className="activity-ux-import" aria-labelledby="activity-import-heading">
       <h2 id="activity-import-heading">{u(locale,'importActivity')}</h2>
       <p className="muted">{u(locale,'importHint')}</p>
-      <div className={'activity-import-drop'+(dragging?' dragging':'')} onDragOver={(event:DragEvent<HTMLDivElement>)=>{event.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)} onDrop={(event:DragEvent<HTMLDivElement>)=>{event.preventDefault();setDragging(false);void loadFile(event.dataTransfer.files[0]);}}>
-        <FileUp size={32} aria-hidden="true"/><strong>{u(locale,'drop')}</strong><span className="muted small">{u(locale,'fileHelp')}</span>
+      <div className={'import-area'+(dragging?' dragging':'')} {...dropHandlers}>
         <input ref={fileRef} type="file" accept=".json,application/json" aria-label={u(locale,'chooseFile')} className="sr-only" onChange={event=>void loadFile(event.target.files?.[0])}/>
-        <button className="button primary" type="button" onClick={()=>fileRef.current?.click()}>{u(locale,importName?'importAnother':'chooseFile')}</button>
+        {!importCandidate && <div className="import-drop">
+          <FileUp size={26} aria-hidden="true"/><div><strong>{u(locale,'dropStrip')}</strong><span className="muted small">{u(locale,'fileHelp')}</span></div>
+          <button className="button primary" type="button" onClick={()=>fileRef.current?.click()}>{u(locale,importName?'importAnother':'chooseFile')}</button>
+        </div>}
+        {importCandidate && <div className="import-file">
+          <FileUp size={22} aria-hidden="true"/>
+          <div className="import-file-name"><strong>{importName}</strong><span className="muted small">{countsOf(kind,importCandidate.content,locale)}</span></div>
+          <p className="activity-ux-good"><Check size={18} aria-hidden="true"/>{u(locale,'importValid')}</p>
+          <button className="button secondary" type="button" onClick={()=>fileRef.current?.click()}>{u(locale,'importAnother')}</button>
+          <button type="button" className="button primary" onClick={acceptFile}>{u(locale,'openEditor')} <ArrowRight size={16} aria-hidden="true"/></button>
+        </div>}
       </div>
       {fileBusy&&<p role="status">{u(locale,'loading')}</p>}
       {fileError&&<section className="error" role="alert"><strong>{t(locale,'loadError')}</strong><IssueList issues={fileError} locale={locale}/><p>{u(locale,'importUnchanged')}</p></section>}
-      {importCandidate&&<section className="activity-import-review" aria-label={u(locale,'importReview')}>
-        <p className="activity-ux-good"><Check size={18}/>{u(locale,'importValid')}</p>
-        <h3 lang={importCandidate.targetLanguage}>{importCandidate.title}</h3>
-        <p lang={importCandidate.targetLanguage}>{importCandidate.instructions}</p>
-        <p>{u(locale,'importSuccess')}</p>
-        <p className="muted small">{u(locale,'importSummary')}: {u(locale,'metaCount',{n:kind==='language-detective'?(importCandidate.content as {segments:unknown[]}).segments.length:kind==='memory'?(importCandidate.content as {pairs:unknown[]}).pairs.length:(importCandidate.content as {items:unknown[]}).items.length})}</p>
-        <details><summary>{u(locale,'importKeys')}</summary><pre className="activity-import-json">{JSON.stringify(importCandidate.content,null,2)}</pre></details>
-        <button type="button" className="button primary" onClick={acceptFile}>{u(locale,'openEditor')} <ArrowRight size={16}/></button>
+      {importCandidate&&<section className="import-review" aria-label={u(locale,'importReview')}>
+        <p className="muted small">{u(locale,'importSuccess')}</p>
+        <div className="readonly-board">
+          <h3 lang={importCandidate.targetLanguage}>{importCandidate.title}</h3>
+          <p className="readonly-instructions" lang={importCandidate.targetLanguage}>{importCandidate.instructions}</p>
+          <Preview activity={importCandidate} locale={locale}/>
+        </div>
+        <details className="technical"><summary>{u(locale,'importKeys')}</summary><pre className="activity-import-json">{JSON.stringify(importCandidate.content,null,2)}</pre></details>
       </section>}
       <p className="muted small">{u(locale,'localOnly')}</p>
     </section>}
-    {screen==='edit' && <section className="activity-ux-workspace" aria-label={u(locale,'newActivity')}>
-      <div className="activity-ux-editor-head">
-        <div><div className="activity-section-kicker">{u(locale,'newActivity')}</div><strong lang={draft.targetLanguage}>{draft.title || name}</strong></div>
-        <button type="button" className="button secondary" onClick={()=>play('preview')} disabled={issues.length>0}>{u(locale,'preview')}</button>
+    {screen==='edit' && <section className="canvas-edit" aria-label={u(locale,'newActivity')}>
+      <div className="activity-bar">
+        <button type="button" className="activity-ux-back" onClick={backToChoice}><ArrowLeft size={17} aria-hidden="true"/>{u(locale,'backChoice')}</button>
+        <h1 className="activity-bar-game">{name}</h1>
+        <span className={'save-chip '+status.tone} role="status"><span className="save-dot" aria-hidden="true"/>{status.text}</span>
+        <span className="activity-bar-space"/>
+        <button type="button" className="button secondary" onClick={download}><Download size={16} aria-hidden="true"/>{u(locale,'downloadShort')}</button>
+        {onOnline && <button type="button" className="button secondary" disabled={onlineBusy} onClick={createRoom}><UsersRound size={16} aria-hidden="true"/>{onlineBusy ? u(locale,'onlineBusy') : u(locale,'createRoom')}</button>}
+        <button type="button" className="button secondary" onClick={()=>play('presentation')}><Presentation size={16} aria-hidden="true"/>{u(locale,'present')}</button>
+        <button type="button" className="button primary" onClick={()=>play('independent')}><Play size={16} aria-hidden="true"/>{u(locale,'try')}</button>
       </div>
-      <div className="activity-ux-body">
-        <nav className="activity-ux-navigation" aria-label={u(locale,'newActivity')}>
-          <ol className="activity-ux-step-list">{steps.map((item,index)=><li key={item}>
-            <button type="button" onClick={()=>goStep(index,true)} aria-current={step===index?'step':undefined} className={'activity-ux-step'+(step===index?' active':'')}>
-              <span className="activity-ux-step-num">{index+1}</span><span className="activity-ux-step-copy"><strong>{u(locale,item)}</strong>
-              <small>{statusLabel(index)}</small></span>{stepIssues(kind,item,issues).length===0&&<Check size={15} aria-hidden="true"/>}
-            </button></li>)}</ol>
-          <div className="activity-ux-navigation-hint">{u(locale,'localOnly')}</div>
-        </nav>
-        <div className="activity-ux-editor-scroll" key={step}>
-          <div className="activity-ux-editor-inner">
-            <div className="activity-section-kicker">{u(locale,'stepCount',{n:step+1,total:steps.length})}</div>
-            <h2 ref={headingRef} tabIndex={-1} className="activity-ux-step-heading">{u(locale,current)}</h2>
-            {current==='details' && <div className="activity-ux-fields">
-              <label className="activity-field">{u(locale,'title')}<input className="field" value={draft.title} onChange={event=>titleChange(event.target.value)}/></label>
-              <label className="activity-field">{u(locale,'instructions')}<textarea className="field" rows={4} value={draft.instructions} onChange={event=>change({...draft,instructions:event.target.value})}/></label>
-              <label className="activity-field">{u(locale,'language')}<input className="field" value={draft.targetLanguage} onChange={event=>change({...draft,targetLanguage:event.target.value})}/></label>
-              <details className="activity-ux-disclosure"><summary>{u(locale,'advanced')}</summary><p className="muted small">{u(locale,'advancedHelp')}</p>
-                <label className="activity-field">{u(locale,'activityId')}<input className="field" value={draft.id} onChange={event=>{setAutoId(false);change({...draft,id:event.target.value});}}/></label>
-              </details>
-              <p className="muted small">{u(locale,'emptyHelp')}</p>
-            </div>}
-            {current==='categories'&&<p className="muted">{u(locale,'categoryHint')}</p>}
-            {current==='cards'&&<p className="muted">{u(locale,'cardsHint')}</p>}
-            {current==='steps'&&<p className="muted">{u(locale,'sequenceHint')}</p>}
-            {current==='passage'&&<p className="muted">{u(locale,'segmentHint')}</p>}
-            {current==='errors'&&<p className="muted">{u(locale,'markHint')}</p>}
-            {current!=='details'&&current!=='review'&&<Editor activity={draft} onChange={change} locale={locale} section={current}/>}
-            {current==='review'&&<div className="activity-ux-review">
-              <p className="muted">{u(locale,'reviewLead')}</p>
-              <div className="activity-ux-review-summary" lang={draft.targetLanguage}><strong>{draft.title}</strong><p>{draft.instructions}</p>
-                <span>{u(locale,'metaCount',{n:summary()})}</span></div>
-              <div className="activity-ux-review-status">{issues.length===0?<><Check size={18}/>{u(locale,'noProblems')}</>:
-                <><span>{u(locale,'needsWork')}: {issues.length}</span>{steps.slice(0,-1).map((s,i)=>stepIssues(kind,s,issues).length>0&&
-                <button type="button" className="button secondary" key={s} onClick={()=>goStep(i,true)}>{u(locale,s)} · {stepIssues(kind,s,issues).length}</button>)}</>}</div>
-              <p className="muted small">{u(locale,'previewHint')}</p>
-              <div className="activity-ux-review-actions">
-                <button className="button primary" type="button" disabled={issues.length>0} onClick={()=>play('presentation')}><Presentation size={18}/>{u(locale,'present')}</button>
-                <button className="button secondary" type="button" disabled={issues.length>0} onClick={()=>play('independent')}><UserRound size={18}/>{u(locale,'practice')}</button>
-                <button className="button secondary" type="button" disabled={issues.length>0} onClick={()=>play('preview')}>{u(locale,'preview')}</button>
-              </div>
-              {onOnline && <div className="activity-ux-export activity-memory-online">
-                <div><strong>{u(locale,'onlineRoom')}</strong><p className="muted small">{u(locale,'onlineHint')}</p></div>
-                <button className="button secondary" type="button" disabled={issues.length>0 || onlineBusy || summary()<2} onClick={() => {
-                  if (onlineBusy) return;
-                  const checked=validate(draft);
-                  if (!checked.value || checked.issues.length || summary()<2) return;
-                  setOnlineBusy(true);setOnlineError('');
-                  void onOnline(structuredClone(checked.value)).catch(e => setOnlineError(e instanceof Error ? e.message : u(locale,'onlineError'))).finally(() => setOnlineBusy(false));
-                }}>{onlineBusy ? u(locale,'onlineBusy') : u(locale,'createRoom')}</button>
-                {onlineError && <p className="error" role="alert">{onlineError}</p>}
-                {summary()<2 && <p className="muted small">{u(locale,'roomNeedsPairs')}</p>}
-              </div>}
-              <div className="activity-ux-export"><button className="button secondary" type="button" disabled={issues.length>0} onClick={download}><Download size={16}/>{u(locale,'download')}</button>
-                <p className="muted small">{u(locale,'downloadHint')}</p></div>
-            </div>}
-            {attempted.has(step)&&currentProblems.length>0&&<div className="activity-ux-step-errors" role="alert"><strong>{u(locale,'fixFields')}</strong><ul>
-              {currentProblems.slice(0,10).map((issue,i)=><li key={i}>{u(locale,'invalidAt',{label:friendlyIssue(kind,issue,locale)})}</li>)}</ul>
-              {currentProblems.length>10&&<details><summary>{u(locale,'showTech')}</summary><IssueList locale={locale} issues={currentProblems.slice(10)}/></details>}
-            </div>}
-          </div>
+      <div className="canvas" ref={canvasRef}>
+        {attempted && issues.length>0 && <div className="problem-banner" role="alert" tabIndex={-1} ref={problemRef}>
+          <AlertTriangle size={18} aria-hidden="true"/>
+          <div><strong>{u(locale,'notReady')}.</strong> {u(locale,'fixFirst')} {friendlyIssue(kind,firstProblem,locale)}
+            {issues.length>1 && <details><summary>{u(locale,'validation')} ({issues.length})</summary><ul>{issues.slice(0,10).map((issue,i)=><li key={i}>{friendlyIssue(kind,issue,locale)}</li>)}</ul>
+              {issues.length>10&&<IssueList locale={locale} issues={issues.slice(10)}/>}</details>}</div>
+        </div>}
+        {onlineError && <p className="error" role="alert">{onlineError}</p>}
+        <div className="canvas-head" lang={draft.targetLanguage}>
+          <input ref={titleRef} className="canvas-title" aria-label={u(locale,'title')} placeholder={u(locale,'titlePlaceholder')} value={draft.title} {...field('title')} onChange={event=>titleChange(event.target.value)}/>
+          <AutoTextarea className="canvas-instructions" aria-label={u(locale,'instructions')} placeholder={u(locale,'instructionPlaceholder')} value={draft.instructions} {...field('instructions')} onChange={event=>change({...draft,instructions:event.target.value})}/>
+        </div>
+        <TargetLanguageField value={draft.targetLanguage} locale={locale} field={field('targetLanguage')} onChange={targetLanguage=>change({...draft,targetLanguage})}/>
+        <p className="canvas-rule">{u(locale,RULE[kind])}</p>
+        <Editor activity={draft} onChange={change} locale={locale} field={field} region={region}/>
+        <div className="canvas-foot">
+          <p className={'canvas-status '+(issues.length?'incomplete':'ready')}>
+            {issues.length===0 ? <><Check size={17} aria-hidden="true"/>{countsOf(kind,draft.content,locale)} · {u(locale,'readyChip')}</>
+              : <><span>{u(locale,'needsChip',{n:issues.length})}</span> <button type="button" className="text-button" onClick={()=>{setAttempted(true);setAttemptToken(n=>n+1);}}>{u(locale,'gotoProblem')} →</button></>}
+          </p>
+          <details className="activity-ux-disclosure" open={advancedOpen} onToggle={event=>setAdvancedOpen(event.currentTarget.open)}><summary>{u(locale,'advanced')}</summary>
+            <p className="muted small">{u(locale,'advancedHelp')}</p>
+            <label className="activity-field">{u(locale,'activityId')}<input className="field" value={draft.id} {...field('id')} onChange={event=>{setAutoId(false);change({...draft,id:event.target.value});}}/></label>
+          </details>
+          <p className="muted small">{u(locale,'localOnly')}</p>
         </div>
       </div>
-      <footer className="activity-ux-footer">
-        <div className="activity-ux-save-state"><span className="activity-ux-save-dot"/>{dirty?u(locale,'statusDirty'):u(locale,'statusLocal')}</div>
-        <div className="activity-ux-footer-actions">
-          <button type="button" className="button secondary" disabled={step===0} onClick={()=>goStep(step-1,true)}>{u(locale,'previous')}</button>
-          {step<steps.length-1&&<button type="button" className="button primary" onClick={()=>goStep(step+1)}>{u(locale,'next')}<ArrowRight size={16}/></button>}
-          {step===steps.length-1&&<button type="button" className="button primary" disabled={issues.length>0} onClick={()=>play('presentation')}>{u(locale,'present')}<ArrowRight size={16}/></button>}
-        </div>
-      </footer>
     </section>}
     {isPlay&&playing&&<section className="activity-ux-play activity-play panel padded" key={kind+':'+playCounter}>
-      <div className="activity-ux-play-top"><div className="activity-section-kicker">{u(locale,screen==='preview'?'preview':screen==='presentation'?'present':'practice')}</div>
-        <button type="button" className="button secondary" onClick={()=>setScreen('edit')}>{u(locale,'backEditor')}</button></div>
-      <h2 lang={playing.targetLanguage}>{playing.title}</h2><p className="lead" lang={playing.targetLanguage}>{playing.instructions}</p>
-      <Player activity={playing} mode={screen as PlayMode} locale={locale}/>
-      <div className="row"><button type="button" className="button secondary" onClick={restart}>{u(locale,'reset')}</button></div>
+      <div className="activity-ux-play-top">
+        <button type="button" className="activity-ux-back" onClick={()=>setScreen('edit')}><ArrowLeft size={17} aria-hidden="true"/>{u(locale,'backEditor')}</button>
+        <h1 className="play-game">{name}</h1>
+        <span className="play-mode-chip">{u(locale,mode==='presentation'?'present':'try')}</span>
+      </div>
+      <h2 lang={playing.targetLanguage}>{playing.title}</h2><p className="lead play-instructions" lang={playing.targetLanguage}>{playing.instructions}</p>
+      <Player activity={playing} mode={mode} locale={locale}/>
     </section>}
   </main>;
 }

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { SequencePage } from '../src/games/sequence/SequencePage';
-import { captureDownload, importActivity, openAuthorStep, openReview, renderPage } from './helpers/dom';
+import { captureDownload, importActivity,   renderPage } from './helpers/dom';
 import { sequenceFixture } from './helpers/fixtures';
 
 afterEach(() => vi.restoreAllMocks());
@@ -11,15 +11,19 @@ const button = (name: string | RegExp) => screen.getByRole('button', {name}) as 
 const field = (name: string | RegExp) => screen.getByLabelText(name) as HTMLInputElement;
 async function create(user: UserEvent) {
   await user.click(button(/Selbst erstellen/));
-  await openAuthorStep(user, 1);
 }
 async function loaded(user: UserEvent) {
   await importActivity(user,sequenceFixture());
   expect(field('Titel').value).toBe('Gespräch ordnen');
-  await openAuthorStep(user,1);
+  
 }
 const order=()=>[...document.querySelectorAll<HTMLInputElement>('.activity-edit-row input.field')].map(el=>el.value);
 
+async function expectBlocked(user:UserEvent,dl=captureDownload()){
+  await user.click(button('Herunterladen'));
+  expect(dl.names).toHaveLength(0);
+  expect(screen.getByRole('alert').textContent).toContain('Noch nicht spielbereit');
+}
 async function fill(user:UserEvent) {
   await create(user);
   await user.type(field('Aufgabe'), 'Ordne die Sätze.');
@@ -34,16 +38,17 @@ describe('Sequence guided authoring',()=>{
     expect(field('Schritt 1')).toBeTruthy();
     expect(screen.getAllByText(/Reihenfolge.*Lösung/).length).toBeGreaterThan(0);
   });
-  it('validates missing prompt and steps when the teacher continues',async()=>{
+  it('explains missing prompt and steps when the teacher tries to play, then plays once complete',async()=>{
     const {user}=renderPage(<SequencePage/>);
     await create(user);
     expect(screen.queryByRole('alert')).toBeNull();
-    await user.click(button('Weiter'));
-    expect(screen.getByRole('alert').textContent).toContain('Bitte ergänzen');
+    await user.click(button('Ausprobieren'));
+    expect(screen.getByRole('alert').textContent).toContain('Noch nicht spielbereit');
+    expect(document.activeElement).toBe(field('Aufgabe'));
     await user.type(field('Aufgabe'),'Ordne.');
     for(const [i,v] of ['Eins','Zwei','Drei'].entries()) await user.type(field('Schritt '+(i+1)),v);
-    await user.click(button('Weiter'));
-    expect(screen.getByRole('heading',{name:'Prüfen',level:2})).toBeTruthy();
+    await user.click(button('Ausprobieren'));
+    expect(document.querySelector('.activity-ux-play')).toBeTruthy();
   });
   it('serializes edited answer-key order without changing the item IDs',async()=>{
     const dl=captureDownload();
@@ -52,8 +57,7 @@ describe('Sequence guided authoring',()=>{
     await user.click(button('Nach oben: Schritt 3'));
     await user.click(button('Nach unten: Schritt 1'));
     expect(order()).toEqual(['Drei','Eins','Zwei']);
-    await openReview(user);
-    await user.click(button('Aktivität herunterladen'));
+    await user.click(button('Herunterladen'));
     expect(JSON.parse(await dl.text()).content.items.map((v:{text:string})=>v.text)).toEqual(['Drei','Eins','Zwei']);
   });
   it('reimports the same answer key byte for byte',async()=>{
@@ -61,13 +65,13 @@ describe('Sequence guided authoring',()=>{
     const first=renderPage(<SequencePage/>);
     await loaded(first.user);
     await first.user.click(button('Nach oben: Schritt 4'));
-    await openReview(first.user);
-    await first.user.click(button('Aktivität herunterladen'));
+    await (first.user);
+    await first.user.click(button('Herunterladen'));
     const exported=await dl.text();first.unmount();
     const second=renderPage(<SequencePage/>);
     await importActivity(second.user,JSON.parse(exported));
-    await openReview(second.user);
-    await second.user.click(button('Aktivität herunterladen'));
+    await (second.user);
+    await second.user.click(button('Herunterladen'));
     expect(await dl.text()).toBe(exported);
   });
   it('supports 3 to 20 steps and disables controls at both limits',async()=>{
@@ -84,9 +88,8 @@ describe('Sequence guided authoring',()=>{
     await loaded(user);
     await user.clear(field('Schritt 2'));
     await user.type(field('Schritt 2'),' guten tag, praxis müller. ');
-    await openReview(user);
-    expect(button('Aktivität herunterladen').disabled).toBe(true);
-    await openAuthorStep(user,1);
+    await expectBlocked(user);
+    
     expect(field('Schritt 1').value).toBe('Guten Tag, Praxis Müller.');
   });
   it('omits a cleared optional explanation from the downloaded JSON',async()=>{
@@ -95,8 +98,7 @@ describe('Sequence guided authoring',()=>{
     await loaded(user);
     await user.click(screen.getByText('Erklärung (optional)'));
     await user.clear(document.querySelector<HTMLTextAreaElement>('.activity-ux-disclosure textarea')!);
-    await openReview(user);
-    await user.click(button('Aktivität herunterladen'));
+    await user.click(button('Herunterladen'));
     expect(JSON.parse(await dl.text()).content).not.toHaveProperty('explanation');
   });
   it('generates fresh IDs after a middle deletion',async()=>{
@@ -107,7 +109,7 @@ describe('Sequence guided authoring',()=>{
     await user.click(button('Schritt hinzufügen'));await user.type(field('Schritt 5'),'Fünf');
     await user.click(button('Entfernen: Schritt 4'));
     await user.click(button('Schritt hinzufügen'));await user.type(field('Schritt 5'),'Sechs');
-    await openReview(user);await user.click(button('Aktivität herunterladen'));
+    await (user);await user.click(button('Herunterladen'));
     expect(JSON.parse(await dl.text()).content.items.map((v:{id:string})=>v.id)).toEqual(['step-1','step-2','step-3','step-5','step-4']);
   });
   it('keeps focus on moved rows, even when the Up button disables',async()=>{

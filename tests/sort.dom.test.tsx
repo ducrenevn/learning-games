@@ -3,16 +3,15 @@ import { describe, expect, it } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { SortPage } from '../src/games/sort/SortPage';
-import { chooseLocale, importActivity, openAuthorStep, openReview, playText, renderPage } from './helpers/dom';
+import { chooseLocale, importActivity,   playText  , renderPage } from './helpers/dom';
 import { sortFixture } from './helpers/fixtures';
 
 /** Imports the fixture, opens a play mode and returns helpers. */
-async function play(user: UserEvent, mode: 'Allein üben' | 'Präsentieren' | 'Vorschau' = 'Allein üben', mutate?: (a: ReturnType<typeof sortFixture>) => void) {
+async function play(user: UserEvent, mode: 'Ausprobieren' | 'Präsentieren' | 'Ausprobieren' = 'Ausprobieren', mutate?: (a: ReturnType<typeof sortFixture>) => void) {
   const a = sortFixture(); mutate?.(a);
   await importActivity(user, a);
   await waitFor(() => expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe('Artikel sortieren'));
-  await openReview(user);
-  await user.click(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button', { name: mode }));
+  await user.click(screen.getByRole('button', { name: mode }));
 }
 const card = (text: string) => screen.getByRole('button', { name: new RegExp('^' + text + '(?![a-zäöü])') });
 const tray = (label: string) => screen.getByRole('button', { name: 'Hier ablegen: ' + label }) as HTMLButtonElement;
@@ -44,7 +43,7 @@ describe('Sort play: answer secrecy', () => {
   });
   it('does not expose the answer key through DOM attributes', async () => {
     const { user } = renderPage(<SortPage />);
-    await play(user, 'Allein üben', a => { a.content.items[0].explanation = 'GEHEIME-ERKLAERUNG'; });
+    await play(user, 'Ausprobieren', a => { a.content.items[0].explanation = 'GEHEIME-ERKLAERUNG'; });
     expect(document.querySelector('.activity-play')!.innerHTML).not.toContain('GEHEIME-ERKLAERUNG');
     expect(document.querySelector('.activity-play')!.innerHTML).not.toMatch(/data-(answer|correct|category)/i);
   });
@@ -114,7 +113,7 @@ describe('Sort play: placing cards', () => {
   });
   it('keeps the selection hint in a fixed-height element so the layout never jumps while selecting', async () => {
     const { user } = renderPage(<SortPage />);
-    await play(user, 'Allein üben', a => { a.content.items[0].text = 'Sehr langer Kartentext '.repeat(8).trim(); });
+    await play(user, 'Ausprobieren', a => { a.content.items[0].text = 'Sehr langer Kartentext '.repeat(8).trim(); });
     const hint = () => document.querySelector('.sort-hint')!.textContent;
     const before = hint();
     await user.click(screen.getAllByRole('button', { name: /^Sehr langer/ })[0]);
@@ -177,7 +176,6 @@ describe('Sort play: shuffle, modes and text', () => {
     await play(user);
     await placeAll(user);
     await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
-    await openAuthorStep(user, 2);
     const authored = [1, 2, 3, 4].map(n => (screen.getByLabelText('Karte ' + n) as HTMLInputElement).value);
     expect(authored).toEqual(['Tisch', 'Lampe', 'Buch', 'Stuhl']);
     expect(cardTexts()).toEqual([]);
@@ -190,7 +188,7 @@ describe('Sort play: shuffle, modes and text', () => {
     await user.click(screen.getByRole('button', { name: 'Prüfen' }));
     expect(playText()).toContain('Ergebnis: 4 von 4 richtig');
     await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
-    await user.click(screen.getByRole('button', { name: 'Allein üben' }));
+    await user.click(screen.getByRole('button', { name: 'Ausprobieren' }));
     expect(document.querySelector('main')!.classList.contains('activity-projected')).toBe(false);
     expect(cardTexts().sort()).toEqual(['Buch', 'Lampe', 'Stuhl', 'Tisch']);
   });
@@ -211,7 +209,7 @@ describe('Sort play: shuffle, modes and text', () => {
   });
   it('renders markup-like and Unicode card text literally and tags it with the target language', async () => {
     const { user } = renderPage(<SortPage />);
-    await play(user, 'Allein üben', a => { a.targetLanguage = 'vi'; a.content.items[0].text = '5 < 6 & Ä 🍎 Ô'; });
+    await play(user, 'Ausprobieren', a => { a.targetLanguage = 'vi'; a.content.items[0].text = '5 < 6 & Ä 🍎 Ô'; });
     const literal = Array.from(document.querySelectorAll('.sort-card-choice strong')).find(e => e.textContent === '5 < 6 & Ä 🍎 Ô')!;
     expect(literal).toBeTruthy();
     expect(literal.getAttribute('lang')).toBe('vi');
@@ -219,7 +217,7 @@ describe('Sort play: shuffle, modes and text', () => {
   });
   it('lets prototype-like card ids ("constructor") be placed and scored without crashing', async () => {
     const { user } = renderPage(<SortPage />);
-    await play(user, 'Allein üben', a => { a.content.items[0].id = 'constructor'; });
+    await play(user, 'Ausprobieren', a => { a.content.items[0].id = 'constructor'; });
     await placeAll(user);
     await user.click(screen.getByRole('button', { name: 'Prüfen' }));
     expect(playText()).toContain('Ergebnis: 4 von 4 richtig');

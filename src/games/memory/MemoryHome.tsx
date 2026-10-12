@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ActivityWorkspace } from '../../shared/activities/Workspace';
 import { LocalMemory } from './LocalMemory';
 import { MemoryEditor } from './MemoryEditor';
+import { MemoryPreview } from './MemoryPreview';
 import { makeBlankMemory, toMemoryPairs, validateMemory, type MemoryActivity } from './activity';
 import { createMemoryRoom } from './api/memoryRpc';
 import { saveRoomIdentity } from '../../shared/classroom/identity';
@@ -21,5 +22,5 @@ export function MemoryHome() {
     navigate('/games/memory/room/' + data.roomCode);
   }
   return <ActivityWorkspace kind="memory" makeBlank={makeBlankMemory} validate={validateMemory}
-    Editor={MemoryEditor} Player={MemoryPlayer} onOnline={openRoom} joinHref="/games/memory/join"/>;
+    Editor={MemoryEditor} Player={MemoryPlayer} Preview={MemoryPreview} onOnline={openRoom} joinHref="/games/memory/join"/>;
 }

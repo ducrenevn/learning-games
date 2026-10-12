@@ -22,10 +22,9 @@ const text = {
     replace: 'Dùng danh sách', replaceWarning: 'Thay thế toàn bộ cặp hiện tại?', bad: 'Hãy sửa danh sách:', sample: 'Chèn ví dụ' },
 } as const;
 
-export function MemoryEditor({ activity, onChange, locale, section }: EditorProps<MemoryActivity>) {
+export function MemoryEditor({ activity, onChange, locale, field }: EditorProps<MemoryActivity>) {
   const [legacy, setLegacy] = useState('');
   const [legacyErrors, setLegacyErrors] = useState<string[]>([]);
-  if (section !== 'pairs') return null;
   const words = text[locale];
   const pairs = activity.content.pairs;
   const update = (next: MemoryActivity['content']['pairs']) => onChange({ ...activity, content: { pairs: next } });
@@ -43,10 +42,10 @@ export function MemoryEditor({ activity, onChange, locale, section }: EditorProp
     <p className="muted">{words.pairs}: {pairs.length} / 16</p>
     {pairs.map((pair, index) => <div className="activity-edit-row activity-memory-pair" key={pair.id}>
       <label className="activity-field">{words.left} · {index + 1}
-        <input className="field" value={pair.left} maxLength={80} onChange={e => update(pairs.map(p => p.id === pair.id ? { ...p, left: e.target.value } : p))}/>
+        <input className="field" value={pair.left} maxLength={80} {...field('content.pairs[' + index + '].left')} onChange={e => update(pairs.map(p => p.id === pair.id ? { ...p, left: e.target.value } : p))}/>
       </label>
       <label className="activity-field">{words.right} · {index + 1}
-        <input className="field" value={pair.right} maxLength={80} onChange={e => update(pairs.map(p => p.id === pair.id ? { ...p, right: e.target.value } : p))}/>
+        <input className="field" value={pair.right} maxLength={80} {...field('content.pairs[' + index + '].right')} onChange={e => update(pairs.map(p => p.id === pair.id ? { ...p, right: e.target.value } : p))}/>
       </label>
       <label className="activity-field">{words.category}
         <input className="field" value={pair.category ?? ''} maxLength={80} onChange={e => update(pairs.map(p => {

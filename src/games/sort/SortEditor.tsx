@@ -8,18 +8,18 @@ function nextId(prefix: string, used: string[]) {
   while (used.includes(prefix + '-' + i)) i++;
   return prefix + '-' + i;
 }
-export function SortEditor({ activity, onChange, locale, section }: EditorProps<SortActivity>) {
+export function SortEditor({ activity, onChange, locale, field }: EditorProps<SortActivity>) {
   const { categories, items } = activity.content;
   const categoryList = useListFocus<HTMLDivElement>(), cardList = useListFocus<HTMLDivElement>();
   const update = (part: Partial<SortActivity['content']>) => onChange({ ...activity, content: { ...activity.content, ...part } });
   // Screen-reader-only row context so repeated fields ("Answer", "Remove") are distinguishable.
   const rowOf = (n: number) => <span className="sr-only"> ({t(locale, 'card')} {n + 1})</span>;
   return <div className="activity-editor">
-    {(!section || section === 'categories') && <div className="activity-list activity-ux-row-list" ref={categoryList.rootRef}>
+    {<div className="activity-list activity-ux-row-list" ref={categoryList.rootRef}>
       <h2>{t(locale, 'category')}</h2>
       {categories.map((category, i) => <div className="activity-edit-row" data-row key={category.id}>
         <label className="activity-field">{t(locale, 'label')} {i + 1}
-          <input className="field" value={category.label} onChange={e => update({ categories: categories.map((c, j) => j === i ? { ...c, label: e.target.value } : c) })}/>
+          <input className="field" value={category.label} {...field('content.categories[' + i + '].label')} onChange={e => update({ categories: categories.map((c, j) => j === i ? { ...c, label: e.target.value } : c) })}/>
         </label>
         <button type="button" className="button secondary" aria-label={tf(locale, 'removeRow', { what: t(locale, 'category') + ' ' + (i + 1) })} disabled={categories.length <= 2}
           onClick={() => { update({ categories: categories.filter((_, j) => i !== j) }); categoryList.rowRemoved(); }}>{t(locale, 'remove')}</button>
@@ -27,11 +27,11 @@ export function SortEditor({ activity, onChange, locale, section }: EditorProps<
       <button type="button" className="button secondary" data-add disabled={categories.length >= 5}
         onClick={() => { update({ categories: [...categories, { id: nextId('category', categories.map(c => c.id)), label: '' }] }); categoryList.rowAdded(); }}>{t(locale, 'addCategory')}</button>
     </div>}
-    {(!section || section === 'cards') && <div className="activity-list activity-ux-row-list" ref={cardList.rootRef}>
+    {<div className="activity-list activity-ux-row-list" ref={cardList.rootRef}>
       <h2>{t(locale, 'card')}</h2>
       {items.map((item, i) => <div className="activity-edit-row" data-row key={item.id}>
         <label className="activity-field">{t(locale, 'card')} {i + 1}
-          <input className="field" value={item.text} onChange={e => update({ items: items.map((v, j) => j === i ? { ...v, text: e.target.value } : v) })}/>
+          <input className="field" value={item.text} {...field('content.items[' + i + '].text')} onChange={e => update({ items: items.map((v, j) => j === i ? { ...v, text: e.target.value } : v) })}/>
         </label>
         <label className="activity-field">{t(locale, 'answer')}{rowOf(i)}
           <select className="field" value={item.categoryId} aria-invalid={!categories.some(c => c.id === item.categoryId)}

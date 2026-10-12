@@ -5,15 +5,18 @@ import type { UserEvent } from '@testing-library/user-event';
 import { DetectivePage } from '../src/games/language-detective/DetectivePage';
 import { splitPassage } from '../src/games/language-detective/DetectiveEditor';
 import { detectiveFixture, detectiveCleanFixture } from './helpers/fixtures';
-import { captureDownload, importActivity, openAuthorStep, openReview, renderPage } from './helpers/dom';
+import { captureDownload, importActivity,   renderPage } from './helpers/dom';
 
 afterEach(()=>vi.restoreAllMocks());
 const button=(name:string|RegExp)=>screen.getByRole('button',{name}) as HTMLButtonElement;
 const field=(name:string|RegExp)=>screen.getByLabelText(name) as HTMLInputElement;
-async function create(user:UserEvent){await user.click(button(/Selbst erstellen/));await openAuthorStep(user,1);}
+async function create(user:UserEvent){await user.click(button(/Selbst erstellen/));}
 async function loaded(user:UserEvent){await importActivity(user,detectiveFixture());expect(field('Titel').value).toBe('Finde den Fehler');}
-async function passage(user:UserEvent){await openAuthorStep(user,1);}
-async function errors(user:UserEvent){await openAuthorStep(user,2);}
+async function expectBlocked(user:UserEvent,dl=captureDownload()){
+  await user.click(button('Herunterladen'));
+  expect(dl.names).toHaveLength(0);
+  expect(screen.getByRole('alert').textContent).toContain('Noch nicht spielbereit');
+}
 const marked=()=>within(screen.getByRole('group',{name:'Fehler markieren'}));
 
 async function fill(user:UserEvent,sentence='Ich haben heute Zeit.'){
@@ -34,52 +37,47 @@ describe('Language Detective sentence-first guided authoring',()=>{
   it('accepts zero flagged issues and exports the canonical empty issue array',async()=>{
     const dl=captureDownload();const {user}=renderPage(<DetectivePage/>);
     await fill(user,'Ich habe heute Zeit.');
-    await errors(user);await openReview(user);
-    expect(button('Aktivität herunterladen').disabled).toBe(false);
-    await user.click(button('Aktivität herunterladen'));
+    expect(button('Herunterladen').disabled).toBe(false);
+    await user.click(button('Herunterladen'));
     const data=JSON.parse(await dl.text());
     expect(data.content.issues).toEqual([]);
     expect(data.content.segments.map((s:{text:string})=>s.text)).toEqual(['Ich','habe','heute','Zeit.']);
   });
   it('requires a model correction and an explanation for each marked word',async()=>{
     const dl=captureDownload();const {user}=renderPage(<DetectivePage/>);
-    await fill(user);await errors(user);
+    await fill(user);
     await user.click(marked().getByRole('button',{name:'haben'}));
-    await openReview(user);
-    expect(button('Aktivität herunterladen').disabled).toBe(true);
-    await errors(user);
+    await expectBlocked(user,dl);
+    
     await user.type(field(/Musterkorrektur/),'habe');
     await user.type(field(/Erklärung/),'Verb mit ich.');
-    await openReview(user);
-    await user.click(button('Aktivität herunterladen'));
+    await user.click(button('Herunterladen'));
     expect(JSON.parse(await dl.text()).content.issues).toEqual([{segmentId:'segment-2',correction:'habe',explanation:'Verb mit ich.'}]);
   });
   it('removes a marked issue without leaving dangling private answer references',async()=>{
     const dl=captureDownload();const {user}=renderPage(<DetectivePage/>);
-    await loaded(user);await errors(user);
+    await loaded(user);
     await user.click(marked().getByRole('button',{name:'haben'}));
     expect(screen.queryByLabelText(/Musterkorrektur.*Textteil 2/)).toBeNull();
-    await user.click(marked().getByRole('button',{name:'dem'}));
-    await openReview(user);await user.click(button('Aktivität herunterladen'));
+    await user.click(marked().getByRole('button',{name:'dem'}));await user.click(button('Herunterladen'));
     expect(JSON.parse(await dl.text()).content.issues).toEqual([]);
   });
   it('can move and edit sentence segments without losing their validated text',async()=>{
     const dl=captureDownload();const {user}=renderPage(<DetectivePage/>);
-    await loaded(user);await passage(user);
+    await loaded(user);
     await user.click(screen.getByText('Textteile einzeln bearbeiten'));
     const inputs=document.querySelectorAll<HTMLInputElement>('.activity-ux-simple-row input');
     expect([...inputs].map(x=>x.value)).toEqual(['Ich','haben','gestern','dem','Film','gesehen.']);
     await user.click(document.querySelectorAll<HTMLButtonElement>('.activity-ux-simple-row [data-move]')[2]);
     expect([...document.querySelectorAll<HTMLInputElement>('.activity-ux-simple-row input')].map(x=>x.value)[0]).toBe('haben');
-    await openReview(user);
-    await user.click(button('Aktivität herunterladen'));
+    await user.click(button('Herunterladen'));
     expect(JSON.parse(await dl.text()).content.segments[0]).toEqual({id:'s2',text:'haben'});
   });
   it('supports the 12 marked-issue limit and disables further marking',async()=>{
     const {user}=renderPage(<DetectivePage/>);
     const a=detectiveFixture();a.content.segments=Array.from({length:14},(_,i)=>({id:'s'+(i+1),text:'Wort'+(i+1)}));
     a.content.issues=Array.from({length:12},(_,i)=>({segmentId:'s'+(i+1),correction:'C'+(i+1),explanation:'Grund'+(i+1)}));
-    await importActivity(user,a);await errors(user);
+    await importActivity(user,a);
     expect((marked().getByRole('button',{name:'Wort13'}) as HTMLButtonElement).disabled).toBe(true);
     await user.click(marked().getByRole('button',{name:'Wort1'}));
     expect((marked().getByRole('button',{name:'Wort13'}) as HTMLButtonElement).disabled).toBe(false);
@@ -96,17 +94,17 @@ describe('Language Detective sentence-first guided authoring',()=>{
   });
   it('keeps multiple marked corrections attached to their IDs after import/export',async()=>{
     const dl=captureDownload();const first=renderPage(<DetectivePage/>);
-    await loaded(first.user);await openReview(first.user);
-    await first.user.click(button('Aktivität herunterladen'));
+    await loaded(first.user);await (first.user);
+    await first.user.click(button('Herunterladen'));
     const json=await dl.text();first.unmount();
     const second=renderPage(<DetectivePage/>);
-    await importActivity(second.user,JSON.parse(json));await openReview(second.user);
-    await second.user.click(button('Aktivität herunterladen'));
+    await importActivity(second.user,JSON.parse(json));await (second.user);
+    await second.user.click(button('Herunterladen'));
     expect(await dl.text()).toBe(json);
   });
   it('keeps 4–80 segments and generates unique IDs after a middle removal',async()=>{
     const dl=captureDownload();const {user}=renderPage(<DetectivePage/>);
-    await importActivity(user,detectiveCleanFixture());await passage(user);
+    await importActivity(user,detectiveCleanFixture());
     await user.click(screen.getByText('Textteile einzeln bearbeiten'));
     const add=button('Textteil hinzufügen');
     expect(document.querySelectorAll('.activity-ux-simple-row').length).toBe(6);
@@ -121,26 +119,22 @@ describe('Language Detective sentence-first guided authoring',()=>{
     const ids=[...document.querySelectorAll('.activity-ux-simple-row')].map((_,i)=>i);
     expect(ids).toHaveLength(79);
     // Unfilled added rows correctly keep Review/Download disabled; no fake export accepted.
-    await openReview(user);
-    expect(button('Aktivität herunterladen').disabled).toBe(true);
-    expect(dl.names).toHaveLength(0);
+    await expectBlocked(user,dl);
   },120000);
   it('rejects unsafe markup in teacher corrections without exposing the answer to learners',async()=>{
     const {user}=renderPage(<DetectivePage/>);
-    await loaded(user);await errors(user);
+    await loaded(user);
     await user.clear(field(/Musterkorrektur.*Textteil 2/));
     await user.type(field(/Musterkorrektur.*Textteil 2/),'<img src=x>');
-    await openReview(user);
-    expect(button('Aktivität herunterladen').disabled).toBe(true);
+    await expectBlocked(user);
   });
-  it('uses separate passage and error stages with unique accessible segment buttons',async()=>{
+  it('shows the passage editor and the word marker together, with unique accessible segment buttons',async()=>{
     const {user}=renderPage(<DetectivePage/>);
-    await loaded(user);await passage(user);
-    expect(screen.getByRole('heading',{name:'Text',level:2})).toBeTruthy();
-    await errors(user);
+    await loaded(user);
+    expect(screen.getByLabelText('Text')).toBeTruthy();
     const btns=marked().getAllByRole('button');
     expect(btns).toHaveLength(6);
     expect(new Set(btns.map(b=>b.textContent)).size).toBe(6);
-    expect(screen.queryByLabelText('Text')).toBeNull();
+    expect(user).toBeTruthy();
   });
 });

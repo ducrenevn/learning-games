@@ -11,7 +11,7 @@ function nextId(ids: string[]) { let n=1;while(ids.includes('segment-'+n))n++;re
 export function splitPassage(text:string) {
   return text.trim().split(/\s+/u).filter(Boolean);
 }
-export function DetectiveEditor({ activity,onChange,locale,section }:EditorProps<DetectiveActivity>) {
+export function DetectiveEditor({ activity,onChange,locale,field }:EditorProps<DetectiveActivity>) {
   const {segments,issues}=activity.content;
   const [passage,setPassage]=useState(()=>segments.map(s=>s.text).filter(Boolean).join(' '));
   const [manual,setManual]=useState(false);
@@ -72,15 +72,15 @@ export function DetectiveEditor({ activity,onChange,locale,section }:EditorProps
     update({issues:marked?issues.filter(v=>v.segmentId!==id):[...issues,{segmentId:id,correction:'',explanation:''}]});
   }
   const rowOf=(n:number)=><span className="sr-only"> ({t(locale,'segment')} {n+1})</span>;
-  const showPassage=!section||section==='passage';
-  const showIssues=!section||section==='errors';
+  const showPassage=true;
+  const showIssues=true;
   return <div className="activity-editor">
     {showPassage&&<section className="activity-ux-editor-section">
       <label className="activity-field">{t(locale,'prompt')}
-        <textarea className="field" rows={2} value={activity.content.prompt} onChange={e=>update({prompt:e.target.value})}/>
+        <textarea className="field" rows={2} value={activity.content.prompt} {...field('content.prompt')} onChange={e=>update({prompt:e.target.value})}/>
       </label>
       <label className="activity-field">{u(locale,'passage')}
-        <textarea className="field activity-ux-passage-input" rows={5} maxLength={16000} value={passage} onChange={e=>editPassage(e.target.value)}/>
+        <textarea className="field activity-ux-passage-input" rows={5} maxLength={16000} value={passage} {...field('content.segments')} onChange={e=>editPassage(e.target.value)}/>
       </label>
       <div className="row"><button type="button" className="button primary" onClick={prepare}>{u(locale,'segmentAction')}</button>
         <span className="muted small">{segments.filter(s=>s.text).length} {t(locale,'segment')}</span></div>

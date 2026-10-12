@@ -6,7 +6,7 @@ import { moveSequence } from './engine';
 import type { SequenceActivity } from './model';
 
 function nextId(ids: string[]) { let n = 1; while (ids.includes('step-' + n)) n++; return 'step-' + n; }
-export function SequenceEditor({ activity, onChange, locale }: EditorProps<SequenceActivity>) {
+export function SequenceEditor({ activity, onChange, locale, field }: EditorProps<SequenceActivity>) {
   const { items } = activity.content;
   const [notice, setNotice] = useState('');
   const { rootRef: moveRoot, keepFocus } = useMoveFocus<HTMLDivElement>();
@@ -20,7 +20,7 @@ export function SequenceEditor({ activity, onChange, locale }: EditorProps<Seque
   }
   return <div className="activity-editor">
     <label className="activity-field">{t(locale, 'prompt')}
-      <textarea className="field" rows={3} value={activity.content.prompt} onChange={e => update({ prompt: e.target.value })}/>
+      <textarea className="field" rows={3} value={activity.content.prompt} {...field('content.prompt')} onChange={e => update({ prompt: e.target.value })}/>
     </label>
     <div className="activity-list" ref={node => { moveRoot.current = node; list.rootRef.current = node; }}>
       <h2>{t(locale, 'answerKey')}</h2>
@@ -28,7 +28,7 @@ export function SequenceEditor({ activity, onChange, locale }: EditorProps<Seque
       <p className="sr-only" role="status" aria-live="polite">{notice}</p>
       {items.map((item, i) => <div className="activity-edit-row" data-row key={item.id}>
         <label className="activity-field">{t(locale, 'item')} {i + 1}
-          <input className="field" value={item.text} onChange={e => update({ items: items.map((v, j) => j === i ? { ...v, text: e.target.value } : v) })}/>
+          <input className="field" value={item.text} {...field('content.items[' + i + '].text')} onChange={e => update({ items: items.map((v, j) => j === i ? { ...v, text: e.target.value } : v) })}/>
         </label>
         <div className="activity-item-tools">
           <button type="button" className="button secondary" disabled={i === 0} data-move={moveKey(item.id, 'up')} onClick={() => move(i, -1)}
