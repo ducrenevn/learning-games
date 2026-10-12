@@ -123,8 +123,13 @@ a:hover {
 .sequence-card::marker { font-weight:700; }
 .sequence-card-copy { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:8px; }
 .detective-segments { display:flex; flex-wrap:wrap; gap:7px; line-height:1.6; }
-.detective-segment { display:inline-flex; align-items:center; min-height:48px; padding:8px 10px; font:inherit; font-size:1.08em; text-align:left; color:inherit; background:#fff; border:2px solid #ccc5bb; border-radius:10px; cursor:pointer; overflow-wrap:anywhere; max-width:100%; }
+.detective-segment { display:inline-flex; flex-direction:column; align-items:flex-start; justify-content:center; min-height:48px; padding:8px 10px; font:inherit; font-size:1.08em; text-align:left; color:inherit; background:#fff; border:2px solid #ccc5bb; border-radius:10px; cursor:pointer; overflow-wrap:anywhere; max-width:100%; }
 .detective-segment:disabled { cursor:default; opacity:1; }
+/* After Check every verdict is text + icon + border style, never colour alone. */
+.detective-mark { font-weight:700; }
+.detective-segment.hit { border-color:#315b4a; background:#e3eee7; }
+.detective-segment.missed { border-style:dashed; border-color:#b9664e; background:#fbeee8; }
+.detective-segment.extra { border-style:double; border-width:4px; border-color:#8f4034; background:#f6e4dc; }
 .activity-issue-toggle { display:inline-flex; gap:8px; align-items:center; min-height:44px; font-weight:650; }
 .activity-issue-toggle input { width:20px; height:20px; }
 .activity-page button:focus-visible,.activity-page input:focus-visible,.activity-page textarea:focus-visible,.activity-page select:focus-visible,.activity-page a:focus-visible { outline:3px solid #b9664e; outline-offset:3px; }

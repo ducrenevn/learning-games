@@ -34,6 +34,7 @@ export const messages = {
     moreIssues: '… und {n} weitere', showProblems: 'Probleme anzeigen ({n})',
     placeIn: '{card}: Kategorie wählen', announcePlaced: '{card} wurde der Kategorie {category} zugeordnet.',
     announceCleared: 'Zuordnung von {card} zurückgenommen.', removeRow: 'Entfernen: {what}',
+    hit: 'Richtig markiert', maxIssues: 'Höchstens 12 Fehler können markiert werden.', issueExplanation: 'Erklärung',
     announceMoved: '{card}: jetzt Position {pos} von {total}.', addStep: 'Schritt hinzufügen',
     orderHint: 'Die Reihenfolge dieser Liste ist die richtige Lösung. Lernende sehen die Karten gemischt.',
     problems: {
@@ -78,6 +79,7 @@ export const messages = {
     moreIssues: '… and {n} more', showProblems: 'Show problems ({n})',
     placeIn: '{card}: choose a category', announcePlaced: '{card} placed in {category}.',
     announceCleared: 'Placement of {card} removed.', removeRow: 'Remove: {what}',
+    hit: 'Correctly marked', maxIssues: 'At most 12 issues can be marked.', issueExplanation: 'Explanation',
     announceMoved: '{card}: now position {pos} of {total}.', addStep: 'Add step',
     orderHint: 'The order of this list is the correct answer. Learners see the cards shuffled.',
     problems: {
@@ -122,6 +124,7 @@ export const messages = {
     moreIssues: '… và {n} mục khác', showProblems: 'Xem các lỗi ({n})',
     placeIn: '{card}: chọn nhóm', announcePlaced: 'Đã xếp {card} vào nhóm {category}.',
     announceCleared: 'Đã bỏ vị trí của {card}.', removeRow: 'Xóa: {what}',
+    hit: 'Đánh dấu đúng', maxIssues: 'Chỉ có thể đánh dấu tối đa 12 lỗi.', issueExplanation: 'Giải thích',
     announceMoved: '{card}: nay ở vị trí {pos} trên {total}.', addStep: 'Thêm bước',
     orderHint: 'Thứ tự của danh sách này là đáp án đúng. Người học sẽ thấy các thẻ đã được xáo trộn.',
     problems: {
