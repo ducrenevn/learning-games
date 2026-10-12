@@ -12,7 +12,7 @@
 
 ## Next game / LG-A1
 - Owner-selected for **planning**: generic **Sort categorization**, with teacher-authored categories/items, one defensible destination per item. German articles and Kasus are *pedagogical examples*, not fixed app presets. Sequence/ordering is separately deferred.
-- [Agent map](GAME_MAP.md), [Sort mechanics draft](activity-specs/GAME_SPEC_sort.md), and [teaching library](../activity-library/README.md) now have a docs-only branch structure. No actual playable Sort and no approved final JSON schema or classroom-tested JSON files.
+- [Agent map](GAME_MAP.md), [Sort mechanics draft](games/sort.md), and [teaching library](../library/README.md) now have a docs-only branch structure. No actual playable Sort and no approved final JSON schema or classroom-tested JSON files.
 - Initial candidate vertical slice: local author/import/edit/preview/play/check/retry/export/reimport, localized UI DE/EN/VI, no new backend. Final JSON contract, UX, limits and testing require owner agreement **before coding**.
 - Later sequence recommended: Conversation Cards → Information Gap. Memory polish/hardening backlog remains independent.
 

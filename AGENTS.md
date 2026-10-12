@@ -1,6 +1,6 @@
 # Learning Games — Working Rules
 
-1. Read `docs/START_HERE.md`, `docs/CURRENT_STATE.md`, `docs/SYSTEM_OVERVIEW.md`, `docs/ROADMAP.md` before substantial work.
+1. Read `docs/START_HERE.md`, `docs/CURRENT_STATE.md`, `docs/architecture/SYSTEM_OVERVIEW.md`, `docs/ROADMAP.md` before substantial work.
 2. Working software outranks optimistic documentation. Verify code and tests; report unverified browser/hosted behavior explicitly.
 3. Keep game engines independent. Shared components are promoted only when two games actually need them.
 4. Never modify Speak Practice Pro's (SPP) speaking, Auth, Homework or database schema as an incidental game task. Hosted DDL requires separately approved migration.
@@ -15,11 +15,11 @@ Preserve unrelated and uncommitted work. Commit, push, merge to `main` or other 
 
 ## Tool and environment entrypoint
 
-- This Vercel site uses **SPP's Supabase prototype RPCs**, not its own database or Supabase Auth. No SPP production migration, Auth or Homework write is authorized by a Learning Games task; see `docs/BACKEND_BASELINE.md`.
+- This Vercel site uses **SPP's Supabase prototype RPCs**, not its own database or Supabase Auth. No SPP production migration, Auth or Homework write is authorized by a Learning Games task; see `docs/architecture/BACKEND_BASELINE.md`.
 - Canva is a presentation/original prototype reference; do not assume a configured Canva coding-agent tool. Verify actual active tools and targets for hosted work.
 
 ## Agent routing / LG-A1 planning (2026-10-12)
-- Start at `docs/START_HERE.md`. Lesson-planning agents read the **short** `docs/GAME_MAP.md` and a relevant `activity-library/` entry, not all long game specifications.
-- `docs/activity-specs/` holds game mechanics and schema proposals; `activity-library/<game>/` holds evolving lesson ideas and, after schema approval, real reusable JSON. No example is an app preset by default.
+- Start at `docs/START_HERE.md`. Lesson-planning agents read the **short** `docs/GAME_MAP.md` and a relevant `library/` entry, not all long game specifications.
+- `docs/games/` holds game mechanics and schema proposals; `library/<game>/` holds evolving lesson ideas and, after schema approval, real reusable JSON. No example is an app preset by default.
 - **LG-A1 Sort** is approved for **planning/documentation only**, not code: generic categorization, teacher-defined items/categories. Ordering/Sequence deferred.
 - Keep Memory M3a PR #10 release gate separate. No merge/deploy/hosted SPP changes from the documentation work.
