@@ -49,7 +49,6 @@ describe('single-canvas entry and local authoring',()=>{
     }
     for(const [index,word] of ['Apfel','Birne','Karotte','Gurke'].entries()){
       await user.type(screen.getByLabelText('Karte '+(index+1)),word);
-      if(index>1)await user.selectOptions(screen.getByLabelText(new RegExp('Lösung.*Karte '+(index+1))),'category-2');
     }
     expect(screen.queryByRole('alert')).toBeNull();
     expect(screen.getByText(/spielbereit/)).toBeTruthy();

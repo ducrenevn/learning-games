@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
 import { t, tf } from '../../shared/activities/i18n';
 import { u } from '../../shared/activities/uxCopy';
 import { moveKey, useMoveFocus } from '../../shared/activities/focus';
+import { splitLines } from '../../shared/activities/listPaste';
 import { AutoTextarea } from '../../shared/activities/canvasParts';
 import type { EditorProps } from '../../shared/activities/Workspace';
 import { moveSequence } from './engine';
@@ -10,10 +11,7 @@ import type { SequenceActivity } from './model';
 
 const MIN_STEPS = 3, MAX_STEPS = 20;
 function nextId(ids: string[]) { let n = 1; while (ids.includes('step-' + n)) n++; return 'step-' + n; }
-/** One step per line; a leading "1." "2)" "-" or bullet from a pasted list is not part of the step. */
-export function splitSteps(raw: string): string[] {
-  return raw.split(/\r?\n/).map(line => line.trim().replace(/^(?:\d{1,2}[.)]|[-•*])\s+/, '').trim()).filter(Boolean);
-}
+export const splitSteps = splitLines;
 const oneLine = (value: string) => value.replace(/\s*[\r\n]+\s*/g, ' ');
 const msg = {
   de: { paste: 'Tipp: Enter fügt einen Schritt ein, eine eingefügte Liste wird zu einzelnen Schritten.', max: 'Höchstens 20 Schritte.', min: 'Mindestens 3 Schritte.', pasted: 'Eingefügt: {n} Schritte.', cut: 'Eingefügt: {n} Schritte – weitere passen nicht (höchstens 20).', hint: 'Nächsten Schritt tippen' },
