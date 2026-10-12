@@ -1,7 +1,7 @@
 {
   "corpusVersion": 1,
   "contract": "learning-games.activity / schemaVersion=1",
-  "notes": "Valid files are schema fixtures, not classroom-certified. Memory uses a separate legacy text format.",
+  "notes": "Schema fixtures only, not classroom-certified. Four JSON activity types; legacy Memory pipe-delimited text remains supported as advanced input.",
   "files": [
     {
       "file": "invalid/language-detective/01-unknown-content-key.json",
@@ -44,6 +44,48 @@
       "kind": "language-detective",
       "expected": "invalid",
       "errorCode": "markup"
+    },
+    {
+      "file": "invalid/memory/01-room-token.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/memory/02-duplicate-pair-id.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/memory/03-duplicate-pair-values.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/memory/04-too-many-pairs.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/memory/05-unsafe-left.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "markup"
+    },
+    {
+      "file": "invalid/memory/06-overlong-right.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "length"
+    },
+    {
+      "file": "invalid/memory/07-extra-player-state.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "unknown"
     },
     {
       "file": "invalid/sequence/01-unknown-content-key.json",
@@ -152,6 +194,31 @@
     {
       "file": "valid/language-detective/05-eighty-segments-twelve-issues.json",
       "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/01-deutsch-englisch.json",
+      "kind": "memory",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/02-gastronomie-vokabular.json",
+      "kind": "memory",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/03-vietnamesische-woerter.json",
+      "kind": "memory",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/04-englische-wortpaare.json",
+      "kind": "memory",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/05-sixteen-pairs-boundary.json",
+      "kind": "memory",
       "expected": "valid"
     },
     {

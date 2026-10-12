@@ -5,11 +5,12 @@ import type { ActivityType } from '../src/shared/activities/contract';
 import { validateSort } from '../src/games/sort/model';
 import { validateSequence } from '../src/games/sequence/model';
 import { validateDetective } from '../src/games/language-detective/model';
+import { validateMemory } from '../src/games/memory/activity';
 import { serializeActivity, validateImported } from '../src/shared/activities/portable';
 
 // Acceptance fixtures for owner testing. They are schema-validated (this test), NOT classroom-tested, and are not app presets.
 const dir = join(__dirname, 'fixtures', 'wave-f');
-const validators = { sort: validateSort, sequence: validateSequence, 'language-detective': validateDetective };
+const validators = { sort: validateSort, sequence: validateSequence, 'language-detective': validateDetective, memory: validateMemory };
 const files = readdirSync(dir).filter(f => f.endsWith('.json')).sort();
 
 describe('Wave F acceptance fixtures', () => {

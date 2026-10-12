@@ -29,6 +29,8 @@ const copy = {
     markHint:'Markieren Sie die fehlerhaften Wörter. Tragen Sie nur für markierte Wörter die richtige Form und eine Erklärung ein.',
     noErrors:'Keine Fehler im Text', marks:'Markierte Fehler', previewHint:'Antworten bleiben bis zur Prüfung verborgen.',
     metaCount:'{n} Einträge', invalidAt:'Bitte prüfen: {label}', emptyHelp:'Sie können zunächst unvollständige Angaben machen. Fehler werden erst beim Weitergehen gezeigt.',
+    pairs:'Paare', leftCard:'Karte A', rightCard:'Karte B', joinGame:'Raum beitreten', joinHint:'Mit einem Raumcode am Online-Memory teilnehmen.',
+    onlineRoom:'Gemeinsam online spielen', onlineHint:'Einen Raum mit diesen Paaren starten. Erst dieser Klick verbindet sich mit dem Spielserver.', onlineError:'Raum konnte nicht erstellt werden.', onlineBusy:'Raum wird erstellt …', createRoom:'Online-Raum erstellen', roomNeedsPairs:'Für einen Online-Raum sind mindestens 2 Paare nötig.',
     localOnly:'Lokal · keine Anmeldung, keine automatische Weitergabe', importSummary:'Importierte Angaben', recheck:'Erneut prüfen',
   },
   en: {
@@ -59,6 +61,8 @@ const copy = {
     markHint:'Mark the incorrect words and add the correct form and an explanation for each.',
     noErrors:'No errors in the text', marks:'Marked errors', previewHint:'Answers stay hidden until Check.',
     metaCount:'{n} entries', invalidAt:'Review: {label}', emptyHelp:'You can start with an incomplete draft. Field guidance appears when you continue.',
+    pairs:'Pairs', leftCard:'Card A', rightCard:'Card B', joinGame:'Join game', joinHint:'Use a room code to join online Memory.',
+    onlineRoom:'Play together online', onlineHint:'Start an online room with these pairs. Only this action contacts the game server.', onlineError:'Could not create the room.', onlineBusy:'Creating room…', createRoom:'Create online room', roomNeedsPairs:'Online rooms require at least 2 pairs.',
     localOnly:'Local · no account or automatic sharing', importSummary:'Imported content', recheck:'Check again',
   },
   vi: {
@@ -89,6 +93,8 @@ const copy = {
     markHint:'Đánh dấu từ sai và nhập cách sửa cùng lời giải thích.',
     noErrors:'Văn bản không có lỗi', marks:'Lỗi đã đánh dấu', previewHint:'Đáp án chỉ hiện sau khi kiểm tra.',
     metaCount:'{n} mục', invalidAt:'Cần kiểm tra: {label}', emptyHelp:'Bạn có thể bắt đầu với bản nháp. Hướng dẫn lỗi xuất hiện khi tiếp tục.',
+    pairs:'Các cặp', leftCard:'Thẻ A', rightCard:'Thẻ B', joinGame:'Vào phòng chơi', joinHint:'Dùng mã phòng để tham gia Memory trực tuyến.',
+    onlineRoom:'Chơi chung trực tuyến', onlineHint:'Tạo phòng với các cặp thẻ này. Chỉ nút này mới kết nối máy chủ.', onlineError:'Không thể tạo phòng.', onlineBusy:'Đang tạo phòng…', createRoom:'Tạo phòng trực tuyến', roomNeedsPairs:'Phòng trực tuyến cần ít nhất 2 cặp.',
     localOnly:'Chỉ trong trình duyệt · không đăng nhập hoặc chia sẻ tự động', importSummary:'Nội dung đã nhập', recheck:'Kiểm tra lại',
   },
 } as const;

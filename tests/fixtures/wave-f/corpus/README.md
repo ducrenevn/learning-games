@@ -1,8 +1,35 @@
-# Activity import corpus v1 — schema-validated, not classroom-tested
-Under `valid/` are **15 accepted JSON files** (5 per game) for Sort, Sequence and Language Detective. `invalid/` contains **21 deliberate rejection fixtures** (7 per game). `manifest.json` records the expected outcome and validator error code. Each canonical JSON file is importable only in its own game. The boundary fixtures (maximum categories/cards/steps/segments) are technical, not lesson recommendations.
+# Learning Games — activity import / rejection corpus v1
 
-**Manual procedure:** Open the game's **Import activity** page → select a valid file → inspect teacher-only content/keys → accept → navigate guided editor → Preview/Present/Practice → Download activity → reimport. Switch DE/EN/VI without changing authored German, Vietnamese or English content. In each invalid case, expect an actionable localized error **without replacing a current draft**; then retry with a valid file. Also generate malformed JSON, over-128-KiB input, wrong-game file, file-read race/cancel and same-file retry for browser negative tests.
+**Status:** source-validated fixture candidates; **not classroom-tested**, not bundled application presets. The 20 JSON files under `valid/` are intended to be imported into the four local-first games in this review branch. The 28 JSON files under `invalid/` are deliberately rejected by those validators. Never use the invalid files as lessons.
 
-`memory-legacy/01-german-vocabulary.txt` is Memory's original text pair format, **not JSON**. Memory does not yet have canonical JSON import. Do not claim it does.
+- `manifest.json` is the machine-readable file list, game type and expected acceptance/rejection reason. Keep it updated when adding a fixture.
+- `valid/sort/` contains 2–5-category tasks, German article, gastronomy, German case expressions, Vietnamese greetings, and a 30-card capacity test.
+- `valid/sequence/` contains appointment conversation, cooking procedure, English support-email, Vietnamese hotel check-in, and a 20-step capacity test.
+- `valid/language-detective/` contains one-issue, two-issue, explicit no-error, Vietnamese no-error and 80-segment/12-issue stress cases. Model corrections are teacher-reviewed, **not** automatically graded.
+- `invalid/` covers unknown keys, wrong references, duplicate IDs/text, invalid counts, malicious markup, unsupported version, control/invisible-only characters and missing explanations.
+- Additional runtime-generated negative tests must cover **malformed JSON, >128 KiB input, wrong-game import, simultaneous imports, cancelled/replaced file loads, and replay/download** without committing huge or invalid binary files.
 
-Content labels: **schema-validated** only until actual browser file chooser+download proof; **classroom-tested** requires owner teaching acceptance. These fixtures do not automatically become app presets or library lessons.
+## Manual import procedure (all four games)
+
+Open `/games/<type>` → **Import activity** → choose a valid file matching the chosen game → inspect the teacher review (including the private answer key) → **Open in editor** → inspect authored content → Preview/Present/Independent → Download activity → reimport and compare. Changing DE/EN/VI must not translate authored content. Before Check/Reveal, no answer key is visible to the student.
+
+For each invalid file, select it in the matching game's Import activity flow. Expect a localized, actionable validation message, no override to the current draft, no change to the current game/answer key, and the ability to choose a subsequent valid file. The programmatic test `tests/activityCorpus.test.ts` asserts each outcome using actual validators, including round-trips.
+
+## Memory is a separate game engine
+
+Memory now accepts portable `activityType: "memory"` JSON containing teacher-authored pairs. It **also** supports the original `LEFT | RIGHT | OPTIONAL_CATEGORY` legacy bulk editor; `memory-legacy/01-german-vocabulary.txt` is a compatibility fixture, **not JSON**. Import/export never contains room/player data. Memory online behavior remains in the original RPC/room modules and is not part of this corpus smoke.
+
+## Evidence labels and ownership
+
+- `schema-validated`: correct structural shape under current validator code.
+- `browser-import-tested`: Antigravity executes actual file chooser/edit/download/reimport against a verified commit.
+- `classroom-tested`: owner has actually used and judged the content in teaching; no file currently claims this.
+
+Copy fixtures to classroom library `library/<game>/activities/` only after the owner reviews teaching content; testing fixtures are not built-in presets or automatically distributed.
+
+### Memory JSON files (approved frontend-only extension)
+
+- Five `valid/memory` samples cover bilingual vocabulary, gastronomy, Vietnamese, English and the maximum 16 pairs.
+- Seven `invalid/memory` samples test hostile/unknown room or student state, duplicate pairs/IDs, count, markup and text-length boundaries.
+- `memory-legacy/` remains a text-parser regression fixture, not a JSON activity.
+- The online room button requires at least two pairs and keeps using existing hosted Memory RPCs only when a teacher explicitly clicks it. Antigravity must not trigger hosted room creation without separate approval.

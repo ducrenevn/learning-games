@@ -9,6 +9,7 @@ import {
   type LocalCard,
 } from './engine/local';
 import type { MemoryPair } from './types';
+import type { Locale } from '../../shared/activities/contract';
 import { MemoryBoard } from './components/MemoryBoard';
 import { MemoryScoreboard } from './components/MemoryScoreboard';
 
@@ -16,10 +17,27 @@ interface Props {
   pairs: MemoryPair[];
   errors: string[];
   onPlayingChange?: (isPlaying: boolean) => void;
+  locale?: Locale;
+  singlePlayer?: boolean;
 }
 
-export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
-  const [names, setNames] = useState('Spieler 1, Spieler 2');
+const copy = {
+  de: { initial:'Spieler 1, Spieler 2', solo:'Spieler 1', local:'Lokal spielen', names:'Spielernamen (durch Komma getrennt)',
+    start:'Spiel starten', hit:'Richtig! Ein Paar gefunden!', miss:'Das passt leider nicht!', done:'Alle Paare gefunden!',
+    won:'gewinnt mit', point:'Punkt', points:'Punkten', tie:'Gleichstand', finished:'Spiel beendet!', again:'Nochmal spielen',
+    settings:'Einstellungen', found:'Paare gefunden', quit:'Spiel beenden', complete:'GESCHAFFT' },
+  en: { initial:'Player 1, Player 2', solo:'Player 1', local:'Play locally', names:'Player names (comma-separated)',
+    start:'Start game', hit:'Correct! A pair found!', miss:'These cards do not match!', done:'All pairs found!',
+    won:'wins with', point:'point', points:'points', tie:'Tie', finished:'Game complete!', again:'Play again',
+    settings:'Settings', found:'Pairs found', quit:'End game', complete:'COMPLETE' },
+  vi: { initial:'Người chơi 1, Người chơi 2', solo:'Người chơi 1', local:'Chơi tại chỗ', names:'Tên người chơi (cách nhau bằng dấu phẩy)',
+    start:'Bắt đầu', hit:'Đúng! Tìm được một cặp!', miss:'Hai thẻ chưa khớp!', done:'Đã tìm thấy tất cả các cặp!',
+    won:'thắng với', point:'điểm', points:'điểm', tie:'Hòa', finished:'Hoàn thành!', again:'Chơi lại',
+    settings:'Cài đặt', found:'Số cặp đã tìm', quit:'Kết thúc', complete:'XONG' },
+} as const;
+export function LocalMemory({ pairs, errors, onPlayingChange, locale = 'de', singlePlayer = false }: Props) {
+  const m = copy[locale];
+  const [names, setNames] = useState<string>(singlePlayer ? m.solo : m.initial);
   const [deck, setDeck] = useState<LocalCard[] | null>(null);
   const [scores, setScores] = useState<number[]>([]);
   const [turn, setTurn] = useState(0);
@@ -97,7 +115,7 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
 
     const isMatch = firstCard.pairId === card.pairId;
     setLastMatch(isMatch);
-    setNotice(isMatch ? 'Richtig! Ein Paar gefunden!' : 'Das passt leider nicht!');
+    setNotice(isMatch ? m.hit : m.miss);
 
     if (isMatch) {
       const updatedDeck = matchCards(deck, [firstId, id]);
@@ -134,9 +152,9 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
   if (!deck) {
     return (
       <div className="form">
-        <h2>Lokal spielen</h2>
+        <h2>{m.local}</h2>
         <label>
-          Spielernamen (durch Komma getrennt)
+          {m.names}
           <input
             className="field"
             value={names}
@@ -148,7 +166,7 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
           disabled={errors.length > 0 || pairs.length < 1 || players.length < 1}
           onClick={start}
         >
-          Spiel starten
+          {m.start}
         </button>
       </div>
     );
@@ -159,27 +177,27 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
       players.map((name, i) => ({ name, score: scores[i] ?? 0 }))
     );
     const winnerLead = players.length === 1
-      ? 'Alle Paare gefunden!'
+      ? m.done
       : winners.length === 1
-        ? `${winners[0]} gewinnt mit ${bestScore} ${bestScore === 1 ? 'Punkt' : 'Punkten'}!`
-        : `Gleichstand (${bestScore} Punkte): ${winners.join(', ')}`;
+        ? `${winners[0]} ${m.won} ${bestScore} ${bestScore === 1 ? m.point : m.points}!`
+        : `${m.tie} (${bestScore} ${m.points}): ${winners.join(', ')}`;
 
     return (
       <div className="panel results">
-        <div className="eyebrow">GESCHAFFT</div>
-        <h1>Spiel beendet!</h1>
+        <div className="eyebrow">{m.complete}</div>
+        <h1>{m.finished}</h1>
         <p className="lead">{winnerLead}</p>
         <div className="result-grid">
           {players.map((name, i) => (
             <div className="result-item" key={name + i}>
               <span>{name}</span>
-              <strong>{scores[i] ?? 0} {scores[i] === 1 ? 'Punkt' : 'Punkte'}</strong>
+              <strong>{scores[i] ?? 0} {scores[i] === 1 ? m.point : m.points}</strong>
             </div>
           ))}
         </div>
         <div className="row" style={{ justifyContent: 'center' }}>
-          <button className="button primary" onClick={start}>Nochmal spielen</button>
-          <button className="button secondary" onClick={exitGame}>Einstellungen</button>
+          <button className="button primary" onClick={start}>{m.again}</button>
+          <button className="button secondary" onClick={exitGame}>{m.settings}</button>
         </div>
       </div>
     );
@@ -195,10 +213,10 @@ export function LocalMemory({ pairs, errors, onPlayingChange }: Props) {
           activeId={String(turn)}
         />
         <div className="progress-pill">
-          Paare gefunden: {matchedPairs} / {pairs.length}
+          {m.found}: {matchedPairs} / {pairs.length}
         </div>
         <div className="sidebar-actions">
-          <button className="button subtle" onClick={exitGame}>Spiel beenden</button>
+          <button className="button subtle" onClick={exitGame}>{m.quit}</button>
         </div>
       </aside>
       <MemoryBoard

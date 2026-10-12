@@ -1,0 +1,93 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "memory",
+  "id": "sixteen-pairs-boundary",
+  "title": "Boundary: 16 pairs",
+  "targetLanguage": "de",
+  "instructions": "Technischer Grenzwert, keine Unterrichtsvorlage.",
+  "content": {
+    "pairs": [
+      {
+        "id": "pair-1",
+        "left": "Wort 01",
+        "right": "Word 01"
+      },
+      {
+        "id": "pair-2",
+        "left": "Wort 02",
+        "right": "Word 02"
+      },
+      {
+        "id": "pair-3",
+        "left": "Wort 03",
+        "right": "Word 03"
+      },
+      {
+        "id": "pair-4",
+        "left": "Wort 04",
+        "right": "Word 04"
+      },
+      {
+        "id": "pair-5",
+        "left": "Wort 05",
+        "right": "Word 05"
+      },
+      {
+        "id": "pair-6",
+        "left": "Wort 06",
+        "right": "Word 06"
+      },
+      {
+        "id": "pair-7",
+        "left": "Wort 07",
+        "right": "Word 07"
+      },
+      {
+        "id": "pair-8",
+        "left": "Wort 08",
+        "right": "Word 08"
+      },
+      {
+        "id": "pair-9",
+        "left": "Wort 09",
+        "right": "Word 09"
+      },
+      {
+        "id": "pair-10",
+        "left": "Wort 10",
+        "right": "Word 10"
+      },
+      {
+        "id": "pair-11",
+        "left": "Wort 11",
+        "right": "Word 11"
+      },
+      {
+        "id": "pair-12",
+        "left": "Wort 12",
+        "right": "Word 12"
+      },
+      {
+        "id": "pair-13",
+        "left": "Wort 13",
+        "right": "Word 13"
+      },
+      {
+        "id": "pair-14",
+        "left": "Wort 14",
+        "right": "Word 14"
+      },
+      {
+        "id": "pair-15",
+        "left": "Wort 15",
+        "right": "Word 15"
+      },
+      {
+        "id": "pair-16",
+        "left": "Wort 16",
+        "right": "Word 16"
+      }
+    ]
+  }
+}

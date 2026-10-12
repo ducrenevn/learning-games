@@ -2,6 +2,7 @@ import { MAX_BYTES, parseJson, type ActivityType, type Result, type Validator } 
 import { validateSort } from '../../games/sort/model';
 import { validateSequence } from '../../games/sequence/model';
 import { validateDetective } from '../../games/language-detective/model';
+import { validateMemory } from '../../games/memory/activity';
 
 export function validateImported(text: string, type: ActivityType): Result<unknown> {
   const parsed = parseJson(text);
@@ -10,6 +11,7 @@ export function validateImported(text: string, type: ActivityType): Result<unkno
     sort: validateSort,
     sequence: validateSequence,
     'language-detective': validateDetective,
+    memory: validateMemory,
   };
   return validators[type](parsed.value);
 }

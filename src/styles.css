@@ -275,3 +275,14 @@ a:hover {
   .activity-ux-review-actions .button{flex:1 1 100%;}
   .activity-ux-play{padding:15px;}
 }
+
+/* Memory guided authoring and local board: reuse the same shell as Wave F. */
+.activity-ux-page .activity-ux-options:has(> :nth-child(3)) { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.activity-memory-pair { grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) auto !important; }
+.activity-memory-online { border-top:1px solid var(--ux-border); padding-top:18px; }
+.activity-ux-play .play-layout { width:100%; margin:16px 0; min-height:0; }
+.activity-ux-play .memory-grid { min-height:420px; }
+.activity-ux-play .board-panel { min-height:440px; }
+@media(max-width:1000px) { .activity-memory-pair { grid-template-columns:repeat(2,minmax(0,1fr)) !important; } }
+@media(max-width:900px) { .activity-ux-page .activity-ux-options:has(> :nth-child(3)) { grid-template-columns:1fr; } }
+@media(max-width:560px) { .activity-memory-pair { grid-template-columns:minmax(0,1fr) !important; } .activity-ux-play .play-layout { grid-template-columns:minmax(0,1fr); } }
