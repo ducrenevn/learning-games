@@ -1,0 +1,67 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "language-detective",
+  "id": "finde-den-fehler",
+  "title": "Finde den Fehler",
+  "targetLanguage": "de",
+  "instructions": "Markiere Fehler und vergleiche.",
+  "content": {
+    "prompt": "Lies den Text und markiere die Fehler.",
+    "segments": [
+      {
+        "id": "s1",
+        "text": "Ich"
+      },
+      {
+        "id": "s2",
+        "text": "haben"
+      },
+      {
+        "id": "s3",
+        "text": "gestern"
+      },
+      {
+        "id": "s4",
+        "text": "ein"
+      },
+      {
+        "id": "s5",
+        "text": "Buch"
+      },
+      {
+        "id": "s6",
+        "text": "gelesen"
+      },
+      {
+        "id": "s7",
+        "text": "und"
+      },
+      {
+        "id": "s8",
+        "text": "dem"
+      },
+      {
+        "id": "s9",
+        "text": "Film"
+      },
+      {
+        "id": "s10",
+        "text": "gesehen."
+      }
+    ],
+    "issues": [
+      {
+        "segmentId": "s2",
+        "correction": "habe",
+        "explanation": "Verb mit ich: habe."
+      },
+      {
+        "segmentId": "s8",
+        "correction": "den",
+        "explanation": "Akkusativ: den Film."
+      }
+    ],
+    "summary": "Achte auf Verbendung und Kasus."
+  }
+}

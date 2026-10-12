@@ -1,0 +1,70 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sort",
+  "id": "artikel-sortieren",
+  "title": "Artikel sortieren",
+  "targetLanguage": "de",
+  "instructions": "Ordne die Nomen dem richtigen Artikel zu.",
+  "content": {
+    "categories": [
+      {
+        "id": "der",
+        "label": "der"
+      },
+      {
+        "id": "die",
+        "label": "die"
+      },
+      {
+        "id": "das",
+        "label": "das"
+      }
+    ],
+    "items": [
+      {
+        "id": "tisch",
+        "text": "Tisch",
+        "categoryId": "der",
+        "explanation": "Maskulin: der Tisch."
+      },
+      {
+        "id": "lampe",
+        "text": "Lampe",
+        "categoryId": "die",
+        "explanation": "Feminin: die Lampe."
+      },
+      {
+        "id": "buch",
+        "text": "Buch",
+        "categoryId": "das"
+      },
+      {
+        "id": "stuhl",
+        "text": "Stuhl",
+        "categoryId": "der"
+      },
+      {
+        "id": "tuer",
+        "text": "Tür",
+        "categoryId": "die",
+        "explanation": "Umlaut: die Tür."
+      },
+      {
+        "id": "fenster",
+        "text": "Fenster",
+        "categoryId": "das"
+      },
+      {
+        "id": "lang",
+        "text": "Sehr langer Kartentext ohne Leerzeichen-Trenner: DonaudampfschifffahrtsgesellschaftskapitänsmützenabzeichenDonaudampfschifffahrtsgesellschaftskapitänsmützenabzeichenDonaudampfschifffahrtsgesellschaftskapitänsmützenabzeichen",
+        "categoryId": "der"
+      },
+      {
+        "id": "emoji",
+        "text": "Äpfel 🍎 & Öl <3",
+        "categoryId": "die"
+      }
+    ]
+  }
+}
