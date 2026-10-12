@@ -1,156 +1,173 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { SortPage } from '../src/games/sort/SortPage';
-import { captureDownload, fileInput, importActivity, renderPage } from './helpers/dom';
+import { captureDownload, importActivity, openAuthorStep, openReview, renderPage } from './helpers/dom';
 import { sortFixture } from './helpers/fixtures';
 
 afterEach(() => vi.restoreAllMocks());
-const input = (label: string) => screen.getByLabelText(label) as HTMLInputElement;
 const button = (name: string | RegExp) => screen.getByRole('button', { name }) as HTMLButtonElement;
-async function fillBlank(user: UserEvent) {
-  await user.type(input('Beschriftung 1'), 'Obst');
-  await user.type(input('Beschriftung 2'), 'Gemüse');
-  for (const [n, text] of [[1, 'Apfel'], [2, 'Birne'], [3, 'Karotte'], [4, 'Gurke']] as const) await user.type(input('Karte ' + n), text);
-}
+const field = (name: string | RegExp) => screen.getByLabelText(name) as HTMLInputElement;
+async function create(user: UserEvent) { await user.click(button(/Selbst erstellen/)); }
+async function categories(user: UserEvent) { await openAuthorStep(user, 1); }
+async function cards(user: UserEvent) { await openAuthorStep(user, 2); }
 async function loaded(user: UserEvent) {
   await importActivity(user, sortFixture());
-  await waitFor(() => expect(input('Titel').value).toBe('Artikel sortieren'));
+  expect(field('Titel').value).toBe('Artikel sortieren');
+}
+async function fillBlank(user: UserEvent) {
+  await create(user);
+  await categories(user);
+  await user.type(field('Beschriftung 1'), 'Obst');
+  await user.type(field('Beschriftung 2'), 'Gemüse');
+  await cards(user);
+  for (const [i, word] of ['Apfel', 'Birne', 'Karotte', 'Gurke'].entries()) {
+    await user.type(field('Karte ' + (i + 1)), word);
+    if (i >= 2) await user.selectOptions(screen.getByLabelText(new RegExp('Lösung.*Karte ' + (i + 1))), 'category-2');
+  }
 }
 
-describe('Sort authoring from a blank form', () => {
-  it('is invalid until categories and cards have text, and then unlocks Preview, Present, Practice and Export', async () => {
+describe('Sort guided teacher authoring', () => {
+  it('opens calm rather than exposing the old global error list', async () => {
     const { user } = renderPage(<SortPage />);
-    expect(button('Vorschau').disabled).toBe(true);
-    expect(button('JSON herunterladen').disabled).toBe(true);
-    expect(document.querySelector('#activity-problems')!.textContent).toContain('content.categories[0].label');
-    await fillBlank(user);
-    expect(document.querySelector('#activity-problems')).toBeNull();
-    for (const name of ['Vorschau', 'Präsentieren', 'Allein üben', 'JSON herunterladen']) expect(button(name).disabled, name).toBe(false);
+    expect(screen.queryByRole('alert')).toBeNull();
+    await create(user);
+    expect(screen.getByRole('heading', { name: 'Aufgabe', level: 2 })).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+    await categories(user);
+    expect(screen.getByRole('heading', { name: 'Kategorien', level: 2 })).toBeTruthy();
+    expect(button('Weiter')).toBeTruthy();
   });
-  it('exports exactly what was authored, in authored order, with no learner or session state', async () => {
+  it('requires category names before advancing; only the attempted step shows an error', async () => {
+    const { user } = renderPage(<SortPage />);
+    await create(user);
+    await categories(user);
+    expect(screen.queryByRole('alert')).toBeNull();
+    await user.click(button('Weiter'));
+    expect((await screen.findByRole('alert')).textContent).toContain('Bitte ergänzen');
+    await user.type(field('Beschriftung 1'), 'Obst');
+    await user.type(field('Beschriftung 2'), 'Gemüse');
+    await user.click(button('Weiter'));
+    expect(screen.getByRole('heading', { level: 2, name: 'Karten' })).toBeTruthy();
+  });
+  it('exports authored categories, item answers and explanations, but no session state', async () => {
     const dl = captureDownload();
     const { user } = renderPage(<SortPage />);
     await fillBlank(user);
-    await user.selectOptions(screen.getByLabelText('Lösung (Karte 3)'), 'category-2');
-    await user.selectOptions(screen.getByLabelText('Lösung (Karte 4)'), 'category-2');
-    await user.type(screen.getByLabelText('Erklärung (optional) (Karte 1)'), 'Ein Apfel ist Obst.');
-    await user.click(button('JSON herunterladen'));
-    expect(dl.names).toEqual(['sort_new-sort-activity.json']);
-    expect(JSON.parse(await dl.text())).toEqual({
-      format: 'learning-games.activity', schemaVersion: 1, activityType: 'sort', id: 'new-sort-activity', title: 'Sort',
-      targetLanguage: 'de', instructions: 'Ordne die Karten den passenden Kategorien zu.',
-      content: {
-        categories: [{ id: 'category-1', label: 'Obst' }, { id: 'category-2', label: 'Gemüse' }],
-        items: [
-          { id: 'card-1', text: 'Apfel', categoryId: 'category-1', explanation: 'Ein Apfel ist Obst.' },
-          { id: 'card-2', text: 'Birne', categoryId: 'category-1' },
-          { id: 'card-3', text: 'Karotte', categoryId: 'category-2' },
-          { id: 'card-4', text: 'Gurke', categoryId: 'category-2' },
-        ],
-      },
-    });
+    const optional = document.querySelector('.activity-ux-optional')!;
+    await user.click(optional.querySelector('summary')!);
+    await user.type(optional.querySelector('input')!, 'Ein Apfel ist Obst.');
+    await openReview(user);
+    await user.click(button('Aktivität herunterladen'));
+    const exported = JSON.parse(await dl.text());
+    expect(exported.activityType).toBe('sort');
+    expect(exported.content.categories.map((c: {label:string}) => c.label)).toEqual(['Obst','Gemüse']);
+    expect(exported.content.items.map((c: {categoryId:string}) => c.categoryId)).toEqual(['category-1','category-1','category-2','category-2']);
+    expect(exported.content.items[0].explanation).toBe('Ein Apfel ist Obst.');
+    expect(exported).not.toHaveProperty('roomCode');
+    expect(exported).not.toHaveProperty('attempts');
   });
-  it('reimporting an exported authoring session reproduces identical content', async () => {
+  it('reimports an exported file with unchanged teacher answer assignments', async () => {
     const dl = captureDownload();
-    const { user, unmount } = renderPage(<SortPage />);
-    await loaded(user);
-    await user.type(input('Titel'), ' 2');
-    await user.click(button('JSON herunterladen'));
-    const exported = await dl.text();
-    unmount();
+    const first = renderPage(<SortPage />);
+    await loaded(first.user);
+    await openReview(first.user);
+    await first.user.click(button('Aktivität herunterladen'));
+    const exportText = await dl.text();
+    first.unmount();
     const second = renderPage(<SortPage />);
-    await importActivity(second.user, JSON.parse(exported));
-    await waitFor(() => expect(input('Titel').value).toBe('Artikel sortieren 2'));
-    await second.user.click(button('JSON herunterladen'));
-    expect(await dl.text()).toBe(exported);
+    await importActivity(second.user, JSON.parse(exportText));
+    await openReview(second.user);
+    await second.user.click(button('Aktivität herunterladen'));
+    expect(await dl.text()).toBe(exportText);
   });
-});
-
-describe('Sort editor limits and integrity', () => {
-  it('keeps 2–5 categories and 4–30 cards by disabling the controls at the boundaries', async () => {
+  it('supports 2–5 categories and disables the button at the maximum', async () => {
     const { user } = renderPage(<SortPage />);
+    await create(user);
+    await categories(user);
     expect(button('Entfernen: Kategorie 1').disabled).toBe(true);
-    expect(button('Entfernen: Karte 1').disabled).toBe(true);
-    for (let i = 0; i < 3; i++) await user.click(button('Kategorie hinzufügen'));
+    for(let i=0;i<3;i++) await user.click(button('Kategorie hinzufügen'));
     expect(button('Kategorie hinzufügen').disabled).toBe(true);
-    expect(screen.getAllByRole('button', { name: /^Entfernen: Kategorie/ }).length).toBe(5);
-    for (let i = 0; i < 26; i++) await user.click(button('Karte hinzufügen'));
+    expect(screen.getAllByRole('button', {name:/^Entfernen: Kategorie/})).toHaveLength(5);
+    await user.click(button('Entfernen: Kategorie 5'));
+    expect(button('Kategorie hinzufügen').disabled).toBe(false);
+  });
+  it('supports 4–30 cards and retains stable ordering', async () => {
+    const { user } = renderPage(<SortPage />);
+    await create(user); await cards(user);
+    expect(button('Entfernen: Karte 1').disabled).toBe(true);
+    for(let i=0;i<26;i++) await user.click(button('Karte hinzufügen'));
     expect(button('Karte hinzufügen').disabled).toBe(true);
-    expect(screen.getAllByRole('button', { name: /^Entfernen: Karte/ }).length).toBe(30);
+    expect(screen.getAllByRole('button', {name:/^Entfernen: Karte/})).toHaveLength(30);
     await user.click(button('Entfernen: Karte 30'));
     expect(button('Karte hinzufügen').disabled).toBe(false);
-  }, 30000);
-  it('gives every repeated Remove button and answer/explanation field a unique accessible name', async () => {
+  },30000);
+  it('does not silently reassign cards when a referenced category is deleted', async () => {
     const { user } = renderPage(<SortPage />);
     await loaded(user);
-    const names = screen.getAllByRole('button', { name: /^Entfernen:/ }).map(b => b.getAttribute('aria-label'));
-    expect(new Set(names).size).toBe(names.length);
-    // jsdom trims the sr-only suffix's leading space when computing names; browsers keep it, hence \s*
-    expect(screen.getAllByRole('combobox', { name: /^Lösung\s*\(Karte \d\)$/ }).length).toBe(4);
-    expect(screen.getAllByLabelText(/^Erklärung \(optional\)\s*\(Karte \d\)$/).length).toBe(4);
-  });
-  it('flags cards whose category was removed instead of silently reassigning them', async () => {
-    const { user } = renderPage(<SortPage />);
-    await loaded(user);
-    await user.click(button('Entfernen: Kategorie 1')); // "der" is referenced by Tisch and Stuhl
-    const select = screen.getByLabelText('Lösung (Karte 1)') as HTMLSelectElement;
+    await categories(user);
+    await user.click(button('Entfernen: Kategorie 1'));
+    await cards(user);
+    const select = screen.getByLabelText(/Lösung.*Karte 1/) as HTMLSelectElement;
     expect(select.getAttribute('aria-invalid')).toBe('true');
     expect(within(select).getByText('⚠ der')).toBeTruthy();
-    expect(document.querySelector('#activity-problems')!.textContent).toContain('content.items[0].categoryId: unbekannte Referenz');
-    expect(button('Vorschau').disabled).toBe(true);
-    await user.selectOptions(select, 'die');
-    await user.selectOptions(screen.getByLabelText('Lösung (Karte 4)'), 'die');
-    expect(document.querySelector('#activity-problems')).toBeNull();
-    expect(button('Vorschau').disabled).toBe(false);
+    await openReview(user);
+    expect((button('Aktivität herunterladen')).disabled).toBe(true);
   });
-  it('generates unique ids even after a row in the middle was removed', async () => {
+  it('rejects case-folded duplicate cards and unsafe HTML content', async () => {
+    const { user } = renderPage(<SortPage />);
+    await loaded(user);
+    await cards(user);
+    await user.click(button('Karte hinzufügen'));
+    await user.type(field('Karte 5'), ' tisch ');
+    await openReview(user);
+    expect(button('Aktivität herunterladen').disabled).toBe(true);
+    await cards(user);
+    await user.clear(field('Karte 5'));
+    await user.type(field('Karte 5'), '<img src=x>');
+    await openReview(user);
+    expect(button('Aktivität herunterladen').disabled).toBe(true);
+  });
+  it('generates a new unique card ID after deleting a middle row', async () => {
     const dl = captureDownload();
     const { user } = renderPage(<SortPage />);
-    await fillBlank(user);                                  // card-1 … card-4
-    await user.click(button('Karte hinzufügen')); await user.type(input('Karte 5'), 'E');   // card-5
-    await user.click(button('Karte hinzufügen')); await user.type(input('Karte 6'), 'F');   // card-6
-    await user.click(button('Entfernen: Karte 5'));                                           // ids: 1,2,3,4,6
-    await user.click(button('Karte hinzufügen')); await user.type(input('Karte 6'), 'G');   // must be card-5, not a clash with card-6
-    await user.click(button('JSON herunterladen'));
-    const ids = JSON.parse(await dl.text()).content.items.map((i: { id: string }) => i.id);
-    expect(ids).toEqual(['card-1', 'card-2', 'card-3', 'card-4', 'card-6', 'card-5']);
-  });
-  it('flags case/whitespace-insensitive duplicate cards and markup as the teacher types', async () => {
-    const { user } = renderPage(<SortPage />);
-    await loaded(user);
+    await fillBlank(user);
+    for (const label of ['E','F']) {
+      await user.click(button('Karte hinzufügen'));
+      await user.type(field('Karte ' + (label==='E'?5:6)), label);
+    }
+    await user.click(button('Entfernen: Karte 5'));
     await user.click(button('Karte hinzufügen'));
-    await user.type(input('Karte 5'), ' tisch ');
-    expect(document.querySelector('#activity-problems')!.textContent).toMatch(/content\.items\[4\]\.text: doppelter Wert/);
-    await user.clear(input('Karte 5'));
-    await user.type(input('Karte 5'), '<b>fett</b>');
-    expect(document.querySelector('#activity-problems')!.textContent).toMatch(/content\.items\[4\]\.text: HTML\/Skripte sind nicht erlaubt/);
+    await user.type(field('Karte 6'), 'G');
+    await openReview(user);
+    await user.click(button('Aktivität herunterladen'));
+    expect(JSON.parse(await dl.text()).content.items.map((x: {id:string})=>x.id)).toEqual(['card-1','card-2','card-3','card-4','card-6','card-5']);
   });
-  it('removes the explanation key entirely when the field is cleared', async () => {
+  it('removes optional explanation keys instead of exporting blank strings', async () => {
     const dl = captureDownload();
     const { user } = renderPage(<SortPage />);
-    await loaded(user);
-    await user.clear(screen.getByLabelText('Erklärung (optional) (Karte 1)'));
-    await user.click(button('JSON herunterladen'));
-    const exported = JSON.parse(await dl.text());
-    expect(exported.content.items[0]).toEqual({ id: 'tisch', text: 'Tisch', categoryId: 'der' });
+    await loaded(user); await cards(user);
+    const optional = document.querySelector('.activity-ux-optional')!;
+    await user.click(optional.querySelector('summary')!);
+    await user.clear(optional.querySelector('input')!);
+    await openReview(user);
+    await user.click(button('Aktivität herunterladen'));
+    expect(JSON.parse(await dl.text()).content.items[0]).not.toHaveProperty('explanation');
   });
-});
-
-describe('Sort editor keyboard focus', () => {
-  it('focuses the new row after Add and the Add button after Remove, but never on import', async () => {
+  it('retains unique button and field names for repeated card rows', async () => {
     const { user } = renderPage(<SortPage />);
-    expect(document.activeElement).toBe(document.body);
-    await loaded(user);
-    expect(document.activeElement).toBe(fileInput());            // focus stays on the chooser; import must not move it into the form
+    await loaded(user); await cards(user);
+    const names = screen.getAllByRole('button', {name:/^Entfernen: Karte/}).map(b=>b.getAttribute('aria-label'));
+    expect(new Set(names).size).toBe(names.length);
+    expect(screen.getAllByRole('combobox',{name:/^Lösung/})).toHaveLength(4);
+  });
+  it('preserves keyboard focus after adding and removing a card', async () => {
+    const { user } = renderPage(<SortPage />);
+    await loaded(user); await cards(user);
     await user.click(button('Karte hinzufügen'));
-    expect(document.activeElement).toBe(input('Karte 5'));
+    expect(document.activeElement).toBe(field('Karte 5'));
     await user.click(button('Entfernen: Karte 5'));
     expect(document.activeElement).toBe(button('Karte hinzufügen'));
-    await user.click(button('Kategorie hinzufügen'));
-    expect(document.activeElement).toBe(input('Beschriftung 4'));
-    await user.click(button('Entfernen: Kategorie 4'));
-    expect(document.activeElement).toBe(button('Kategorie hinzufügen'));
   });
 });

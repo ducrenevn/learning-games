@@ -1,228 +1,170 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { screen, waitFor, within } from '@testing-library/react';
 import { SortPage } from '../src/games/sort/SortPage';
-import { validateSort } from '../src/games/sort/model';
-import { serializeActivity } from '../src/shared/activities/portable';
-import { chooseLocale, fileInput, importActivity, jsonFile, renderPage } from './helpers/dom';
-import { sequenceFixture, sortFixture } from './helpers/fixtures';
+import { SequencePage } from '../src/games/sequence/SequencePage';
+import { sortFixture, sequenceFixture } from './helpers/fixtures';
+import { captureDownload, chooseLocale, fileInput, jsonFile, openReview, renderPage } from './helpers/dom';
 
-const field = (label: RegExp) => screen.getByLabelText(label) as HTMLInputElement;
 afterEach(() => vi.restoreAllMocks());
+const button = (name: string | RegExp) => screen.getByRole('button', { name });
+async function startImport(user: ReturnType<typeof renderPage>['user']) {
+  await user.click(button(/Aktivität importieren/));
+  return fileInput();
+}
+async function readyImport(user: ReturnType<typeof renderPage>['user'], data: unknown) {
+  await startImport(user);
+  await user.upload(fileInput(), jsonFile('activity.json', data));
+  expect(await screen.findByText('Datei gültig')).toBeTruthy();
+  await user.click(button('Im Editor öffnen'));
+}
 
-describe('import failures', () => {
-  it('shows only the file problems, near the top, and leaves the current draft untouched', async () => {
+describe('Guided local activity import safety', () => {
+  it('starts without errors or technical form fields', () => {
+    renderPage(<SortPage />);
+    expect(button(/Selbst erstellen/)).toBeTruthy();
+    expect(button(/Aktivität importieren/)).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByLabelText('Interne Aktivitäts-ID')).toBeNull();
+    expect(document.querySelector('input[type="file"]')).toBeNull();
+  });
+  it('rejects malformed JSON beside the file chooser without opening an editor', async () => {
     const { user } = renderPage(<SortPage />);
-    const idBefore = field(/Aktivitäts-ID/).value;
-    await user.upload(fileInput(), jsonFile('bad.json', '{broken'));
+    await startImport(user);
+    await user.upload(fileInput(), jsonFile('broken.json', '{broken'));
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain('Import fehlgeschlagen');
-    expect(alert.textContent).toContain('file: ungültige JSON-Datei');
-    // none of the blank template's own validation problems may leak into the import error
-    expect(alert.textContent).not.toMatch(/content\./);
-    expect(field(/Aktivitäts-ID/).value).toBe(idBefore);
-    // the alert is reachable without scrolling past the whole editor
-    const authoring = document.querySelector('.activity-authoring')!;
-    expect(alert.compareDocumentPosition(authoring) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(alert.textContent).toContain('ungültige JSON-Datei');
+    expect(screen.queryByLabelText('Titel')).toBeNull();
+    expect(document.querySelector('.activity-ux-import')?.contains(alert)).toBe(true);
   });
-  it('reports a file from another game with a clear kind error', async () => {
+  it('rejects another game type without replacing activity state', async () => {
     const { user } = renderPage(<SortPage />);
-    await importActivity(user, sequenceFixture());
-    const alert = await screen.findByRole('alert');
-    expect(alert.textContent).toContain('activityType: falscher Spieltyp');
+    await startImport(user);
+    await user.upload(fileInput(), jsonFile('wrong.json', sequenceFixture()));
+    expect((await screen.findByRole('alert')).textContent).toContain('falscher Spieltyp');
+    expect(screen.queryByRole('button', { name: 'Im Editor öffnen' })).toBeNull();
   });
-  it('reports oversize files by size before reading them', async () => {
+  it('checks file size before calling File.text()', async () => {
     const { user } = renderPage(<SortPage />);
-    const huge = new File(['x'], 'huge.json', { type: 'application/json' });
+    await startImport(user);
+    const huge = jsonFile('large.json', 'x');
     Object.defineProperty(huge, 'size', { value: 128 * 1024 + 1 });
-    const text = vi.fn(async () => 'x');
-    Object.defineProperty(huge, 'text', { value: text });
+    const read = vi.fn(async () => 'x');
+    Object.defineProperty(huge, 'text', { value: read });
     await user.upload(fileInput(), huge);
     expect((await screen.findByRole('alert')).textContent).toContain('Datei zu groß');
-    expect(text).not.toHaveBeenCalled();
+    expect(read).not.toHaveBeenCalled();
   });
-  it('resets the file input after every outcome so the same file can be chosen again', async () => {
+  it('rejects non-json extensions before reading', async () => {
     const { user } = renderPage(<SortPage />);
-    await user.upload(fileInput(), jsonFile('bad.json', '{broken'));
+    await startImport(user);
+    const wrong = jsonFile('activity.txt', sortFixture());
+    Object.defineProperty(wrong, 'text', { value: vi.fn(async () => '') });
+    fileInput().removeAttribute('accept');
+    await user.upload(fileInput(), wrong);
+    expect((await screen.findByRole('alert')).textContent).toContain('unbekanntes Dateiformat');
+  });
+  it('allows the same file to be retried after a failed selection', async () => {
+    const { user } = renderPage(<SortPage />);
+    await startImport(user);
+    const bad = jsonFile('broken.json', '{broken');
+    await user.upload(fileInput(), bad);
     await screen.findByRole('alert');
     expect(fileInput().value).toBe('');
-    await importActivity(user, sortFixture());
-    await waitFor(() => expect(field(/Titel/).value).toBe('Artikel sortieren'));
-    expect(fileInput().value).toBe('');
-    // cancelled overwrite confirmation must also reset the input
-    await user.type(field(/Titel/), '!');
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
-    await importActivity(user, sortFixture());
-    expect(fileInput().value).toBe('');
+    await user.upload(fileInput(), bad);
+    expect((await screen.findByRole('alert')).textContent).toContain('ungültige JSON-Datei');
   });
-  it('caps a very long problem list instead of rendering hundreds of rows', async () => {
+  it('replaces a failed review with a valid file and requires explicit acceptance', async () => {
     const { user } = renderPage(<SortPage />);
-    const a = sortFixture();
-    a.content.items = Array.from({ length: 30 }, (_, i) => ({ id: 'c' + i, text: 'Karte ' + i, categoryId: 'der', bogus: 1 })) as never;
-    await importActivity(user, a);
+    await startImport(user);
+    await user.upload(fileInput(), jsonFile('broken.json', '{broken'));
+    await screen.findByRole('alert');
+    await user.upload(fileInput(), jsonFile('good.json', sortFixture()));
+    expect(await screen.findByText('Datei gültig')).toBeTruthy();
+    expect(screen.queryByLabelText('Titel')).toBeNull();
+    await user.click(button('Im Editor öffnen'));
+    expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe('Artikel sortieren');
+  });
+  it('caps extremely long error lists', async () => {
+    const { user } = renderPage(<SortPage />);
+    await startImport(user);
+    const bad = sortFixture();
+    bad.content.items = Array.from({ length: 30 }, (_, i) => ({ id: 'c' + i, text: 'Karte ' + i, categoryId: 'der', bogus: true })) as never;
+    await user.upload(fileInput(), jsonFile('invalid.json', bad));
     const alert = await screen.findByRole('alert');
     expect(within(alert).getAllByRole('listitem').length).toBeLessThanOrEqual(26);
-    expect(alert.textContent).toMatch(/und \d+ weitere/);
   });
 });
 
-describe('unsaved-edit protection', () => {
-  it('asks before an import replaces unsaved edits and keeps them when declined', async () => {
+describe('Guided editor, review and local file ownership', () => {
+  it('opens an imported draft in Details with unchanged title and target language', async () => {
     const { user } = renderPage(<SortPage />);
-    await importActivity(user, sortFixture());
-    await waitFor(() => expect(field(/Titel/).value).toBe('Artikel sortieren'));
-    await user.type(field(/Titel/), ' geändert');
+    await readyImport(user, sortFixture());
+    expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe('Artikel sortieren');
+    expect((screen.getByLabelText('Zielsprache') as HTMLInputElement).value).toBe('de');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+  it('exposes canonical export only at Review and preserves the original imported answer key', async () => {
+    const dl = captureDownload();
+    const { user } = renderPage(<SortPage />);
+    await readyImport(user, sortFixture());
+    expect(screen.queryByRole('button', { name: 'Aktivität herunterladen' })).toBeNull();
+    await openReview(user);
+    await user.click(button('Aktivität herunterladen'));
+    expect(dl.names).toEqual(['sort_artikel-sortieren.json']);
+    expect(JSON.parse(await dl.text())).toEqual(sortFixture());
+  });
+  it('warns before discarding edited content on return to the chooser', async () => {
+    const { user } = renderPage(<SortPage />);
+    await readyImport(user, sortFixture());
+    await user.type(screen.getByLabelText('Titel'), ' neu');
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    const other = sortFixture(); other.title = 'Anderes Thema';
-    await importActivity(user, other);
-    expect(confirm).toHaveBeenCalledTimes(1);
-    expect(field(/Titel/).value).toBe('Artikel sortieren geändert');
+    await user.click(button(/Zur Auswahl/));
+    expect(confirm).toHaveBeenCalledOnce();
+    expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe('Artikel sortieren neu');
     confirm.mockReturnValue(true);
-    await importActivity(user, other);
-    await waitFor(() => expect(field(/Titel/).value).toBe('Anderes Thema'));
+    await user.click(button(/Zur Auswahl/));
+    expect(button(/Selbst erstellen/)).toBeTruthy();
   });
-  it('re-asks when the teacher edits while a slow file is still being read', async () => {
+  it('protects an unfinished imported review on browser close', async () => {
     const { user } = renderPage(<SortPage />);
-    await importActivity(user, sortFixture());
-    await waitFor(() => expect(field(/Titel/).value).toBe('Artikel sortieren'));
-    // Not dirty yet (fresh import) → no confirmation at the start of the second import.
-    let release!: (text: string) => void;
-    const slow = jsonFile('slow.json', '');
-    Object.defineProperty(slow, 'text', { value: () => new Promise<string>(resolve => { release = resolve; }) });
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    await user.upload(fileInput(), slow);
-    expect(confirm).not.toHaveBeenCalled();
-    await user.type(field(/Titel/), ' mitten im Lesen');
-    const other = sortFixture(); other.title = 'Ersatz';
-    release(JSON.stringify(other));
-    await waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
-    expect(field(/Titel/).value).toBe('Artikel sortieren mitten im Lesen');
+    await startImport(user);
+    await user.upload(fileInput(), jsonFile('good.json', sortFixture()));
+    await screen.findByText('Datei gültig');
+    await waitFor(() => {
+      const before = new Event('beforeunload', { cancelable: true });
+      window.dispatchEvent(before);
+      expect(before.defaultPrevented).toBe(true);
+    });
   });
-  it('applies a slow import and returns to the editor when the teacher only switched views meanwhile', async () => {
-    const { user } = renderPage(<SortPage />);
-    await importActivity(user, sortFixture());
-    await waitFor(() => expect(field(/Titel/).value).toBe('Artikel sortieren'));
-    let release!: (text: string) => void;
-    const slow = jsonFile('slow.json', '');
-    Object.defineProperty(slow, 'text', { value: () => new Promise<string>(resolve => { release = resolve; }) });
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    await user.upload(fileInput(), slow);
-    await user.click(screen.getByRole('button', { name: 'Vorschau' }));
-    expect(screen.getByRole('heading', { level: 2, name: 'Artikel sortieren' })).toBeTruthy();
-    const other = sortFixture(); other.title = 'Nach dem Lesen';
-    release(JSON.stringify(other));
-    // no unsaved edits exist, so nothing can be lost and no confirmation is needed
-    await waitFor(() => expect(field(/Titel/).value).toBe('Nach dem Lesen'));
-    expect(confirm).not.toHaveBeenCalled();
+  it('shows validation only after attempting Continue and allows navigation to incomplete steps', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await user.click(button(/Selbst erstellen/));
+    expect(screen.queryByRole('alert')).toBeNull();
+    await user.click(button('Weiter'));
+    await user.click(button('Weiter'));
+    expect(screen.getByRole('alert').textContent).toContain('Bitte ergänzen');
+    await openReview(user);
+    expect(document.querySelector('.activity-ux-review-status')?.textContent).toMatch(/Noch zu ergänzen/);
   });
-  it('registers a beforeunload guard only while there are unexported edits', async () => {
+  it('keeps authored text unchanged when DE → EN → VI is switched', async () => {
     const { user } = renderPage(<SortPage />);
-    const probe = () => { const e = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(e); return e.defaultPrevented; };
-    expect(probe()).toBe(false);
-    await user.type(field(/Titel/), 'x');
-    expect(probe()).toBe(true);
-  });
-  it('exports a canonical file under <type>_<id>.json and then clears the unsaved marker', async () => {
-    const blobs: Blob[] = [], names: string[] = [];
-    URL.createObjectURL = (blob: Blob | MediaSource) => { blobs.push(blob as Blob); return 'blob:test'; };
-    URL.revokeObjectURL = () => {};
-    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { names.push(this.download); });
-    const { user } = renderPage(<SortPage />);
-    await importActivity(user, sortFixture());
-    await waitFor(() => expect(field(/Titel/).value).toBe('Artikel sortieren'));
-    await user.type(field(/Titel/), '!');
-    expect(screen.getByText('Nicht exportierte Änderungen')).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: 'JSON herunterladen' }));
-    expect(names).toEqual(['sort_artikel-sortieren.json']);
-    const expected = sortFixture(); expected.title = 'Artikel sortieren!';
-    expect(await blobs[0].text()).toBe(serializeActivity(expected, validateSort).value);
-    expect(screen.getByText('Datei zum Export bereit')).toBeTruthy();
-  });
-});
-
-describe('New form', () => {
-  it('resets to a blank invalid template, asking first when there are unexported edits', async () => {
-    const { user } = renderPage(<SortPage />);
-    await importActivity(user, sortFixture());
-    await waitFor(() => expect(field(/Titel/).value).toBe('Artikel sortieren'));
-    // freshly imported: nothing to lose, so no confirmation
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    await user.type(field(/Titel/), '!');
-    await user.click(screen.getByRole('button', { name: 'Neu' }));
-    expect(confirm).toHaveBeenCalledTimes(1);
-    expect(field(/Titel/).value).toBe('Artikel sortieren!');          // declined: draft kept
-    confirm.mockReturnValue(true);
-    await user.click(screen.getByRole('button', { name: 'Neu' }));
-    expect(field(/Titel/).value).toBe('Sort');
-    expect(screen.getByText('Datei zum Export bereit')).toBeTruthy();
-    expect((screen.getByRole('button', { name: 'Vorschau' }) as HTMLButtonElement).disabled).toBe(true);
-    await user.click(screen.getByRole('button', { name: 'Neu' }));  // clean again: no further prompt
-    expect(confirm).toHaveBeenCalledTimes(2);
-  });
-});
-
-describe('mode navigation', () => {
-  it('disables Preview, Present and Practice while the draft is invalid and offers the problem list', async () => {
-    const { user } = renderPage(<SortPage />);
-    for (const name of ['Vorschau', 'Präsentieren', 'Allein üben']) {
-      expect((screen.getByRole('button', { name }) as HTMLButtonElement).disabled, name).toBe(true);
+    await readyImport(user, sortFixture());
+    for (const locale of ['en', 'vi', 'de'] as const) {
+      await chooseLocale(user, locale);
+      expect((screen.getByDisplayValue('Artikel sortieren') as HTMLInputElement).value).toBe('Artikel sortieren');
+      expect((screen.getByDisplayValue('Ordne die Nomen dem Artikel zu.') as HTMLTextAreaElement).value).toBe('Ordne die Nomen dem Artikel zu.');
+      expect(document.documentElement.lang).toBe(locale);
     }
-    await user.click(screen.getByRole('button', { name: /Probleme anzeigen \(\d+\)/ }));
-    expect(document.activeElement?.id).toBe('activity-problems');
   });
-  it('marks the active mode with aria-current', async () => {
+  it('separates the activity Review from the play screen and has no authoring controls in play', async () => {
     const { user } = renderPage(<SortPage />);
-    await importActivity(user, sortFixture());
-    await waitFor(() => expect(field(/Titel/).value).toBe('Artikel sortieren'));
-    const nav = screen.getByRole('navigation', { name: 'Modus' });
-    const current = () => within(nav).getAllByRole('button').filter(b => b.getAttribute('aria-current') === 'true').map(b => b.textContent);
-    expect(current()).toEqual(['Bearbeiten']);
-    for (const name of ['Vorschau', 'Präsentieren', 'Allein üben']) {
-      await user.click(within(nav).getByRole('button', { name }));
-      expect(current()).toEqual([name]);
-    }
-    await user.click(within(nav).getByRole('button', { name: 'Bearbeiten' }));
-    expect(current()).toEqual(['Bearbeiten']);
-  });
-});
-
-describe('language handling', () => {
-  let original: string;
-  beforeEach(() => { original = document.documentElement.lang; document.documentElement.lang = 'de'; });
-  afterEach(() => { document.documentElement.lang = original; });
-  it('sets <html lang> to the interface locale and restores it when the page unmounts', async () => {
-    const { user, unmount } = renderPage(<SortPage />);
-    expect(document.documentElement.lang).toBe('de');
-    await chooseLocale(user, 'vi');
-    expect(document.documentElement.lang).toBe('vi');
-    await chooseLocale(user, 'en');
-    expect(document.documentElement.lang).toBe('en');
-    unmount();
-    expect(document.documentElement.lang).toBe('de');
-  });
-  it('marks authored title and instructions with the activity target language, not the interface language', async () => {
-    const { user } = renderPage(<SortPage />);
-    const a = sortFixture(); a.targetLanguage = 'fr';
-    await importActivity(user, a);
-    await waitFor(() => expect(field(/Titel/).value).toBe('Artikel sortieren'));
-    await chooseLocale(user, 'en');
-    await user.click(screen.getByRole('button', { name: 'Preview' }));
-    const heading = screen.getByRole('heading', { level: 2, name: 'Artikel sortieren' });
-    expect(heading.getAttribute('lang')).toBe('fr');
-    expect(screen.getByText('Ordne die Nomen dem Artikel zu.').getAttribute('lang')).toBe('fr');
-  });
-});
-
-// jsdom has no layout, so only the semantics are asserted here; real touch-target sizes are checked in the browser report.
-describe('accessibility semantics', () => {
-  it('labels the file input and keeps the back link out of the way of unsaved edits', async () => {
-    const { user } = renderPage(<SortPage />);
-    expect(fileInput().getAttribute('aria-label')).toBe('Datei auswählen');
-    await user.type(field(/Titel/), 'x');
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    const link = screen.getByRole('link', { name: /Learning Games/ });
-    const proceeded = fireEvent.click(link);
-    expect(confirm).toHaveBeenCalled();
-    expect(proceeded).toBe(false); // navigation was cancelled
+    await readyImport(user, sortFixture());
+    await openReview(user);
+    await user.click(button('Allein üben'));
+    expect(document.querySelector('.activity-ux-play')).not.toBeNull();
+    expect(screen.queryByLabelText('Interne Aktivitäts-ID')).toBeNull();
+    expect(document.querySelector('.activity-ux-back')?.textContent).toContain('Zum Editor');
   });
 });

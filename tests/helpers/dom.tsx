@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, vi } from 'vitest';
@@ -19,8 +19,36 @@ export function fileInput(): HTMLInputElement {
   return document.querySelector<HTMLInputElement>('input[type="file"]')!;
 }
 /** Imports `data` through the real file input. Resolves after the async file read has been flushed. */
+/** Opens the actual guided file-first import flow and accepts the validated teacher activity. */
 export async function importActivity(user: UserEvent, data: unknown, name = 'activity.json') {
-  await user.upload(fileInput(), jsonFile(name, data));
+  // Return from detached play and/or editor to the entry, preserving all real leave guards.
+  for (let tries = 0; tries < 3 && !document.querySelector('input[type="file"]'); tries++) {
+    const importButton = screen.queryByRole('button', {name: /Aktivität importieren|Import activity|Nhập hoạt động/});
+    if (importButton) { await user.click(importButton); break; }
+    const back = document.querySelector<HTMLButtonElement>('.activity-ux-back');
+    if (!back) throw new Error('Unable to reach the activity import entry');
+    await user.click(back);
+  }
+  const input = fileInput();
+  if (!input) throw new Error('The import file picker was not mounted. Navigate to Import activity.');
+  await user.upload(input, jsonFile(name, data));
+  const accept = await screen.findByRole('button', {name: /Im Editor öffnen|Open in editor|Mở trong trình chỉnh sửa/});
+  await user.click(accept);
+}
+/** The reviewed flow exposes game modes only on the Review step. */
+export async function openReview(user: UserEvent) {
+  const nav = document.querySelector<HTMLElement>('.activity-ux-navigation');
+  if (!nav) throw new Error('Guided editor navigation not mounted');
+  const steps = within(nav).getAllByRole('button');
+  await user.click(steps[steps.length - 1]);
+}
+/** Select an authored content step through the same real step navigator the teacher uses. */
+export async function openAuthorStep(user: UserEvent, step: number) {
+  const nav = document.querySelector<HTMLElement>('.activity-ux-navigation');
+  if (!nav) throw new Error('Guided editor navigation not mounted');
+  const steps = within(nav).getAllByRole('button');
+  if (!steps[step]) throw new Error('No guided editor step ' + step);
+  await user.click(steps[step]);
 }
 export async function chooseLocale(user: UserEvent, locale: Locale) {
   await user.selectOptions(document.querySelector('select')!, locale);

@@ -3,15 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { SortPage } from '../src/games/sort/SortPage';
-import { chooseLocale, importActivity, playText, renderPage } from './helpers/dom';
+import { chooseLocale, importActivity, openAuthorStep, openReview, playText, renderPage } from './helpers/dom';
 import { sortFixture } from './helpers/fixtures';
 
 /** Imports the fixture, opens a play mode and returns helpers. */
 async function play(user: UserEvent, mode: 'Allein üben' | 'Präsentieren' | 'Vorschau' = 'Allein üben', mutate?: (a: ReturnType<typeof sortFixture>) => void) {
   const a = sortFixture(); mutate?.(a);
   await importActivity(user, a);
-  await waitFor(() => expect((document.querySelector('input.field') as HTMLInputElement).value).toBe('artikel-sortieren'));
-  await user.click(screen.getByRole('button', { name: mode }));
+  await waitFor(() => expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe('Artikel sortieren'));
+  await openReview(user);
+  await user.click(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button', { name: mode }));
 }
 const card = (text: string) => screen.getByRole('button', { name: new RegExp('^' + text + '(?![a-zäöü])') });
 const tray = (label: string) => screen.getByRole('button', { name: 'Hier ablegen: ' + label }) as HTMLButtonElement;
@@ -175,7 +176,8 @@ describe('Sort play: shuffle, modes and text', () => {
     const { user } = renderPage(<SortPage />);
     await play(user);
     await placeAll(user);
-    await user.click(screen.getByRole('button', { name: 'Zum Editor' }));
+    await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
+    await openAuthorStep(user, 2);
     const authored = [1, 2, 3, 4].map(n => (screen.getByLabelText('Karte ' + n) as HTMLInputElement).value);
     expect(authored).toEqual(['Tisch', 'Lampe', 'Buch', 'Stuhl']);
     expect(cardTexts()).toEqual([]);
@@ -187,7 +189,7 @@ describe('Sort play: shuffle, modes and text', () => {
     await placeAll(user);
     await user.click(screen.getByRole('button', { name: 'Prüfen' }));
     expect(playText()).toContain('Ergebnis: 4 von 4 richtig');
-    await user.click(screen.getByRole('button', { name: 'Zum Editor' }));
+    await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
     await user.click(screen.getByRole('button', { name: 'Allein üben' }));
     expect(document.querySelector('main')!.classList.contains('activity-projected')).toBe(false);
     expect(cardTexts().sort()).toEqual(['Buch', 'Lampe', 'Stuhl', 'Tisch']);
