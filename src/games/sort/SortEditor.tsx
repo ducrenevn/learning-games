@@ -1,16 +1,31 @@
-import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
-import { ArrowRightLeft, MessageSquareText, Plus, X } from 'lucide-react';
+import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { ArrowRightLeft, GripVertical, MessageSquareText, Plus, X } from 'lucide-react';
+import { useDraggable, useDroppable, type DragEndEvent } from '@dnd-kit/core';
+import { DragArea } from '../../shared/activities/dnd';
 import { t, tf } from '../../shared/activities/i18n';
 import { u } from '../../shared/activities/uxCopy';
 import { splitLines } from '../../shared/activities/listPaste';
 import type { EditorProps } from '../../shared/activities/Workspace';
 import type { SortActivity, SortItem } from './model';
+import { dropTarget } from './SortPlayer';
 
 const MIN_CATEGORIES = 2, MAX_CATEGORIES = 5, MIN_CARDS = 4, MAX_CARDS = 30;
 function nextId(prefix: string, used: string[]) {
   let i = 1;
   while (used.includes(prefix + '-' + i)) i++;
   return prefix + '-' + i;
+}
+/** A bin that accepts a dragged card (the buttons remain the keyboard path). */
+function DropBin({ id, className, label, children }: { id: string; className: string; label: string; children: ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id: 'bin:' + id });
+  return <section ref={setNodeRef} className={className + (isOver ? ' over' : '')} aria-label={label}>{children}</section>;
+}
+/** A card row that can be dragged by its grip into another bin. */
+function DragCard({ id, lifted, children }: { id: string; lifted: boolean; children: (grip: ReactNode) => ReactNode }) {
+  const { setNodeRef, setActivatorNodeRef, listeners, isDragging } = useDraggable({ id });
+  return <li ref={setNodeRef} className={'card-edit' + (lifted ? ' lifted' : '') + (isDragging ? ' dragging' : '')} data-row>
+    {children(<span className="seq-grip" ref={setActivatorNodeRef} aria-hidden="true" {...listeners}><GripVertical size={16} /></span>)}
+  </li>;
 }
 type Focus = { kind: 'card' | 'category' | 'add-card' | 'add-category'; id?: string; end?: boolean };
 
@@ -24,6 +39,7 @@ export function SortEditor({ activity, onChange, locale, field, region }: Editor
   const [moving, setMoving] = useState<string | null>(null);
   const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set());
   const [notice, setNotice] = useState('');
+  const [dragId, setDragId] = useState<string | null>(null);
   const [focus, setFocus] = useState<Focus | null>(null);
   const cardInputs = useRef(new Map<string, HTMLInputElement>());
   const categoryInputs = useRef(new Map<string, HTMLInputElement>());
@@ -99,6 +115,14 @@ export function SortEditor({ activity, onChange, locale, field, region }: Editor
     setMoving(null);
     setFocus({ kind: 'card', id: item.id, end: true });
   }
+  function dropped(event: DragEndEvent) {
+    setDragId(null);
+    const item = items.find(i => i.id === event.active.id);
+    const target = dropTarget(event.over?.id, categories.map(c => c.id));
+    if (!item || !target || target === item.categoryId) return;
+    patchItem(item.id, { categoryId: target });
+    setNotice(tf(locale, 'announcePlaced', { card: item.text || cardName(item.id), category: labelOf(target) }));
+  }
   function cardKeys(event: KeyboardEvent<HTMLInputElement>, item: SortItem) {
     if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
       event.preventDefault();
@@ -125,12 +149,15 @@ export function SortEditor({ activity, onChange, locale, field, region }: Editor
     update({ items: [...items.slice(0, at), fillCurrent ? { ...item, text: accepted[0] } : item, ...created, ...items.slice(at + 1)] });
     setFocus({ kind: 'card', id: (created[created.length - 1] ?? item).id, end: true });
   }
-  return <div className="activity-editor sort-author" onKeyDown={event => { if (event.key === 'Escape' && moving) setMoving(null); }}>
+  const dragged = items.find(i => i.id === dragId);
+  return <DragArea onStart={event => { setDragId(String(event.active.id)); setMoving(null); }} onEnd={dropped} onCancel={() => setDragId(null)}
+    overlay={dragged ? <div className="sort-chip drag-ghost"><strong>{dragged.text || t(locale, 'card')}</strong></div> : null}>
+  <div className="activity-editor sort-author" onKeyDown={event => { if (event.key === 'Escape' && moving) setMoving(null); }}>
     <p className="sr-only" role="status" aria-live="polite">{notice}</p>
     <div className="sort-bins edit" {...region('content.items')}>
       {categories.map((category, ci) => {
         const cards = cardsIn(category.id);
-        return <section className={'sort-bin edit' + (moving ? ' armed' : '')} key={category.id} aria-label={category.label || t(locale, 'category') + ' ' + (ci + 1)}>
+        return <DropBin key={category.id} id={category.id} className={'sort-bin edit' + (moving || dragId ? ' armed' : '')} label={category.label || t(locale, 'category') + ' ' + (ci + 1)}>
           <header>
             <input className="bin-title" aria-label={t(locale, 'label') + ' ' + (ci + 1)} placeholder={u(locale, 'categoryHint2')} value={category.label}
               {...field('content.categories[' + ci + '].label')}
@@ -142,8 +169,9 @@ export function SortEditor({ activity, onChange, locale, field, region }: Editor
           <ul className="bin-cards">{cards.map(item => {
             const realIndex = items.findIndex(i => i.id === item.id);
             const showExplanation = open.has(item.id) || item.explanation !== undefined;
-            return <li className={'card-edit' + (moving === item.id ? ' lifted' : '')} key={item.id} data-row>
+            return <DragCard key={item.id} id={item.id} lifted={moving === item.id}>{grip => <>
               <div className="card-edit-main">
+                {grip}
                 <input className="chip-input" aria-label={cardName(item.id)} placeholder={u(locale, 'cardHint')} value={item.text} {...field('content.items[' + realIndex + '].text')}
                   ref={el => { if (el) cardInputs.current.set(item.id, el); else cardInputs.current.delete(item.id); }}
                   onKeyDown={e => cardKeys(e, item)} onPaste={e => paste(e, item)} onChange={e => setText(item.id, e.target.value)}/>
@@ -156,7 +184,7 @@ export function SortEditor({ activity, onChange, locale, field, region }: Editor
               </div>
               {showExplanation && <input className="chip-input chip-explanation" aria-label={u(locale, 'explainCard') + ' · ' + cardName(item.id)} placeholder={u(locale, 'explainCard')}
                 value={item.explanation ?? ''} {...field('content.items[' + realIndex + '].explanation')} onChange={e => setExplanation(item.id, e.target.value)}/>}
-            </li>;
+            </>}</DragCard>;
           })}</ul>
           <button type="button" className="add-card" disabled={items.length >= MAX_CARDS} aria-label={t(locale, 'addItem') + ': ' + (category.label || t(locale, 'category') + ' ' + (ci + 1))}
             ref={el => { if (el) addCardButtons.current.set(category.id, el); else addCardButtons.current.delete(category.id); }}
@@ -165,7 +193,7 @@ export function SortEditor({ activity, onChange, locale, field, region }: Editor
           </button>
           {moving && <button type="button" className="sort-drop" disabled={items.find(i => i.id === moving)?.categoryId === category.id}
             aria-label={u(locale, 'moveHere') + ': ' + (category.label || t(locale, 'category') + ' ' + (ci + 1))} onClick={() => moveTo(category.id)}>{u(locale, 'moveHere')}</button>}
-        </section>;
+        </DropBin>;
       })}
       <button type="button" className="sort-bin ghost" data-add ref={addCategoryButton} disabled={categories.length >= MAX_CATEGORIES} onClick={addCategory}>
         <Plus size={18} aria-hidden="true"/><span>{t(locale, 'addCategory')}</span>
@@ -174,7 +202,8 @@ export function SortEditor({ activity, onChange, locale, field, region }: Editor
     </div>
     {items.length >= MAX_CARDS && <p className="muted small">{u(locale, 'maxCards')}</p>}
     <p className="muted small">{u(locale, 'tipCards')}</p>
-  </div>;
+  </div>
+  </DragArea>;
 }
 function tf0(template: string, vars: Record<string, string | number>) {
   return template.replace(/\{(\w+)\}/g, (whole, name: string) => Object.hasOwn(vars, name) ? String(vars[name]) : whole);

@@ -1,5 +1,9 @@
-import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
-import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
+import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { ArrowDown, ArrowUp, GripVertical, Plus, X } from 'lucide-react';
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { DragArea } from '../../shared/activities/dnd';
 import { t, tf } from '../../shared/activities/i18n';
 import { u } from '../../shared/activities/uxCopy';
 import { moveKey, useMoveFocus } from '../../shared/activities/focus';
@@ -18,6 +22,14 @@ const msg = {
   en: { paste: 'Tip: Enter adds a step; a pasted list becomes separate steps.', max: 'At most 20 steps.', min: 'At least 3 steps.', pasted: 'Pasted {n} steps.', cut: 'Pasted {n} steps – the rest do not fit (at most 20).', hint: 'Type the next step' },
   vi: { paste: 'Mẹo: Enter thêm một bước; danh sách dán vào sẽ thành các bước riêng.', max: 'Tối đa 20 bước.', min: 'Tối thiểu 3 bước.', pasted: 'Đã dán {n} bước.', cut: 'Đã dán {n} bước – phần còn lại không vừa (tối đa 20).', hint: 'Nhập bước tiếp theo' },
 } as const;
+
+/** A row that can be dragged by its grip; the buttons beside it stay the keyboard path. */
+function SortableEditRow({ id, children }: { id: string; children: (grip: ReactNode) => ReactNode }) {
+  const { setNodeRef, setActivatorNodeRef, listeners, transform, transition, isDragging } = useSortable({ id });
+  return <div className={'seq-row seq-edit' + (isDragging ? ' dragging' : '')} data-row ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}>
+    {children(<span className="seq-grip" ref={setActivatorNodeRef} aria-hidden="true" {...listeners}><GripVertical size={18} /></span>)}
+  </div>;
+}
 
 /** The teacher edits the same slim numbered rows the learner will later reorder. Row order is the answer. */
 export function SequenceEditor({ activity, onChange, locale, field }: EditorProps<SequenceActivity>) {
@@ -46,6 +58,12 @@ export function SequenceEditor({ activity, onChange, locale, field }: EditorProp
     update({ items: order.map(id => items.find(v => v.id === id)!) });
     setNotice(tf(locale, 'announceMoved', { card: items[i].text || label(i), pos: i + direction + 1, total: items.length }));
     keepFocus(items[i].id, direction === -1 ? 'up' : 'down');
+  }
+  function dropped(event: DragEndEvent) {
+    const from = items.findIndex(v => v.id === event.active.id), to = event.over ? items.findIndex(v => v.id === event.over!.id) : -1;
+    if (from < 0 || to < 0 || from === to) return;
+    update({ items: arrayMove(items, from, to) });
+    setNotice(tf(locale, 'announceMoved', { card: items[from].text || label(from), pos: to + 1, total: items.length }));
   }
   function insertAfter(index: number, texts: string[] = ['']) {
     const room = MAX_STEPS - items.length;
@@ -96,7 +114,9 @@ export function SequenceEditor({ activity, onChange, locale, field }: EditorProp
     <div className="pairs-head"><strong>{t(locale, 'answerKey')}</strong><span className="muted small" aria-live="polite">{items.length} / {MAX_STEPS}</span></div>
     <p className="sr-only" role="status" aria-live="polite">{notice}</p>
     <div className="seq-rows" ref={rootRef} role="group" aria-label={t(locale, 'answerKey')}>
-      {items.map((item, i) => <div className="seq-row seq-edit" data-row key={item.id}>
+      <DragArea onEnd={dropped} overlay={null}><SortableContext items={items.map(v => v.id)} strategy={verticalListSortingStrategy}>
+      {items.map((item, i) => <SortableEditRow key={item.id} id={item.id}>{grip => <>
+        {grip}
         <span className="seq-num" aria-hidden="true">{i + 1}</span>
         <label className="seq-text"><span className="sr-only">{label(i)}</span>
           <AutoTextarea className="seq-input" minRows={1} value={item.text} placeholder={words.hint} {...field('content.items[' + i + '].text')}
@@ -112,7 +132,8 @@ export function SequenceEditor({ activity, onChange, locale, field }: EditorProp
             aria-label={tf(locale, 'removeRow', { what: label(i) })}
             onClick={() => { remove(i); setFocusTarget({ id: 'add' }); }}><X size={16} aria-hidden="true"/></button>
         </div>
-      </div>)}
+      </>}</SortableEditRow>)}
+      </SortableContext></DragArea>
       <button type="button" className="seq-row seq-add" data-add ref={addButton} disabled={items.length >= MAX_STEPS}
         onClick={() => { const created = insertAfter(items.length - 1); if (created?.[0]) setFocusTarget({ id: created[0].id }); }}>
         <span className="seq-num" aria-hidden="true"><Plus size={14}/></span>{t(locale, 'addStep')}

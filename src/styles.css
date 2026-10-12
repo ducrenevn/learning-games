@@ -447,3 +447,16 @@ a:hover {
 @media(max-width:700px){.sort-bin.ghost{flex:1 1 100%;min-height:72px}}
 .sort-bank header{grid-template-columns:minmax(0,1fr) auto auto}
 @media(max-width:700px){.sort-bank h3{font-size:1rem;overflow-wrap:anywhere}.sort-bank header{gap:6px}.hint-trigger{width:36px;height:36px}}
+.sort-chip{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.sort-chip.dragging{opacity:.35;border-style:dashed}
+.sort-chip.drag-ghost{cursor:grabbing;transform:rotate(2deg);border:2px solid var(--green);background:#fff;box-shadow:0 14px 30px #24443855;pointer-events:none}
+.sort-bin.over{background:#c9e3cf;box-shadow:0 0 0 4px #315b4a44}
+.sort-bank.over{border-color:var(--green);box-shadow:0 0 0 4px #315b4a44}
+@media(prefers-reduced-motion:reduce){.sort-chip.drag-ghost{transform:none}}
+.seq-grip{display:grid;place-items:center;width:28px;height:44px;flex:none;color:#7a887f;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.seq-grip:hover{color:var(--green)}
+.seq-grip:active{cursor:grabbing}
+.seq-row.dragging{position:relative;z-index:5;box-shadow:0 12px 26px #2444383d;border-color:var(--green);background:#fff}
+.card-edit.dragging{opacity:.4}
+.sort-bin.edit.over{background:#c9e3cf;box-shadow:0 0 0 4px #315b4a44}
+.card-edit-main .seq-grip{width:22px;height:40px}
