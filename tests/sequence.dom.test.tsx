@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { SequencePage } from '../src/games/sequence/SequencePage';
-import { chooseLocale, importActivity, playText, renderPage } from './helpers/dom';
+import { chooseLocale, importActivity, openAuthorStep, openReview, playText, renderPage } from './helpers/dom';
 import { sequenceFixture } from './helpers/fixtures';
 
 const authored = sequenceFixture().content.items.map(i => i.text);
@@ -11,7 +11,8 @@ async function play(user: UserEvent, mode: 'Allein üben' | 'Präsentieren' | 'V
   const a = sequenceFixture(); mutate?.(a);
   await importActivity(user, a);
   await waitFor(() => expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe('Gespräch ordnen'));
-  await user.click(screen.getByRole('button', { name: mode }));
+  await openReview(user);
+  await user.click(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button', { name: mode }));
 }
 const rows = () => Array.from(document.querySelectorAll('.sequence-card')) as HTMLElement[];
 const order = () => rows().map(r => r.querySelector('.sequence-card-copy span')!.textContent!);
@@ -135,7 +136,8 @@ describe('Sequence play: check, retry and reveal', () => {
     const { user } = renderPage(<SequencePage />);
     await play(user);
     await arrange(user, [...authored].reverse());
-    await user.click(screen.getByRole('button', { name: 'Zum Editor' }));
+    await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
+    await openAuthorStep(user, 1);
     expect([1, 2, 3, 4].map(n => (screen.getByLabelText('Schritt ' + n) as HTMLInputElement).value)).toEqual(authored);
   });
 });
@@ -148,7 +150,7 @@ describe('Sequence play: modes, locales and text', () => {
     await arrange(user, authored);
     await user.click(screen.getByRole('button', { name: 'Prüfen' }));
     expect(playText()).toContain('4 von 4 richtig');
-    await user.click(screen.getByRole('button', { name: 'Zum Editor' }));
+    await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
     await user.click(screen.getByRole('button', { name: 'Allein üben' }));
     expect(document.querySelector('main')!.classList.contains('activity-projected')).toBe(false);
   });
@@ -180,9 +182,11 @@ describe('Sequence play: modes, locales and text', () => {
     const { user } = renderPage(<SequencePage />);
     await play(user, 'Allein üben', a => { a.content.items.pop(); });
     expect(rows().length).toBe(3);
-    await user.click(screen.getByRole('button', { name: 'Zum Editor' }));
+    await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
     await importActivity(user, (() => { const a = sequenceFixture(); a.content.items = Array.from({ length: 20 }, (_, i) => ({ id: 's' + i, text: 'Schritt Nummer ' + (i + 1) })); return a; })());
+    await openAuthorStep(user, 1);
     await waitFor(() => expect((screen.getByLabelText('Schritt 20') as HTMLInputElement).value).toBe('Schritt Nummer 20'));
+    await openReview(user);
     await user.click(screen.getByRole('button', { name: 'Allein üben' }));
     expect(rows().length).toBe(20);
     expect(within(document.querySelector('.activity-play')!).getAllByRole('listitem').length).toBe(20);

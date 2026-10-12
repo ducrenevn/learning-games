@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { DetectivePage } from '../src/games/language-detective/DetectivePage';
-import { chooseLocale, importActivity, playText, renderPage } from './helpers/dom';
+import { chooseLocale, importActivity, openReview, playText, renderPage } from './helpers/dom';
 import { detectiveCleanFixture, detectiveFixture } from './helpers/fixtures';
 
 type Fixture = ReturnType<typeof detectiveFixture>;
@@ -11,7 +11,8 @@ async function play(user: UserEvent, mode: 'Allein üben' | 'Präsentieren' | 'V
   const a = make(); mutate?.(a);
   await importActivity(user, a);
   await waitFor(() => expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe(a.title));
-  await user.click(screen.getByRole('button', { name: mode }));
+  await openReview(user);
+  await user.click(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button', { name: mode }));
 }
 const segment = (text: string) => screen.getByRole('button', { name: new RegExp('^' + text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![a-zäöüß])') }) as HTMLButtonElement;
 const pick = async (user: UserEvent, ...texts: string[]) => { for (const t of texts) await user.click(segment(t)); };
@@ -253,8 +254,9 @@ describe('Language Detective play: focus, retry and modes', () => {
     expect(playText()).not.toContain('Eigener Korrekturvorschlag');
     expect(playText()).toContain('haben → habe');
     for (const mode of ['Allein üben', 'Vorschau'] as const) {
-      await user.click(screen.getByRole('button', { name: 'Zum Editor' }));
-      await user.click(screen.getByRole('button', { name: mode }));
+      await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
+      await openReview(user);
+  await user.click(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button', { name: mode }));
       await pick(user, 'haben');
       expect(screen.getAllByRole('textbox')).toHaveLength(1);
     }

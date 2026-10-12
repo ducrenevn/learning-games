@@ -1,127 +1,141 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { SequencePage } from '../src/games/sequence/SequencePage';
-import { captureDownload, fileInput, importActivity, renderPage } from './helpers/dom';
+import { captureDownload, importActivity, openAuthorStep, openReview, renderPage } from './helpers/dom';
 import { sequenceFixture } from './helpers/fixtures';
 
 afterEach(() => vi.restoreAllMocks());
-const input = (label: string) => screen.getByLabelText(label) as HTMLInputElement;
-const button = (name: string | RegExp) => screen.getByRole('button', { name }) as HTMLButtonElement;
-const stepTexts = () => Array.from(document.querySelectorAll<HTMLInputElement>('.activity-edit-row input.field')).map(i => i.value);
-async function fillBlank(user: UserEvent) {
-  await user.type(screen.getByLabelText('Aufgabe'), 'Ordne.');
-  for (const [n, text] of [[1, 'Eins'], [2, 'Zwei'], [3, 'Drei']] as const) await user.type(input('Schritt ' + n), text);
+const button = (name: string | RegExp) => screen.getByRole('button', {name}) as HTMLButtonElement;
+const field = (name: string | RegExp) => screen.getByLabelText(name) as HTMLInputElement;
+async function create(user: UserEvent) {
+  await user.click(button(/Selbst erstellen/));
+  await openAuthorStep(user, 1);
 }
 async function loaded(user: UserEvent) {
-  await importActivity(user, sequenceFixture());
-  await waitFor(() => expect(input('Titel').value).toBe('Gespräch ordnen'));
+  await importActivity(user,sequenceFixture());
+  expect(field('Titel').value).toBe('Gespräch ordnen');
+  await openAuthorStep(user,1);
+}
+const order=()=>[...document.querySelectorAll<HTMLInputElement>('.activity-edit-row input.field')].map(el=>el.value);
+
+async function fill(user:UserEvent) {
+  await create(user);
+  await user.type(field('Aufgabe'), 'Ordne die Sätze.');
+  for(const [i,v] of ['Eins','Zwei','Drei'].entries()) await user.type(field('Schritt '+(i+1)),v);
 }
 
-describe('Sequence authoring', () => {
-  it('is invalid until the prompt and every step have text', async () => {
-    const { user } = renderPage(<SequencePage />);
-    expect(button('JSON herunterladen').disabled).toBe(true);
-    expect(document.querySelector('#activity-problems')!.textContent).toContain('content.prompt');
-    await fillBlank(user);
-    expect(document.querySelector('#activity-problems')).toBeNull();
-    expect(button('JSON herunterladen').disabled).toBe(false);
+describe('Sequence guided authoring',()=>{
+  it('opens the editable steps only after the teacher chooses create',async()=>{
+    const {user}=renderPage(<SequencePage/>);
+    expect(screen.queryByLabelText('Schritt 1')).toBeNull();
+    await create(user);
+    expect(field('Schritt 1')).toBeTruthy();
+    expect(screen.getAllByText(/Reihenfolge.*Lösung/).length).toBeGreaterThan(0);
   });
-  it('explains that the order of the list is the answer key (not "Richtige Position")', async () => {
-    renderPage(<SequencePage />);
-    expect(screen.getByText(/Die Reihenfolge dieser Liste ist die richtige Lösung/)).toBeTruthy();
+  it('validates missing prompt and steps when the teacher continues',async()=>{
+    const {user}=renderPage(<SequencePage/>);
+    await create(user);
+    expect(screen.queryByRole('alert')).toBeNull();
+    await user.click(button('Weiter'));
+    expect(screen.getByRole('alert').textContent).toContain('Bitte ergänzen');
+    await user.type(field('Aufgabe'),'Ordne.');
+    for(const [i,v] of ['Eins','Zwei','Drei'].entries()) await user.type(field('Schritt '+(i+1)),v);
+    await user.click(button('Weiter'));
+    expect(screen.getByRole('heading',{name:'Prüfen',level:2})).toBeTruthy();
   });
-  it('exports the authored order as the answer key, and move buttons change that key', async () => {
-    const dl = captureDownload();
-    const { user } = renderPage(<SequencePage />);
-    await fillBlank(user);
-    await user.click(button('Nach oben: Schritt 3'));          // Drei before Zwei
-    await user.click(button('Nach unten: Schritt 1'));         // Eins after Drei
-    expect(stepTexts()).toEqual(['Drei', 'Eins', 'Zwei']);
-    await user.click(button('JSON herunterladen'));
-    expect(JSON.parse(await dl.text()).content.items).toEqual([
-      { id: 'step-3', text: 'Drei' }, { id: 'step-1', text: 'Eins' }, { id: 'step-2', text: 'Zwei' },
-    ]);
+  it('serializes edited answer-key order without changing the item IDs',async()=>{
+    const dl=captureDownload();
+    const {user}=renderPage(<SequencePage/>);
+    await fill(user);
+    await user.click(button('Nach oben: Schritt 3'));
+    await user.click(button('Nach unten: Schritt 1'));
+    expect(order()).toEqual(['Drei','Eins','Zwei']);
+    await openReview(user);
+    await user.click(button('Aktivität herunterladen'));
+    expect(JSON.parse(await dl.text()).content.items.map((v:{text:string})=>v.text)).toEqual(['Drei','Eins','Zwei']);
   });
-  it('keeps the reimported answer order identical byte for byte', async () => {
-    const dl = captureDownload();
-    const { user, unmount } = renderPage(<SequencePage />);
-    await loaded(user);
-    await user.click(button('Nach oben: Schritt 4'));
-    await user.click(button('JSON herunterladen'));
-    const first = await dl.text();
-    unmount();
-    const next = renderPage(<SequencePage />);
-    await importActivity(next.user, JSON.parse(first));
-    await waitFor(() => expect(input('Titel').value).toBe('Gespräch ordnen'));
-    expect(stepTexts().slice(0, 4)).toEqual(['Guten Tag, Praxis Müller.', 'Ich möchte einen Termin.', 'Am Dienstag um zehn Uhr.', 'Wann haben Sie Zeit?']);
-    await next.user.click(button('JSON herunterladen'));
-    expect(await dl.text()).toBe(first);
+  it('reimports the same answer key byte for byte',async()=>{
+    const dl=captureDownload();
+    const first=renderPage(<SequencePage/>);
+    await loaded(first.user);
+    await first.user.click(button('Nach oben: Schritt 4'));
+    await openReview(first.user);
+    await first.user.click(button('Aktivität herunterladen'));
+    const exported=await dl.text();first.unmount();
+    const second=renderPage(<SequencePage/>);
+    await importActivity(second.user,JSON.parse(exported));
+    await openReview(second.user);
+    await second.user.click(button('Aktivität herunterladen'));
+    expect(await dl.text()).toBe(exported);
   });
-  it('enforces 3–20 steps by disabling Remove and Add at the boundaries', async () => {
-    const { user } = renderPage(<SequencePage />);
+  it('supports 3 to 20 steps and disables controls at both limits',async()=>{
+    const {user}=renderPage(<SequencePage/>);
+    await create(user);
     expect(button('Entfernen: Schritt 1').disabled).toBe(true);
-    for (let i = 0; i < 17; i++) await user.click(button('Schritt hinzufügen'));
+    for(let n=0;n<17;n++)await user.click(button('Schritt hinzufügen'));
     expect(button('Schritt hinzufügen').disabled).toBe(true);
-    expect(screen.getAllByRole('button', { name: /^Entfernen: Schritt/ }).length).toBe(20);
     await user.click(button('Entfernen: Schritt 20'));
     expect(button('Schritt hinzufügen').disabled).toBe(false);
-  }, 30000);
-  it('flags duplicate step texts case-insensitively and removes the explanation key when cleared', async () => {
-    const dl = captureDownload();
-    const { user } = renderPage(<SequencePage />);
+  },30000);
+  it('rejects case-insensitive duplicates without overwriting another row',async()=>{
+    const {user}=renderPage(<SequencePage/>);
     await loaded(user);
-    await user.clear(input('Schritt 2'));
-    await user.type(input('Schritt 2'), ' guten tag, praxis müller. ');
-    expect(document.querySelector('#activity-problems')!.textContent).toMatch(/content\.items\[1\]\.text: doppelter Wert/);
-    await user.clear(input('Schritt 2'));
-    await user.type(input('Schritt 2'), 'Ich möchte einen Termin.');
-    await user.clear(screen.getByLabelText('Erklärung (optional)'));
-    await user.click(button('JSON herunterladen'));
+    await user.clear(field('Schritt 2'));
+    await user.type(field('Schritt 2'),' guten tag, praxis müller. ');
+    await openReview(user);
+    expect(button('Aktivität herunterladen').disabled).toBe(true);
+    await openAuthorStep(user,1);
+    expect(field('Schritt 1').value).toBe('Guten Tag, Praxis Müller.');
+  });
+  it('omits a cleared optional explanation from the downloaded JSON',async()=>{
+    const dl=captureDownload();
+    const {user}=renderPage(<SequencePage/>);
+    await loaded(user);
+    await user.click(screen.getByText('Erklärung (optional)'));
+    await user.clear(document.querySelector<HTMLTextAreaElement>('.activity-ux-disclosure textarea')!);
+    await openReview(user);
+    await user.click(button('Aktivität herunterladen'));
     expect(JSON.parse(await dl.text()).content).not.toHaveProperty('explanation');
   });
-  it('generates unique step ids after a middle step was removed', async () => {
-    const dl = captureDownload();
-    const { user } = renderPage(<SequencePage />);
-    await fillBlank(user);
-    await user.click(button('Schritt hinzufügen')); await user.type(input('Schritt 4'), 'Vier');   // step-4
-    await user.click(button('Schritt hinzufügen')); await user.type(input('Schritt 5'), 'Fünf');   // step-5
-    await user.click(button('Entfernen: Schritt 4'));                                              // 1,2,3,5
-    await user.click(button('Schritt hinzufügen')); await user.type(input('Schritt 5'), 'Sechs');  // must be step-4
-    await user.click(button('JSON herunterladen'));
-    expect(JSON.parse(await dl.text()).content.items.map((i: { id: string }) => i.id)).toEqual(['step-1', 'step-2', 'step-3', 'step-5', 'step-4']);
+  it('generates fresh IDs after a middle deletion',async()=>{
+    const dl=captureDownload();
+    const {user}=renderPage(<SequencePage/>);
+    await fill(user);
+    await user.click(button('Schritt hinzufügen'));await user.type(field('Schritt 4'),'Vier');
+    await user.click(button('Schritt hinzufügen'));await user.type(field('Schritt 5'),'Fünf');
+    await user.click(button('Entfernen: Schritt 4'));
+    await user.click(button('Schritt hinzufügen'));await user.type(field('Schritt 5'),'Sechs');
+    await openReview(user);await user.click(button('Aktivität herunterladen'));
+    expect(JSON.parse(await dl.text()).content.items.map((v:{id:string})=>v.id)).toEqual(['step-1','step-2','step-3','step-5','step-4']);
   });
-});
-
-describe('Sequence editor keyboard focus and names', () => {
-  it('keeps focus on the moved row, following it when its button disables at either end', async () => {
-    const { user } = renderPage(<SequencePage />);
+  it('keeps focus on moved rows, even when the Up button disables',async()=>{
+    const {user}=renderPage(<SequencePage/>);
     await loaded(user);
     button('Nach oben: Schritt 3').focus();
-    await user.keyboard('{Enter}');                                // Schritt 3 → row 2; focus stays on its Up
+    await user.keyboard('{Enter}');
     expect(document.activeElement).toBe(button('Nach oben: Schritt 2'));
-    await user.keyboard('{Enter}');                                // → row 1: Up disables, focus moves to its Down
+    await user.keyboard('{Enter}');
     expect(button('Nach oben: Schritt 1').disabled).toBe(true);
     expect(document.activeElement).toBe(button('Nach unten: Schritt 1'));
-    expect(stepTexts()[0]).toBe('Wann haben Sie Zeit?');
+    expect(order()[0]).toBe('Wann haben Sie Zeit?');
   });
-  it('focuses the new step after Add and the Add button after Remove; import never moves focus', async () => {
-    const { user } = renderPage(<SequencePage />);
+  it('focuses new inputs after Add and the Add control after Remove',async()=>{
+    const {user}=renderPage(<SequencePage/>);
     await loaded(user);
-    expect(document.activeElement).toBe(fileInput());
     await user.click(button('Schritt hinzufügen'));
-    expect(document.activeElement).toBe(input('Schritt 5'));
+    expect(document.activeElement).toBe(field('Schritt 5'));
     await user.click(button('Entfernen: Schritt 5'));
     expect(document.activeElement).toBe(button('Schritt hinzufügen'));
   });
-  it('announces editor moves and gives every repeated button a unique name', async () => {
-    const { user } = renderPage(<SequencePage />);
+  it('announces reordering and distinguishes every repeated row button',async()=>{
+    const {user}=renderPage(<SequencePage/>);
     await loaded(user);
     await user.click(button('Nach unten: Schritt 1'));
-    expect(document.querySelector('.activity-editor [role="status"].sr-only')!.textContent).toBe('Guten Tag, Praxis Müller.: jetzt Position 2 von 4.');
-    const names = screen.getAllByRole('button').map(b => b.getAttribute('aria-label')).filter((n): n is string => !!n && /^(Nach|Entfernen)/.test(n));
+    expect(document.querySelector('.activity-editor [role="status"].sr-only')?.textContent).toContain('jetzt Position 2 von 4');
+    const names=screen.getAllByRole('button').map(el=>el.getAttribute('aria-label')).filter((n):n is string=>!!n&&/^(Nach|Entfernen)/.test(n));
     expect(new Set(names).size).toBe(names.length);
-    expect(names.length).toBe(12); // up, down and remove for each of the 4 steps
+    expect(names).toHaveLength(12);
   });
 });

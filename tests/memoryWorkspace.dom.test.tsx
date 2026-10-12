@@ -27,9 +27,9 @@ describe('Memory unified entry without hosted writes', () => {
     expect(await screen.findByText('Datei gültig')).toBeTruthy();
     await user.click(screen.getByRole('button',{name:/Im Editor öffnen/}));
     expect(screen.getByDisplayValue('Wortschatz')).toBeTruthy();
-    await user.click(screen.getByRole('button',{name:'Paare'}));
+    await user.click(within(screen.getByRole('navigation',{name:'Neue Aktivität'})).getByRole('button',{name:/Paare/}));
     expect(screen.getByDisplayValue('Haus')).toBeTruthy();
-    await user.click(screen.getByRole('button',{name:'Prüfen'}));
+    await user.click(within(screen.getByRole('navigation',{name:'Neue Aktivität'})).getByRole('button',{name:/Prüfen/}));
     const review=screen.getByText(/Gemeinsam online spielen/).closest('.activity-memory-online') as HTMLElement;
     expect(within(review).getByRole('button',{name:/Online-Raum erstellen/})).toBeTruthy();
     await user.click(screen.getByRole('button',{name:'Aktivität herunterladen'}));

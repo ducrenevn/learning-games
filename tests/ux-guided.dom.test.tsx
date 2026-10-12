@@ -46,7 +46,7 @@ describe('guided Wave F entry and local authoring',()=>{
     }
     await user.click(button('Weiter'));
     expect(screen.getByRole('heading',{name:'Prüfen',level:2})).toBeTruthy();
-    expect(button('Präsentieren')).toBeTruthy();
+    expect(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button',{name:'Präsentieren'})).toBeTruthy();
     await user.click(button('Aktivität herunterladen'));
     expect(dl.names[0]).toMatch(/^sort_.*\.json$/);
     const data=JSON.parse(await dl.text());
@@ -63,12 +63,12 @@ describe('guided Wave F entry and local authoring',()=>{
     expect(screen.queryByRole('heading',{name:'Schritte',level:2})).toBeNull();
     await user.click(button('Im Editor öffnen'));
     expect(screen.getByDisplayValue('Gespräch ordnen')).toBeTruthy();
-    await user.click(button(/Prüfen/));
+    await user.click(within(document.querySelector('.activity-ux-navigation')!).getByRole('button',{name:/Prüfen/}));
     await user.click(button('Allein üben'));
     expect(document.querySelector('.activity-ux-play')).toBeTruthy();
     await user.selectOptions(screen.getByRole('combobox',{name:'Sprache'}),'en');
     expect(screen.getByText('Gespräch ordnen')).toBeTruthy();
-    expect(button('Back to editor')).toBeTruthy();
+    expect(document.querySelector('.activity-ux-back')?.textContent).toContain('Back to editor');
   });
   it('prepares a detective sentence as selectable words with separately authored corrections',async()=>{
     const {user}=renderPage(<DetectivePage/>);
