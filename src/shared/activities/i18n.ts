@@ -1,6 +1,6 @@
 import type { Locale, ValidationCode, Issue } from './contract';
 
-const messages = {
+export const messages = {
   de: {
     language: 'Sprache', create: 'Neu', import: 'JSON importieren', export: 'JSON herunterladen',
     edit: 'Bearbeiten', preview: 'Vorschau', present: 'Präsentieren', practice: 'Allein üben',
@@ -35,7 +35,7 @@ const messages = {
       text: 'muss Text sein', length: 'Länge / Pflichtfeld ungültig', slug: 'nur Kleinbuchstaben, Zahlen und Bindestriche',
       language: 'ungültiger Sprachcode', count: 'ungültige Anzahl', duplicate: 'doppelter Wert',
       reference: 'unbekannte Referenz', version: 'nicht unterstützte Version', format: 'unbekanntes Dateiformat',
-      kind: 'falscher Spieltyp', markup: 'HTML/Skripte sind nicht erlaubt', json: 'ungültige JSON-Datei',
+      kind: 'falscher Spieltyp', markup: 'HTML/Skripte sind nicht erlaubt', control: 'unzulässige Steuerzeichen', json: 'ungültige JSON-Datei',
       size: 'Datei zu groß (max. 128 KiB)'
     }
   },
@@ -73,7 +73,7 @@ const messages = {
       text: 'must be text', length: 'invalid length or blank', slug: 'use lowercase letters, digits, hyphens',
       language: 'invalid language tag', count: 'invalid number of entries', duplicate: 'duplicate value',
       reference: 'unknown reference', version: 'unsupported version', format: 'invalid file format',
-      kind: 'wrong game type', markup: 'HTML/scripts are not allowed', json: 'invalid JSON',
+      kind: 'wrong game type', markup: 'HTML/scripts are not allowed', control: 'contains invalid control characters', json: 'invalid JSON',
       size: 'file exceeds 128 KiB'
     }
   },
@@ -111,7 +111,7 @@ const messages = {
       text: 'phải là văn bản', length: 'độ dài không hợp lệ hoặc để trống', slug: 'chỉ chữ thường, số, dấu gạch nối',
       language: 'mã ngôn ngữ không hợp lệ', count: 'số lượng không hợp lệ', duplicate: 'giá trị trùng lặp',
       reference: 'tham chiếu không tồn tại', version: 'phiên bản không hỗ trợ', format: 'định dạng không hợp lệ',
-      kind: 'không đúng loại trò chơi', markup: 'không cho phép HTML/script', json: 'JSON không hợp lệ',
+      kind: 'không đúng loại trò chơi', markup: 'không cho phép HTML/script', control: 'chứa ký tự điều khiển không hợp lệ', json: 'JSON không hợp lệ',
       size: 'tệp vượt quá 128 KiB'
     }
   }

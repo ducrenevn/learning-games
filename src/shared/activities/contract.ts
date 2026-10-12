@@ -15,7 +15,7 @@ export interface ActivityBase<K extends ActivityType, C> {
 export type ValidationCode =
   | 'object' | 'unknown' | 'required' | 'text' | 'length' | 'slug'
   | 'language' | 'count' | 'duplicate' | 'reference' | 'version'
-  | 'format' | 'kind' | 'markup' | 'json' | 'size';
+  | 'format' | 'kind' | 'markup' | 'control' | 'json' | 'size';
 export interface Issue { path: string; code: ValidationCode }
 export interface Result<T> { value?: T; issues: Issue[] }
 export type Validator<T> = (raw: unknown) => Result<T>;
@@ -23,6 +23,17 @@ export type Validator<T> = (raw: unknown) => Result<T>;
 export const MAX_BYTES = 128 * 1024;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const LANGUAGE = /^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{2,8}){0,3}$/;
+// Control characters other than tab/LF/CR and unpaired UTF-16 surrogates never belong in teaching text.
+const FORBIDDEN_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+// Whitespace, control and invisible format characters (zero-width space/joiner, BOM, soft hyphen, bidi marks) are not content.
+const NO_VISIBLE_CONTENT = /^[\p{White_Space}\p{Cc}\p{Cf}]*$/u;
+const TAG_START = /<\/?[a-z]/i;
+const SCRIPT_URL = /javascript\s*:|data\s*:\s*text\/html/i;
+/** Linear-time equivalent of /<\/?[a-z][\s\S]*?>/i, which is quadratic on input such as "<a<a<a…". */
+function looksLikeMarkup(value: string) {
+  const start = TAG_START.exec(value);
+  return (start !== null && value.indexOf('>', start.index) !== -1) || SCRIPT_URL.test(value);
+}
 
 export function record(raw: unknown, path: string, allowed: readonly string[], issues: Issue[]): raw is Record<string, unknown> {
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
@@ -39,11 +50,10 @@ export function textField(obj: Record<string, unknown>, key: string, path: strin
   if (value === undefined) { issues.push({ path: location, code: 'required' }); return; }
   if (typeof value !== 'string') { issues.push({ path: location, code: 'text' }); return; }
   const length = Array.from(value).length;
-  if (length < min || length > max || value.trim().length === 0) issues.push({ path: location, code: 'length' });
+  if (length < min || length > max || NO_VISIBLE_CONTENT.test(value)) { issues.push({ path: location, code: 'length' }); return; }
+  if (FORBIDDEN_CHARS.test(value)) { issues.push({ path: location, code: 'control' }); return; }
   // All authored text is rendered as React text, never HTML. Reject explicit markup as a second safeguard.
-  if (/<\/?[a-z][\s\S]*?>/i.test(value) || /javascript\s*:/i.test(value) || /data\s*:\s*text\/html/i.test(value)) {
-    issues.push({ path: location, code: 'markup' });
-  }
+  if (looksLikeMarkup(value)) issues.push({ path: location, code: 'markup' });
 }
 export function optionalText(obj: Record<string, unknown>, key: string, path: string, max: number, issues: Issue[]) {
   if (Object.hasOwn(obj, key)) textField(obj, key, path, 1, max, issues);
@@ -54,6 +64,7 @@ export function slugField(obj: Record<string, unknown>, key: string, path: strin
 }
 export function arrayField(obj: Record<string, unknown>, key: string, path: string, min: number, max: number, issues: Issue[]): unknown[] {
   const value = obj[key], location = path ? path + '.' + key : key;
+  if (value === undefined) { issues.push({ path: location, code: 'required' }); return []; }
   if (!Array.isArray(value)) { issues.push({ path: location, code: 'count' }); return []; }
   if (value.length < min || value.length > max) issues.push({ path: location, code: 'count' });
   return value.slice(0, max + 1);
