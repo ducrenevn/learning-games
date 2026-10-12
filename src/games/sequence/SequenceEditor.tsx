@@ -42,13 +42,13 @@ export function SequenceEditor({ activity, onChange, locale }: EditorProps<Seque
       <button type="button" className="button secondary" data-add disabled={items.length >= 20}
         onClick={() => { update({ items: [...items, { id: nextId(items.map(v => v.id)), text: '' }] }); list.rowAdded(); }}>{t(locale, 'addStep')}</button>
     </div>
-    <label className="activity-field">{t(locale, 'explanation')}
+    <details className="activity-ux-disclosure"><summary>{t(locale, 'explanation')}</summary><label className="activity-field">
       <textarea className="field" rows={3} value={activity.content.explanation ?? ''} onChange={e => {
         const content = { ...activity.content };
         if (e.target.value) content.explanation = e.target.value;
         else delete content.explanation;
         onChange({ ...activity, content });
       }}/>
-    </label>
+    </label></details>
   </div>;
 }
