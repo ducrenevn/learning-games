@@ -14,4 +14,4 @@ After a game has a **final approved, implemented schema/validator**, store real 
 
 Evidence levels: **draft** (not fully validated), **schema-validated** (name the validator/version), **classroom-tested** (genuinely used; date/context without personal data). Never label a file classroom-tested merely because it reads well. Suggest edits via reviewed commits/PRs, don't silently overwrite proven content, and don't auto-publish repository files to the live app.
 
-**Privacy:** only reusable teaching prompts, instructions and approved answers; no learner identities, submitted answers, recorded student speech, room capabilities or live session state. Mechanics/specifications remain under [docs/activity-specs](../docs/activity-specs).
+**Privacy:** only reusable teaching prompts, instructions and approved answers; no learner identities, submitted answers, recorded student speech, room capabilities or live session state. Mechanics/specifications remain under [docs/activity-specs](../docs/games).
