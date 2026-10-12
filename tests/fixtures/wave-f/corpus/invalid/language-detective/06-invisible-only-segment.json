@@ -1,0 +1,45 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "language-detective",
+  "id": "ich-habe-zeit",
+  "title": "Ich habe heute Zeit",
+  "targetLanguage": "de",
+  "instructions": "Markiere fehlerhafte Textteile und vergleiche die Lösungen.",
+  "content": {
+    "prompt": "Finde einen Fehler im Satz.",
+    "segments": [
+      {
+        "id": "segment-1",
+        "text": "​​"
+      },
+      {
+        "id": "segment-2",
+        "text": "haben"
+      },
+      {
+        "id": "segment-3",
+        "text": "heute"
+      },
+      {
+        "id": "segment-4",
+        "text": "am"
+      },
+      {
+        "id": "segment-5",
+        "text": "Nachmittag"
+      },
+      {
+        "id": "segment-6",
+        "text": "Zeit."
+      }
+    ],
+    "issues": [
+      {
+        "segmentId": "segment-2",
+        "correction": "habe",
+        "explanation": "Das Verb wird in der ersten Person Singular mit „ich“ als „habe“ konjugiert."
+      }
+    ]
+  }
+}

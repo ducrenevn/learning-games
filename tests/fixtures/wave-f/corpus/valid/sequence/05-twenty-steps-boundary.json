@@ -1,0 +1,94 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sequence",
+  "id": "twenty-steps-boundary",
+  "title": "Boundary: 20 Schritte",
+  "targetLanguage": "de",
+  "instructions": "Technisches Testmaterial, keine Unterrichtsvorlage.",
+  "content": {
+    "prompt": "Technische Reihenfolge für den Grenzwert.",
+    "items": [
+      {
+        "id": "step-1",
+        "text": "Schritt 01"
+      },
+      {
+        "id": "step-2",
+        "text": "Schritt 02"
+      },
+      {
+        "id": "step-3",
+        "text": "Schritt 03"
+      },
+      {
+        "id": "step-4",
+        "text": "Schritt 04"
+      },
+      {
+        "id": "step-5",
+        "text": "Schritt 05"
+      },
+      {
+        "id": "step-6",
+        "text": "Schritt 06"
+      },
+      {
+        "id": "step-7",
+        "text": "Schritt 07"
+      },
+      {
+        "id": "step-8",
+        "text": "Schritt 08"
+      },
+      {
+        "id": "step-9",
+        "text": "Schritt 09"
+      },
+      {
+        "id": "step-10",
+        "text": "Schritt 10"
+      },
+      {
+        "id": "step-11",
+        "text": "Schritt 11"
+      },
+      {
+        "id": "step-12",
+        "text": "Schritt 12"
+      },
+      {
+        "id": "step-13",
+        "text": "Schritt 13"
+      },
+      {
+        "id": "step-14",
+        "text": "Schritt 14"
+      },
+      {
+        "id": "step-15",
+        "text": "Schritt 15"
+      },
+      {
+        "id": "step-16",
+        "text": "Schritt 16"
+      },
+      {
+        "id": "step-17",
+        "text": "Schritt 17"
+      },
+      {
+        "id": "step-18",
+        "text": "Schritt 18"
+      },
+      {
+        "id": "step-19",
+        "text": "Schritt 19"
+      },
+      {
+        "id": "step-20",
+        "text": "Schritt 20"
+      }
+    ]
+  }
+}

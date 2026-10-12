@@ -1,0 +1,53 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sort",
+  "id": "loi-chao-tieng-viet",
+  "title": "Lời chào và tạm biệt",
+  "targetLanguage": "vi",
+  "instructions": "Xếp các câu vào nhóm phù hợp.",
+  "content": {
+    "categories": [
+      {
+        "id": "category-1",
+        "label": "Lời chào"
+      },
+      {
+        "id": "category-2",
+        "label": "Lời tạm biệt"
+      }
+    ],
+    "items": [
+      {
+        "id": "card-1",
+        "text": "Xin chào",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-2",
+        "text": "Chào buổi sáng",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-3",
+        "text": "Rất vui được gặp bạn",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-4",
+        "text": "Xin tạm biệt",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-5",
+        "text": "Hẹn gặp lại",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-6",
+        "text": "Chúc ngủ ngon",
+        "categoryId": "category-2"
+      }
+    ]
+  }
+}

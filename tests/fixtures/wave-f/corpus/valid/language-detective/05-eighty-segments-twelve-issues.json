@@ -1,0 +1,396 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "language-detective",
+  "id": "eighty-segments-twelve-issues",
+  "title": "Boundary: 80 Segmente",
+  "targetLanguage": "de",
+  "instructions": "Technisches Testmaterial, keine Unterrichtsvorlage.",
+  "content": {
+    "prompt": "Grenzwerttest mit zwölf markierten Segmenten.",
+    "segments": [
+      {
+        "id": "segment-1",
+        "text": "Wort01"
+      },
+      {
+        "id": "segment-2",
+        "text": "Wort02"
+      },
+      {
+        "id": "segment-3",
+        "text": "Wort03"
+      },
+      {
+        "id": "segment-4",
+        "text": "Wort04"
+      },
+      {
+        "id": "segment-5",
+        "text": "Wort05"
+      },
+      {
+        "id": "segment-6",
+        "text": "Wort06"
+      },
+      {
+        "id": "segment-7",
+        "text": "Wort07"
+      },
+      {
+        "id": "segment-8",
+        "text": "Wort08"
+      },
+      {
+        "id": "segment-9",
+        "text": "Wort09"
+      },
+      {
+        "id": "segment-10",
+        "text": "Wort10"
+      },
+      {
+        "id": "segment-11",
+        "text": "Wort11"
+      },
+      {
+        "id": "segment-12",
+        "text": "Wort12"
+      },
+      {
+        "id": "segment-13",
+        "text": "Wort13"
+      },
+      {
+        "id": "segment-14",
+        "text": "Wort14"
+      },
+      {
+        "id": "segment-15",
+        "text": "Wort15"
+      },
+      {
+        "id": "segment-16",
+        "text": "Wort16"
+      },
+      {
+        "id": "segment-17",
+        "text": "Wort17"
+      },
+      {
+        "id": "segment-18",
+        "text": "Wort18"
+      },
+      {
+        "id": "segment-19",
+        "text": "Wort19"
+      },
+      {
+        "id": "segment-20",
+        "text": "Wort20"
+      },
+      {
+        "id": "segment-21",
+        "text": "Wort21"
+      },
+      {
+        "id": "segment-22",
+        "text": "Wort22"
+      },
+      {
+        "id": "segment-23",
+        "text": "Wort23"
+      },
+      {
+        "id": "segment-24",
+        "text": "Wort24"
+      },
+      {
+        "id": "segment-25",
+        "text": "Wort25"
+      },
+      {
+        "id": "segment-26",
+        "text": "Wort26"
+      },
+      {
+        "id": "segment-27",
+        "text": "Wort27"
+      },
+      {
+        "id": "segment-28",
+        "text": "Wort28"
+      },
+      {
+        "id": "segment-29",
+        "text": "Wort29"
+      },
+      {
+        "id": "segment-30",
+        "text": "Wort30"
+      },
+      {
+        "id": "segment-31",
+        "text": "Wort31"
+      },
+      {
+        "id": "segment-32",
+        "text": "Wort32"
+      },
+      {
+        "id": "segment-33",
+        "text": "Wort33"
+      },
+      {
+        "id": "segment-34",
+        "text": "Wort34"
+      },
+      {
+        "id": "segment-35",
+        "text": "Wort35"
+      },
+      {
+        "id": "segment-36",
+        "text": "Wort36"
+      },
+      {
+        "id": "segment-37",
+        "text": "Wort37"
+      },
+      {
+        "id": "segment-38",
+        "text": "Wort38"
+      },
+      {
+        "id": "segment-39",
+        "text": "Wort39"
+      },
+      {
+        "id": "segment-40",
+        "text": "Wort40"
+      },
+      {
+        "id": "segment-41",
+        "text": "Wort41"
+      },
+      {
+        "id": "segment-42",
+        "text": "Wort42"
+      },
+      {
+        "id": "segment-43",
+        "text": "Wort43"
+      },
+      {
+        "id": "segment-44",
+        "text": "Wort44"
+      },
+      {
+        "id": "segment-45",
+        "text": "Wort45"
+      },
+      {
+        "id": "segment-46",
+        "text": "Wort46"
+      },
+      {
+        "id": "segment-47",
+        "text": "Wort47"
+      },
+      {
+        "id": "segment-48",
+        "text": "Wort48"
+      },
+      {
+        "id": "segment-49",
+        "text": "Wort49"
+      },
+      {
+        "id": "segment-50",
+        "text": "Wort50"
+      },
+      {
+        "id": "segment-51",
+        "text": "Wort51"
+      },
+      {
+        "id": "segment-52",
+        "text": "Wort52"
+      },
+      {
+        "id": "segment-53",
+        "text": "Wort53"
+      },
+      {
+        "id": "segment-54",
+        "text": "Wort54"
+      },
+      {
+        "id": "segment-55",
+        "text": "Wort55"
+      },
+      {
+        "id": "segment-56",
+        "text": "Wort56"
+      },
+      {
+        "id": "segment-57",
+        "text": "Wort57"
+      },
+      {
+        "id": "segment-58",
+        "text": "Wort58"
+      },
+      {
+        "id": "segment-59",
+        "text": "Wort59"
+      },
+      {
+        "id": "segment-60",
+        "text": "Wort60"
+      },
+      {
+        "id": "segment-61",
+        "text": "Wort61"
+      },
+      {
+        "id": "segment-62",
+        "text": "Wort62"
+      },
+      {
+        "id": "segment-63",
+        "text": "Wort63"
+      },
+      {
+        "id": "segment-64",
+        "text": "Wort64"
+      },
+      {
+        "id": "segment-65",
+        "text": "Wort65"
+      },
+      {
+        "id": "segment-66",
+        "text": "Wort66"
+      },
+      {
+        "id": "segment-67",
+        "text": "Wort67"
+      },
+      {
+        "id": "segment-68",
+        "text": "Wort68"
+      },
+      {
+        "id": "segment-69",
+        "text": "Wort69"
+      },
+      {
+        "id": "segment-70",
+        "text": "Wort70"
+      },
+      {
+        "id": "segment-71",
+        "text": "Wort71"
+      },
+      {
+        "id": "segment-72",
+        "text": "Wort72"
+      },
+      {
+        "id": "segment-73",
+        "text": "Wort73"
+      },
+      {
+        "id": "segment-74",
+        "text": "Wort74"
+      },
+      {
+        "id": "segment-75",
+        "text": "Wort75"
+      },
+      {
+        "id": "segment-76",
+        "text": "Wort76"
+      },
+      {
+        "id": "segment-77",
+        "text": "Wort77"
+      },
+      {
+        "id": "segment-78",
+        "text": "Wort78"
+      },
+      {
+        "id": "segment-79",
+        "text": "Wort79"
+      },
+      {
+        "id": "segment-80",
+        "text": "Wort80"
+      }
+    ],
+    "issues": [
+      {
+        "segmentId": "segment-1",
+        "correction": "Korrektur01",
+        "explanation": "Testhinweis für Segment 1."
+      },
+      {
+        "segmentId": "segment-7",
+        "correction": "Korrektur07",
+        "explanation": "Testhinweis für Segment 7."
+      },
+      {
+        "segmentId": "segment-13",
+        "correction": "Korrektur13",
+        "explanation": "Testhinweis für Segment 13."
+      },
+      {
+        "segmentId": "segment-19",
+        "correction": "Korrektur19",
+        "explanation": "Testhinweis für Segment 19."
+      },
+      {
+        "segmentId": "segment-25",
+        "correction": "Korrektur25",
+        "explanation": "Testhinweis für Segment 25."
+      },
+      {
+        "segmentId": "segment-31",
+        "correction": "Korrektur31",
+        "explanation": "Testhinweis für Segment 31."
+      },
+      {
+        "segmentId": "segment-37",
+        "correction": "Korrektur37",
+        "explanation": "Testhinweis für Segment 37."
+      },
+      {
+        "segmentId": "segment-43",
+        "correction": "Korrektur43",
+        "explanation": "Testhinweis für Segment 43."
+      },
+      {
+        "segmentId": "segment-49",
+        "correction": "Korrektur49",
+        "explanation": "Testhinweis für Segment 49."
+      },
+      {
+        "segmentId": "segment-55",
+        "correction": "Korrektur55",
+        "explanation": "Testhinweis für Segment 55."
+      },
+      {
+        "segmentId": "segment-61",
+        "correction": "Korrektur61",
+        "explanation": "Testhinweis für Segment 61."
+      },
+      {
+        "segmentId": "segment-67",
+        "correction": "Korrektur67",
+        "explanation": "Testhinweis für Segment 67."
+      }
+    ]
+  }
+}

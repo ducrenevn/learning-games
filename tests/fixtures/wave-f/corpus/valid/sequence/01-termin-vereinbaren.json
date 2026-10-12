@@ -1,0 +1,35 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sequence",
+  "id": "termin-vereinbaren",
+  "title": "Einen Termin vereinbaren",
+  "targetLanguage": "de",
+  "instructions": "Bringe die Schritte in die richtige Reihenfolge.",
+  "content": {
+    "prompt": "Ordne die Gesprächsschritte beim Terminvereinbaren.",
+    "items": [
+      {
+        "id": "step-1",
+        "text": "Guten Tag, hier ist das Hotel am Markt."
+      },
+      {
+        "id": "step-2",
+        "text": "Ich möchte gern einen Termin vereinbaren."
+      },
+      {
+        "id": "step-3",
+        "text": "Haben Sie am Dienstag noch einen freien Termin?"
+      },
+      {
+        "id": "step-4",
+        "text": "Ja, um 14 Uhr wäre etwas frei."
+      },
+      {
+        "id": "step-5",
+        "text": "Vielen Dank, bis Dienstag."
+      }
+    ],
+    "explanation": "Zuerst begrüßt man sich, dann fragt man nach dem Termin und bestätigt ihn."
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sort",
+  "id": "gastro-arbeitsbereiche",
+  "title": "Küche oder Service?",
+  "targetLanguage": "de",
+  "instructions": "Sortiere die Arbeitsmittel nach ihrem typischen Einsatzbereich.",
+  "content": {
+    "categories": [
+      {
+        "id": "category-1",
+        "label": "Küche"
+      },
+      {
+        "id": "category-2",
+        "label": "Service"
+      }
+    ],
+    "items": [
+      {
+        "id": "card-1",
+        "text": "Kochmesser",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-2",
+        "text": "Schneidebrett",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-3",
+        "text": "Küchenwaage",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-4",
+        "text": "Backblech",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-5",
+        "text": "Speisekarte",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-6",
+        "text": "Bestellblock",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-7",
+        "text": "Serviertablett",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-8",
+        "text": "Rechnung für den Gast",
+        "categoryId": "category-2"
+      }
+    ]
+  }
+}
