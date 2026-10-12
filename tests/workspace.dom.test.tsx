@@ -140,6 +140,27 @@ describe('unsaved-edit protection', () => {
   });
 });
 
+describe('New form', () => {
+  it('resets to a blank invalid template, asking first when there are unexported edits', async () => {
+    const { user } = renderPage(<SortPage />);
+    await importActivity(user, sortFixture());
+    await waitFor(() => expect(field(/Titel/).value).toBe('Artikel sortieren'));
+    // freshly imported: nothing to lose, so no confirmation
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await user.type(field(/Titel/), '!');
+    await user.click(screen.getByRole('button', { name: 'Neu' }));
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(field(/Titel/).value).toBe('Artikel sortieren!');          // declined: draft kept
+    confirm.mockReturnValue(true);
+    await user.click(screen.getByRole('button', { name: 'Neu' }));
+    expect(field(/Titel/).value).toBe('Sort');
+    expect(screen.getByText('Datei zum Export bereit')).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Vorschau' }) as HTMLButtonElement).disabled).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Neu' }));  // clean again: no further prompt
+    expect(confirm).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe('mode navigation', () => {
   it('disables Preview, Present and Practice while the draft is invalid and offers the problem list', async () => {
     const { user } = renderPage(<SortPage />);
