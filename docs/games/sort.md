@@ -1,26 +1,42 @@
-# LG-A1 — Sort (categorization)
-**PLANNING v0.1 · NOT approved for implementation · 2026-10-12.** Teacher-directed generic categorization; **not a German grammar engine**. German articles/cases are possible [pedagogical applications](../../library/sort/README.md), not built-in exercises.
+# LG-A1 — Sort
+**Build scope approved 2026-10-12 for local Presentation and Independent Modes; NOT YET IMPLEMENTED.** See [Wave F baseline](../architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md) for shared envelope, security and release gates; [pedagogical uses](../../library/sort/README.md) are *ideas*, never hardcoded categories.
 
-## What Sort does
-The teacher defines named categories and text cards (words, phrases or sentences), each with **one correct category**. The learner assigns each card; no built-in knowledge of grammar, case, vocabulary or level. Ordering/Sequence is a separate deferred mechanic. Historical umbrella slug `sort-sequence` is not a finalized portable file type.
+## Mechanic
+Teacher authors 2–5 arbitrary categories and 4–30 words/phrases/sentences. Exactly one teacher-designated correct category per card. The game does not parse German articles, Kasus or any domain knowledge. Sequence/order is its own game, not a Sort submode.
 
-## Proposed teacher flow
-Select Sort → manually author or import local JSON → validate with field-level messages → preview/edit categories, items and answers → local play/projector view → export edited JSON → reimport without loss. No account, remote persistence, or backend needed. Browser file download does not guarantee autosave.
+## Content payload (v1)
+```json
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sort",
+  "id": "example-sorting-task",
+  "title": "Begriffe sortieren",
+  "targetLanguage": "de",
+  "instructions": "Ordne die Begriffe zu.",
+  "content": {
+    "categories": [
+      {"id": "left", "label": "Kategorie A"},
+      {"id": "right", "label": "Kategorie B"}
+    ],
+    "items": [
+      {"id": "a", "text": "Begriff A", "categoryId": "left", "explanation": "Optional"},
+      {"id": "b", "text": "Begriff B", "categoryId": "right"}
+    ]
+  }
+}
+```
+*Illustration only, not a stored or classroom-tested activity.* Add at least 4 cards for v1 validation.
 
-## Proposed student flow
-Shuffled unplaced cards. Choose a card and place it in a category, with pointer/touch/keyboard; **select-then-place must work without drag**. Allow moving placed cards. Explicit Check reveals correct/incorrect indicators (not color alone), summary and optional teacher-authored explanations; Retry and Reset. No compulsory timer/leaderboard or automatic language assessment. Do not intentionally show answer key before checking (local browser cannot offer strict answer secrecy).
+## Validation
+2–5 distinct category IDs and nonblank labels (1–80 chars); 4–30 distinct item IDs and nonblank texts (1–240 chars); every `categoryId` references an existing category. Optional `explanation` 1–1,000 chars. IDs use the Wave F slug rule. Prevent duplicate labels within one activity after trim/case-fold; avoid ambiguous identical-looking cards. Reject unknown keys, malformed types, unsupported versions and overlarge files. No student/session data.
 
-## Candidate portable schema — explicitly NOT final
-Envelope could use `format`, `schemaVersion`, `activityType`, `id`, `title`, `targetLanguage`, `instructions` and `content`. Candidate `activityType: "sort"`, `content.mode: "categorize"`, `categories: [{id,label}]`, `items: [{id,text,categoryId,context?,explanation?}]`.
-**Provisional guardrails:** 2–5 categories, 4–30 items, 128 KiB maximum JSON; unique IDs, resolvable category references and one correct category per card. These numbers, field names, slug, enum behavior and version strategy all require owner signoff. Treat files as untrusted data; reject/neutralize scripts, unsupported schema versions, unknown unsafe material and excessive text/nesting. Never export learner names, responses, room codes, tokens or session state.
+## Teacher and player workflow
+- Teacher can add/remove/edit categories and items and change correct assignment; validation before Preview/Play/Export, explicit unsaved-edit affordance.
+- Play starts with shuffled cards and empty category trays. Keyboard/tap select-and-place required; drag/drop is optional enhancement only. Cards remain movable until Check.
+- **Presentation:** projected readable board; teacher explicitly checks and reveals explanations; discussion can happen orally. Manually passing the mouse to a student does not require networking.
+- **Independent:** student sorts, Check shows per-card right/wrong state and summary, Retry clears/re-enables placements. Clear, accessible feedback not dependent on color.
+- Keep canonical authoring order and answer key separate from ephemeral placement/shuffle. Never overwrite original content with runtime moves.
 
-## Initial modes
-- **Include:** teacher local author/import/edit/preview/export, local play, projector/in-person use on one device.
-- **Defer:** online rooms and synchronized student devices (separate hosted/Supabase RPC approval), printable worksheets, sequencing/order.
-- UI chrome/error messages DE/EN/VI; authored learning content stays unchanged. Reuse M3a localization only after its separate PR #10 release gate.
-
-## Tests needed AFTER implementation approval
-Import/validate/edit/preview/play/check/retry/export/reimport; malformed and oversized files, mismatched versions, duplicate IDs and broken assignments; inert markup, accessible mouse/touch/keyboard, 360/390px/mobile/tablet/desktop, DE/EN/VI UI, original content unchanged, Memory regression. No new hosted SQL or SPP Auth/Homework changes.
-
-## Before coding — owner decisions
-Finalize canonical type/envelope/schema and caps, unknown-field handling, teacher editor UX and unsaved changes, student feedback/reveal and drag behavior, local projection UX, acceptance fixtures. **This file does not authorize runtime implementation or a production deployment.**
+## Proof
+Validator boundaries/reference integrity; pure matching engine; no answer leaks before Check; item move/check/retry; pointer/touch/keyboard, DE/EN/VI UI, mobile widths, JSON roundtrip; Memory regression. No new RPC, backend, multiplayer or rooms.
