@@ -1,8 +1,10 @@
 # Product Catalog — Adult Language Activities
 
-**Status:** Product direction agreed in planning, 2026-10-09. **Not implemented.** This plan is for future milestones and does not change the current Memory game, its vocabulary format, production deployment, or SPP/Supabase contracts.
+**Status:** Strategic direction established 2026-10-09; three new local-first mechanics approved for development 2026-10-12, **not yet implemented**. This plan is for future milestones and does not change the current Memory game, its vocabulary format, production deployment, or SPP/Supabase contracts.
 
 **Agent routing update 2026-10-12:** This is the strategic, longer-term catalog. Lesson-planning agents should read the short [Game Map](GAME_MAP.md) then [activity-library](../library/README.md) instead. LG-A1 is now generic **Sort** (categorization only); Sequence/ordering is a separate deferred mechanic. The old `sort-sequence` label is historical and not an approved JSON file type.
+
+**Current build wave:** Sort (LG-A1), Sequence (LG-A2), Language Detective (LG-A3) are now individually specified in [docs/games](games/) and share [local-first baseline](architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md). Each is Presentation + Independent mode, no new backend. Future synchronized multiplayer remains separately gated.
 
 ## Purpose
 

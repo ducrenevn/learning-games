@@ -1,20 +1,18 @@
 # Learning Games — Agent Game Map
-**Short discovery index (2026-10-12)**. Read only the relevant link, not every game specification.
+**Short game-discovery index · 2026-10-12.** Start here, open only what the task needs.
 
-| Game | Status | Core mechanic | Teaching / specification |
+| Game | Status | Stage 1 mechanic | Spec / uses |
 | --- | --- | --- | --- |
-| Memory | **Implemented on main**; M3a localization PR #10 unmerged | Find matching pairs | [Existing contract](games/memory.md) |
-| Sort / LG-A1 | **Planning only** | Assign items to teacher-authored categories | [Mechanic draft](games/sort.md) · [Teaching uses](../library/sort/README.md) |
-| Sequence | Deferred, separate game mechanic | Put items in meaningful order | No approved contract |
-| Quick Response Board | Candidate | Submit short responses for discussion | [Strategic catalog](PRODUCT_CATALOG.md) |
-| Conversation Cards | Product-spec only | Speak from confidential complementary roles | [Specification](games/conversation-cards.md) |
-| Information Gap | Product-spec only | Exchange complementary missing information | [Specification](games/information-gap.md) |
-| Language Detective / Listen & Reconstruct | Candidates | Correct errors / rebuild heard information | [Strategic catalog](PRODUCT_CATALOG.md) |
+| Memory | **Playable on main**; M3a frontend PR #10 separate/unmerged at intake | Online and local pair matching | [Memory contract](games/memory.md) |
+| Sort / LG-A1 | **Authorized for next implementation, NOT yet built** | Categorize teacher-defined cards | [Spec](games/sort.md) · [Teaching library](../library/sort/README.md) |
+| Sequence / LG-A2 | **Authorized for next implementation, NOT yet built** | Arrange ordered cards/dialogue lines/steps | [Spec](games/sequence.md) |
+| Language Detective / LG-A3 | **Authorized for next implementation, NOT yet built** | Identify teacher-marked errors, review corrections | [Spec](games/language-detective.md) |
+| Conversation Cards | Specified; not in current implementation wave | Confidential role-based conversations | [Spec](games/conversation-cards.md) |
+| Information Gap | Specified; not in current implementation wave | Partner exchange of complementary facts | [Spec](games/information-gap.md) |
+| Quick Response Board, Listen & Reconstruct, others | Later candidates | Vary by game | [Product catalog](PRODUCT_CATALOG.md) |
 
-**Agent routes**
-- Lesson planning: this map → [teaching-library index](../library/README.md) → one relevant teaching guide; inspect a JSON only when reusing it.
-- JSON generation: this map → game's **approved** schema/spec → [portable-file policy](architecture/PORTABLE_ACTIVITY_FILES.md). Draft specs do not produce guaranteed import-ready files.
-- Development: [AGENTS.md](../AGENTS.md) → [START_HERE.md](START_HERE.md) → current code, tests, specific contracts.
-- Release verification: read [CURRENT_STATE](CURRENT_STATE.md), live GitHub main and PRs; planning is not deployed functionality.
+**Stage 1 of LG-A1/A2/A3:** [local-first contract](architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md) — teacher-operated **Presentation Mode** and student **Independent Mode**. Same teacher-owned portable JSON and game rules; no new backend, accounts, synchronized rooms, shared turns, or result storage. Multiplayer becomes a separately gated Stage 2. A locally imported file is not automatically shareable over a room link.
 
-Teaching uses may evolve via reviewed repo changes without altering mechanics. No account, live state, tokens, identities or student responses in portable activity JSON. Interface language DE/EN/VI is distinct from authored target language.
+**Lesson agents:** map → relevant [teaching library](../library/README.md) → specific content file if available. Technical game creators: map → particular game specification → [portable file rules](architecture/PORTABLE_ACTIVITY_FILES.md). Developers: [AGENTS](../AGENTS.md) → [START_HERE](START_HERE.md) → source/tests. Avoid reading all long docs by default.
+
+Authoring target language remains separate from DE/EN/VI interface localization. Library examples are not built-in presets or verified classroom files.

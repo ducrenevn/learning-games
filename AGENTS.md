@@ -23,3 +23,6 @@ Preserve unrelated and uncommitted work. Commit, push, merge to `main` or other 
 - `docs/games/` holds game mechanics and schema proposals; `library/<game>/` holds evolving lesson ideas and, after schema approval, real reusable JSON. No example is an app preset by default.
 - **LG-A1 Sort** is approved for **planning/documentation only**, not code: generic categorization, teacher-defined items/categories. Ordering/Sequence deferred.
 - Keep Memory M3a PR #10 release gate separate. No merge/deploy/hosted SPP changes from the documentation work.
+
+## Approved next development wave (2026-10-12)
+The owner authorized **implementation** of three local-first games (LG-A1 Sort, LG-A2 Sequence, LG-A3 Language Detective), using two delivery experiences: teacher-guided Presentation and student Independent Mode. Follow `docs/architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md` and per-game specs. This does **not** authorize new Supabase objects, remote sync, merged/deployed refs or SPP/Auth/Homework changes. Implementation → owner-arranged Sonnet review/fixes → owner manual testing → separate release decision. Do not mistake authorization to develop on an isolated branch for production permission.

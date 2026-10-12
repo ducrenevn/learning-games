@@ -25,3 +25,6 @@ Memory local needs no backend. Memory online uses public `VITE_SUPABASE_URL` and
 
 ## Goal
 Independent, adult-appropriate learning activity toolkit. Memory is implemented; Sort and other activities remain planning until separately approved.
+
+## Wave F — local teaching-game development (2026-10-12)
+A new control room is authorized to **build three frontend-only games**. Read [Wave F contract](architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md), then the three short specs [Sort](games/sort.md), [Sequence](games/sequence.md), [Language Detective](games/language-detective.md). The latest implementation instructions are in [IMMEDIATE_NEXT_PROMPT](IMMEDIATE_NEXT_PROMPT.md). Do not treat this authorization as permission to merge to main, deploy, or change Supabase. First implement, then Sonnet independent review/fixes, then owner testing.

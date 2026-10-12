@@ -17,3 +17,6 @@
 - Later sequence recommended: Conversation Cards → Information Gap. Memory polish/hardening backlog remains independent.
 
 **No permission** to merge, deploy, run SQL, change SPP Auth/Homework/RLS, add hosted RPCs, or store learner identities/results.
+
+## Wave F scope update (2026-10-12; planning docs, no implementation yet)
+Owner approved implementation of LG-A1 Sort, LG-A2 Sequence and LG-A3 Language Detective as **teacher-led Presentation Mode** and **individual Independent Mode** activities on existing frontend infrastructure. Detailed contracts: [Wave F](architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md), [Sort](games/sort.md), [Sequence](games/sequence.md), [Language Detective](games/language-detective.md). This docs PR itself contains no new runnable games. New control room implements all three; owner then requests Sonnet review/fixes before personal testing. No multiplayer, SQL, or hosted SPP changes authorized for this wave.
