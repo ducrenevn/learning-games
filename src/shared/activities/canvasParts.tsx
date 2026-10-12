@@ -4,7 +4,7 @@ import { u } from './uxCopy';
 import type { FieldAttrs } from './issues';
 
 /** A textarea that grows with its text, so titles, instructions and long steps are never truncated or hidden in a scroller. */
-export function AutoTextarea({ value, minRows = 1, className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement> & { value: string; minRows?: number }) {
+export function AutoTextarea({ value, minRows = 1, className, inputRef, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement> & { value: string; minRows?: number; inputRef?: (el: HTMLTextAreaElement | null) => void }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const fit = () => {
     const el = ref.current;
@@ -22,7 +22,7 @@ export function AutoTextarea({ value, minRows = 1, className, ...rest }: Textare
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-  return <textarea ref={ref} rows={minRows} className={className} value={value} {...rest} />;
+  return <textarea ref={el => { ref.current = el; inputRef?.(el); }} rows={minRows} className={className} value={value} {...rest} />;
 }
 
 /** Native names only; BCP-47 codes are an advanced detail behind "Other …". Stored value is still the plain language tag. */

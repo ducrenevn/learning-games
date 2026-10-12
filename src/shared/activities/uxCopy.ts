@@ -41,6 +41,7 @@ const copy = {
     ruleSequence:'Die Reihenfolge hier ist die Lösung. Lernende sehen die Schritte gemischt.', ruleMemory:'Jede Zeile ist ein Kartenpaar: links und rechts gehören zusammen.',
     ruleDetective:'Tippen Sie auf ein Wort, um es als Fehler zu markieren. Ohne Markierung ist der Satz fehlerfrei.',
     sentenceOne:'Satz', sentences:'Sätze',
+    yourOrder:'Deine Reihenfolge',
     localOnly:'Lokal · keine Anmeldung, keine automatische Weitergabe', importSummary:'Importierte Angaben', recheck:'Erneut prüfen',
   },
   en: {
@@ -83,6 +84,7 @@ const copy = {
     ruleSequence:'The order here is the answer. Learners see the steps shuffled.', ruleMemory:'Each row is a card pair: left and right belong together.',
     ruleDetective:'Tap a word to mark it as an error. A sentence with no marks has no error.',
     sentenceOne:'Sentence', sentences:'Sentences',
+    yourOrder:'Your order',
     localOnly:'Local · no account or automatic sharing', importSummary:'Imported content', recheck:'Check again',
   },
   vi: {
@@ -125,6 +127,7 @@ const copy = {
     ruleSequence:'Thứ tự ở đây là đáp án. Người học thấy các bước đã xáo trộn.', ruleMemory:'Mỗi dòng là một cặp thẻ: trái và phải thuộc về nhau.',
     ruleDetective:'Nhấn vào một từ để đánh dấu là lỗi. Câu không có dấu nào là câu không lỗi.',
     sentenceOne:'Câu', sentences:'Các câu',
+    yourOrder:'Thứ tự của bạn',
     localOnly:'Chỉ trong trình duyệt · không đăng nhập hoặc chia sẻ tự động', importSummary:'Nội dung đã nhập', recheck:'Kiểm tra lại',
   },
 } as const;

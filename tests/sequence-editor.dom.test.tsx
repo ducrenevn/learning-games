@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { SequencePage } from '../src/games/sequence/SequencePage';
+import { splitSteps } from '../src/games/sequence/SequenceEditor';
 import { captureDownload, importActivity,   renderPage } from './helpers/dom';
 import { sequenceFixture } from './helpers/fixtures';
 
@@ -17,7 +18,7 @@ async function loaded(user: UserEvent) {
   expect(field('Titel').value).toBe('Gespräch ordnen');
   
 }
-const order=()=>[...document.querySelectorAll<HTMLInputElement>('.activity-edit-row input.field')].map(el=>el.value);
+const order=()=>[...document.querySelectorAll<HTMLTextAreaElement>('.seq-edit textarea')].map(el=>el.value);
 
 async function expectBlocked(user:UserEvent,dl=captureDownload()){
   await user.click(button('Herunterladen'));
@@ -139,5 +140,86 @@ describe('Sequence guided authoring',()=>{
     const names=screen.getAllByRole('button').map(el=>el.getAttribute('aria-label')).filter((n):n is string=>!!n&&/^(Nach|Entfernen)/.test(n));
     expect(new Set(names).size).toBe(names.length);
     expect(names).toHaveLength(12);
+  });
+});
+
+describe('Sequence canvas: type, Enter, paste', () => {
+  it('shows the numbered rows of the answer key, not a form with a separate navigator', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await loaded(user);
+    expect(document.querySelectorAll('.seq-edit')).toHaveLength(4);
+    expect([...document.querySelectorAll('.seq-edit .seq-num')].map(n => n.textContent)).toEqual(['1', '2', '3', '4']);
+    expect(document.querySelector('.activity-ux-navigation')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Weiter' })).toBeNull();
+  });
+  it('Enter inserts a new step directly below and focuses it', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await loaded(user);
+    await user.click(field('Schritt 2'));
+    await user.keyboard('{Enter}');
+    expect(order()).toHaveLength(5);
+    expect(order()[2]).toBe('');
+    expect(document.activeElement).toBe(field('Schritt 3'));
+    expect(order()[1]).toBe('Ich möchte einen Termin.');
+  });
+  it('Enter does not put a line break into the step text', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await create(user);
+    await user.type(field('Schritt 1'), 'Eins{Shift>}{Enter}{/Shift}zwei');
+    expect(order()[0]).toBe('Eins zwei');
+  });
+  it('Backspace on an empty step removes it, keeps at least 3 and returns to the previous step', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await loaded(user);
+    await user.click(field('Schritt 4'));
+    await user.keyboard('{Enter}');                       // new empty step 5
+    expect(order()).toHaveLength(5);
+    await user.keyboard('{Backspace}');
+    expect(order()).toHaveLength(4);
+    expect(document.activeElement).toBe(field('Schritt 4'));
+    await user.click(button('Entfernen: Schritt 4'));    // down to 3
+    await user.click(field('Schritt 3'));
+    await user.clear(field('Schritt 3'));
+    await user.keyboard('{Backspace}');
+    expect(order()).toHaveLength(3);                      // never below the minimum
+  });
+  it('turns a pasted multi-line list into one step per line and drops list numbering', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await create(user);
+    await user.click(field('Schritt 1'));
+    await user.paste('1. Aufstehen\n2) Frühstücken\n- Zur Schule gehen\n\n• Lernen\nHeimgehen');
+    expect(order()).toEqual(['Aufstehen', 'Frühstücken', 'Zur Schule gehen', 'Lernen', 'Heimgehen', '', '']);
+    expect(document.querySelector('.activity-editor [role="status"].sr-only')?.textContent).toContain('5 Schritte');
+  });
+  it('inserts pasted lines after a filled row and caps at 20 with a message', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await loaded(user);
+    await user.click(field('Schritt 1'));
+    await user.paste(Array.from({ length: 30 }, (_, i) => 'Neu ' + (i + 1)).join('\n'));
+    expect(order()).toHaveLength(20);
+    expect(order()[0]).toBe('Guten Tag, Praxis Müller.');
+    expect(order()[1]).toBe('Neu 1');
+    expect(button('Schritt hinzufügen').disabled).toBe(true);
+    expect(document.querySelector('.activity-editor [role="status"].sr-only')?.textContent).toContain('höchstens 20');
+  });
+  it('a single pasted line stays an ordinary paste', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await create(user);
+    await user.click(field('Schritt 1'));
+    await user.paste('Nur eine Zeile');
+    expect(order()).toHaveLength(3);
+    expect(order()[0]).toBe('Nur eine Zeile');
+  });
+  it('lets long steps wrap instead of truncating them', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await create(user);
+    const long = 'Guten Tag, hier ist das Hotel am Marktplatz, wie kann ich Ihnen helfen?';
+    await user.type(field('Schritt 1'), long);
+    expect(field('Schritt 1').tagName).toBe('TEXTAREA');
+    expect(field('Schritt 1').value).toBe(long);
+  });
+  it('splits steps predictably', () => {
+    expect(splitSteps('1. a\n 2) b \n\n- c')).toEqual(['a', 'b', 'c']);
+    expect(splitSteps('Wort')).toEqual(['Wort']);
   });
 });

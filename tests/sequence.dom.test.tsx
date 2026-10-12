@@ -189,3 +189,34 @@ describe('Sequence play: modes, locales and text', () => {
     expect(within(document.querySelector('.activity-play')!).getAllByRole('listitem').length).toBe(20);
   }, 30000);
 });
+
+describe('Sequence play: slim rows and the answer key beside the learner order', () => {
+  it('does not repeat the prompt when it equals the instruction', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await play(user, 'Ausprobieren', a => { a.instructions = a.content.prompt; });
+    expect(document.querySelectorAll('.activity-play .play-prompt')).toHaveLength(0);
+    expect(playText().split(sequenceFixture().content.prompt).length - 1).toBe(1);
+  });
+  it('shows the prompt as a quiet second line when it differs', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await play(user);
+    expect(document.querySelectorAll('.activity-play .play-prompt')).toHaveLength(1);
+  });
+  it('after Reveal shows the learner order and the key side by side, with one key list', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await play(user);
+    expect(document.querySelector('.sequence-compare')!.classList.contains('two')).toBe(false);
+    await user.click(screen.getByRole('button', { name: 'Prüfen' }));
+    await user.click(screen.getByRole('button', { name: /Lösung & Erklärung/ }));
+    expect(document.querySelector('.sequence-compare')!.classList.contains('two')).toBe(true);
+    expect(screen.getByRole('heading', { name: 'Deine Reihenfolge' })).toBeTruthy();
+    expect(document.querySelectorAll('.activity-key')).toHaveLength(1);
+    expect(rows()).toHaveLength(4);
+  });
+  it('numbers every row visibly and keeps list semantics', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await play(user);
+    expect([...document.querySelectorAll('.sequence-card .seq-num')].map(n => n.textContent)).toEqual(['1', '2', '3', '4']);
+    expect(document.querySelector('ol.seq-rows')!.getAttribute('role')).toBe('list');
+  });
+});
