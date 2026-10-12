@@ -91,7 +91,13 @@ a:hover {
 .activity-item-tools { display:flex; flex-wrap:wrap; gap:6px; }
 .activity-item-tools .button { min-width:44px; min-height:44px; }
 .activity-play { margin-top:16px; }
-.activity-projected .activity-play { font-size:clamp(1.05rem,1.8vw,1.4rem); }
+/* Presentation mode is read from across a room: scale everything in the play panel, including the fixed-rem .lead/.small text. */
+.activity-projected .activity-play { font-size:clamp(1.15rem,2.1vw,1.8rem); }
+.activity-projected .activity-play h2 { font-size:1.6em; }
+.activity-projected .activity-play .lead { font-size:1.1em; }
+.activity-projected .activity-play .small { font-size:.85em; }
+.activity-projected .activity-play .button { min-height:56px; padding:.8rem 1.3rem; }
+.activity-projected .sort-card-choice, .activity-projected .detective-segment { min-height:64px; }
 .activity-play .lead { overflow-wrap:anywhere; }
 .activity-board { display:grid; gap:20px; min-width:0; }
 .sort-trays { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr)); gap:12px; }
