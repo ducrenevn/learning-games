@@ -16,6 +16,24 @@ export function useFocusFirstOnChange<T extends HTMLElement>(token: number) {
   return ref;
 }
 
+/**
+ * Editor lists: after the teacher adds a row, focus its first field; after removing one, focus the list's Add button
+ * (the removed row's own button no longer exists). Rows carry `data-row`, the Add button `data-add`. Only user actions
+ * request focus, so importing a file never moves it.
+ */
+export function useListFocus<T extends HTMLElement>() {
+  const rootRef = useRef<T>(null);
+  const [request, setRequest] = useState<{ kind: 'added' | 'removed' } | null>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!request || !root) return;
+    if (request.kind === 'removed') { root.querySelector<HTMLElement>('[data-add]:not([disabled])')?.focus(); return; }
+    const rows = root.querySelectorAll('[data-row]');
+    rows[rows.length - 1]?.querySelector<HTMLElement>('input, textarea, select')?.focus();
+  }, [request]);
+  return { rootRef, rowAdded: () => setRequest({ kind: 'added' }), rowRemoved: () => setRequest({ kind: 'removed' }) };
+}
+
 export type MoveDirection = 'up' | 'down';
 /** `data-move` value that a row's move buttons must carry so focus can follow the row after it is reordered. */
 export const moveKey = (id: string, direction: MoveDirection) => id + ':' + direction;

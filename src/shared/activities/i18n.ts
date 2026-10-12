@@ -32,6 +32,8 @@ export const messages = {
     all: 'Alle', answerKey: 'Lösungsschlüssel', mode: 'Modus',
     exportError: 'Export fehlgeschlagen', importKept: 'Das bisherige Formular wurde nicht verändert.',
     moreIssues: '… und {n} weitere', showProblems: 'Probleme anzeigen ({n})',
+    placeIn: '{card}: Kategorie wählen', announcePlaced: '{card} wurde der Kategorie {category} zugeordnet.',
+    announceCleared: 'Zuordnung von {card} zurückgenommen.', removeRow: 'Entfernen: {what}',
     problems: {
       object: 'muss ein Objekt sein', unknown: 'unbekanntes Feld', required: 'fehlt',
       text: 'muss Text sein', length: 'Länge / Pflichtfeld ungültig', slug: 'nur Kleinbuchstaben, Zahlen und Bindestriche',
@@ -72,6 +74,8 @@ export const messages = {
     all: 'All', answerKey: 'Answer key', mode: 'Mode',
     exportError: 'Export failed', importKept: 'Your current form was not changed.',
     moreIssues: '… and {n} more', showProblems: 'Show problems ({n})',
+    placeIn: '{card}: choose a category', announcePlaced: '{card} placed in {category}.',
+    announceCleared: 'Placement of {card} removed.', removeRow: 'Remove: {what}',
     problems: {
       object: 'must be an object', unknown: 'unknown property', required: 'is missing',
       text: 'must be text', length: 'invalid length or blank', slug: 'use lowercase letters, digits, hyphens',
@@ -112,6 +116,8 @@ export const messages = {
     all: 'Tất cả', answerKey: 'Đáp án', mode: 'Chế độ',
     exportError: 'Xuất tệp thất bại', importKept: 'Biểu mẫu hiện tại không bị thay đổi.',
     moreIssues: '… và {n} mục khác', showProblems: 'Xem các lỗi ({n})',
+    placeIn: '{card}: chọn nhóm', announcePlaced: 'Đã xếp {card} vào nhóm {category}.',
+    announceCleared: 'Đã bỏ vị trí của {card}.', removeRow: 'Xóa: {what}',
     problems: {
       object: 'phải là đối tượng', unknown: 'trường không được hỗ trợ', required: 'bị thiếu',
       text: 'phải là văn bản', length: 'độ dài không hợp lệ hoặc để trống', slug: 'chỉ chữ thường, số, dấu gạch nối',

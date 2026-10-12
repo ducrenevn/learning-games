@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { makeBlankSort, validateSort } from '../src/games/sort/model';
-import { placeSort, scoreSort } from '../src/games/sort/engine';
+import { placementOf, placeSort, scoreSort, shuffledIds } from '../src/games/sort/engine';
 import { serializeActivity, validateImported } from '../src/shared/activities/portable';
+import { sortFixture } from './helpers/fixtures';
 
 const good = () => {
   const a = makeBlankSort();
@@ -50,5 +51,40 @@ describe('Sort pure gameplay', () => {
     expect(scoreSort(a, placements)).toMatchObject({ complete: true, correct: 3, total: 4 });
     expect(scoreSort(a, {}).correct).toBe(0);
     expect(a).toEqual(before);
+  });
+});
+
+describe('Sort engine edge cases', () => {
+  const items = () => sortFixture().content.items;
+  it('shuffledIds is a permutation, deterministic for a fixed random source and never mutates its input', () => {
+    const source = items(), before = structuredClone(source);
+    const ids = shuffledIds(source);
+    expect([...ids].sort()).toEqual(source.map(i => i.id).sort());
+    expect(source).toEqual(before);
+    expect(shuffledIds(source, () => 0)).toEqual(shuffledIds(source, () => 0));
+    expect(shuffledIds(source, () => 0.9999999)).toHaveLength(source.length);
+    // a random() that returns exactly 1 (or a bad value) must not produce undefined/duplicate ids
+    for (const bad of [1, 1.5, -1]) expect([...shuffledIds(source, () => bad)].sort()).toEqual(source.map(i => i.id).sort());
+  });
+  it('placeSort leaves state untouched for unknown cards or categories and can clear a placement', () => {
+    const a = items(), cats = ['der', 'die', 'das'];
+    const start = placeSort(a, cats, {}, 'tisch', 'der');
+    expect(placeSort(a, cats, start, 'nope', 'der')).toBe(start);
+    expect(placeSort(a, cats, start, 'tisch', 'nope')).toBe(start);
+    expect(placeSort(a, cats, start, 'tisch', null)).toEqual({});
+    expect(start).toEqual({ tisch: 'der' }); // previous state object is never mutated
+  });
+  it('looks placements up by own property only', () => {
+    expect(placementOf({}, 'constructor')).toBeUndefined();
+    expect(placementOf({}, 'toString')).toBeUndefined();
+    expect(placementOf({ constructor: 'der' }, 'constructor')).toBe('der');
+  });
+  it('scores only teacher-authored cards and treats stray placement keys as noise', () => {
+    const a = sortFixture();
+    const full = { tisch: 'der', lampe: 'die', buch: 'das', stuhl: 'der' };
+    expect(scoreSort(a, { ...full, ghost: 'der' })).toMatchObject({ complete: true, correct: 4, total: 4 });
+    expect(scoreSort(a, { ...full, buch: 'die' })).toMatchObject({ complete: true, correct: 3 });
+    const noOwn = scoreSort(sortFixture(), Object.create({ tisch: 'der' }));
+    expect(noOwn).toMatchObject({ complete: false, correct: 0 });
   });
 });
