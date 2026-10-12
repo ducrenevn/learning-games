@@ -238,9 +238,9 @@ a:hover {
 /* The authoring canvas: type where it will appear */
 .canvas-edit{display:grid;min-width:0}
 .activity-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 0 10px;border-bottom:1px solid var(--line);min-width:0}
-.activity-bar-game{margin:0;font:700 1rem "Fraunces",Georgia,serif;color:var(--muted)}
+.activity-bar-game{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .activity-bar-space{flex:1}
-.activity-bar .button{min-height:44px;padding:.55rem .95rem}
+.activity-bar .button{min-height:44px;padding:.5rem .85rem;white-space:nowrap}
 .save-chip{display:inline-flex;align-items:center;gap:8px;font-size:.85rem;color:#4f5e55;white-space:nowrap}
 .save-dot{width:9px;height:9px;border-radius:50%;background:#9aa89f;flex:none}
 .save-chip.dirty .save-dot{background:#b98255}.save-chip.saved .save-dot{background:#3f7b5c}
@@ -313,10 +313,37 @@ a:hover {
 @media(max-width:560px){.activity-ux-page .activity-edit-row,.activity-ux-page .activity-edit-row.activity-ux-simple-row{grid-template-columns:minmax(0,1fr)}}
 
 /* Memory guided authoring and local board: reuse the same shell as Wave F. */
-.activity-memory-pair { grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) auto !important; }
-.activity-memory-online { border-top:1px solid var(--ux-border); padding-top:18px; }
 .activity-ux-play .play-layout { width:100%; margin:16px 0; min-height:0; }
 .activity-ux-play .memory-grid { min-height:420px; }
 .activity-ux-play .board-panel { min-height:440px; }
-@media(max-width:1000px) { .activity-memory-pair { grid-template-columns:repeat(2,minmax(0,1fr)) !important; } }
-@media(max-width:560px) { .activity-memory-pair { grid-template-columns:minmax(0,1fr) !important; } .activity-ux-play .play-layout { grid-template-columns:minmax(0,1fr); } }
+
+/* Memory: pair table editor and per-player ownership (colour + shape + initial) */
+.pairs-head{display:flex;justify-content:space-between;align-items:baseline}
+.pairs-table{display:grid;gap:6px}
+.pairs-row{display:grid;grid-template-columns:30px minmax(0,1fr) 24px minmax(0,1fr) 150px 44px;gap:10px;align-items:center;padding:5px 10px;background:var(--paper);border:1px solid var(--line);border-radius:12px;min-width:0}
+.pairs-labels{background:transparent;border:0;padding-top:0;padding-bottom:0;font-size:.75rem;color:var(--muted)}
+.pairs-num{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e3eee7;color:var(--green-deep);font-weight:800;font-size:.8rem}
+.pairs-link{font-style:normal;text-align:center;color:var(--green)}
+.pairs-cell,.pairs-group label{display:block;min-width:0}
+.pairs-row .field{padding:8px 10px;font-size:1.02rem}
+.group-chip{font:inherit;font-size:.78rem;border:1px dashed #9aa89f;border-radius:99px;padding:5px 12px;min-height:32px;color:#4f5e55;background:transparent;cursor:pointer}
+.group-chip:hover{border-color:var(--green);color:var(--green)}
+.icon-button{width:44px;height:44px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--danger);font-size:1.4rem;line-height:1;cursor:pointer}
+.icon-button:hover:not(:disabled){background:#f6e4dc}
+.icon-button:disabled{opacity:.35;cursor:default}
+.pairs-add{font:inherit;font-weight:700;min-height:48px;border:2px dashed #b3c6b8;border-radius:12px;background:transparent;color:var(--green);cursor:pointer}
+.pairs-add:hover:not(:disabled){background:#f1f6f1}
+.pairs-add:disabled{opacity:.5;cursor:default}
+@media(max-width:700px){
+  .pairs-labels{display:none}
+  .pairs-row{grid-template-columns:30px minmax(0,1fr) minmax(0,1fr) 44px;grid-template-areas:"n a b x" ". g g .";row-gap:6px;column-gap:8px}
+  .pairs-num{grid-area:n}.pairs-a{grid-area:a}.pairs-link{display:none}.pairs-b{grid-area:b}.pairs-group{grid-area:g}.pairs-row .icon-button{grid-area:x}
+}
+.owner-badge{display:inline-flex;align-items:center;gap:3px;min-width:34px;justify-content:center;padding:1px 7px;margin-right:8px;border-radius:99px;background:var(--owner);color:#fff;font-size:.78rem;font-weight:800;line-height:1.5;border:2px solid #fff}
+.score-name{display:inline-flex;align-items:center;min-width:0;overflow-wrap:anywhere}
+.player-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.player-chips li{display:inline-flex;align-items:center;border:1px solid #d9d1c4;border-radius:99px;padding:3px 12px 3px 4px;background:var(--paper)}
+.player-chips .owner-badge{margin-right:6px}
+.memory-card.owned .card-front{border:4px solid var(--owner);background:color-mix(in srgb,var(--owner) 9%,#fff)}
+.memory-card.owned .card-owner{position:absolute;top:0;right:0;padding:2px 9px;border-radius:0 8px 0 10px;background:var(--owner);color:#fff;font-size:.8rem;font-weight:800;line-height:1.4}
+@media(forced-colors:active){.owner-badge,.memory-card.owned .card-owner{border:2px solid CanvasText}.memory-card.owned .card-front{border-color:Highlight}}
