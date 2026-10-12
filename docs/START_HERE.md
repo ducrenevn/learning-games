@@ -24,7 +24,7 @@ npm run build
 Memory local needs no backend. Memory online uses public `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` only. Never put secret keys in frontend. Local build is not hosted proof.
 
 ## Goal
-Independent, adult-appropriate learning activity toolkit. Memory is implemented; Sort and other activities remain planning until separately approved.
+Independent, adult-appropriate learning activity toolkit. Memory is implemented on `main`; Sort, Sequence and Language Detective exist only on the unmerged Wave F branch (reviewed, not released); other activities remain planning until separately approved.
 
 ## Wave F — local teaching-game development (2026-10-12)
-A new control room is authorized to **build three frontend-only games**. Read [Wave F contract](architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md), then the three short specs [Sort](games/sort.md), [Sequence](games/sequence.md), [Language Detective](games/language-detective.md). The latest implementation instructions are in [IMMEDIATE_NEXT_PROMPT](IMMEDIATE_NEXT_PROMPT.md). Do not treat this authorization as permission to merge to main, deploy, or change Supabase. First implement, then Sonnet independent review/fixes, then owner testing.
+A new control room is authorized to **build three frontend-only games**. Read [Wave F contract](architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md), then the three short specs [Sort](games/sort.md), [Sequence](games/sequence.md), [Language Detective](games/language-detective.md). **Status 2026-10-12:** all three are implemented on branch `feat/wave-f-local-games-a1-a3-20261012` and have had the independent Sonnet review and fixes ([report](audits/2026-10-12-wave-f-independent-review.md)); they are **not merged, not released and not yet owner-tested**. The current handoff is [IMMEDIATE_NEXT_PROMPT](IMMEDIATE_NEXT_PROMPT.md). Do not treat the original authorization as permission to merge to main, deploy, or change Supabase.

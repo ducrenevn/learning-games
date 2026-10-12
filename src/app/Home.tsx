@@ -10,7 +10,7 @@ export function Home() {
       <article className="panel game-tile" key={game.id}>
         <div className="tile-icon" aria-hidden="true">{game.symbol}</div>
         <h2>{game.title}</h2><p>{game.description}</p>
-        <Link className="button primary" to={game.href}>Spiel öffnen</Link>
+        <Link className="button primary" to={game.href} aria-label={'Spiel öffnen: ' + game.title}>Spiel öffnen</Link>
       </article>)}
     </div>
   </main>;

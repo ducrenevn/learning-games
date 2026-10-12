@@ -12,11 +12,17 @@
 
 ## Next game / LG-A1
 - Owner-selected for **planning**: generic **Sort categorization**, with teacher-authored categories/items, one defensible destination per item. German articles and Kasus are *pedagogical examples*, not fixed app presets. Sequence/ordering is separately deferred.
-- [Agent map](GAME_MAP.md), [Sort mechanics draft](games/sort.md), and [teaching library](../library/README.md) now have a docs-only branch structure. No actual playable Sort and no approved final JSON schema or classroom-tested JSON files.
+- [Agent map](GAME_MAP.md), [Sort mechanics draft](games/sort.md), and [teaching library](../library/README.md) now have a docs-only branch structure. *(At intake on `main`; superseded on the Wave F branch — see "Wave F implementation status" below. Still no classroom-tested JSON files and nothing on `main`.)*
 - Initial candidate vertical slice: local author/import/edit/preview/play/check/retry/export/reimport, localized UI DE/EN/VI, no new backend. Final JSON contract, UX, limits and testing require owner agreement **before coding**.
 - Later sequence recommended: Conversation Cards → Information Gap. Memory polish/hardening backlog remains independent.
 
 **No permission** to merge, deploy, run SQL, change SPP Auth/Homework/RLS, add hosted RPCs, or store learner identities/results.
 
-## Wave F scope update (2026-10-12; planning docs, no implementation yet)
+## Wave F implementation status (updated 2026-10-12, after independent review)
+- LG-A1 Sort, LG-A2 Sequence and LG-A3 Language Detective are **implemented on branch `feat/wave-f-local-games-a1-a3-20261012`** (draft [PR #12](https://github.com/ducrenevn/learning-games/pull/12), based on docs PR #11 `6e7e27e`) and were **independently reviewed and fixed** by Claude Sonnet 5.5: [review report](audits/2026-10-12-wave-f-independent-review.md), [review packet](WAVE_F_IMPLEMENTATION_REVIEW.md).
+- Verified locally: `npm ci`, typecheck, 172 tests (20 Memory unchanged), production build, and real-Chrome checks (layout 1440/768/390/360, DE/EN/VI, both modes, keyboard/focus, downloads, hostile files, touch). **Not verified:** real screen readers, Safari/Firefox, real phone/projector, Vercel hosting, Memory online play.
+- The review's fix commits are **local and unpushed**. **Not merged, not deployed, not owner-tested.** Nothing on `main` or production changed. Owner hands-on acceptance and a separate release decision are the next gates.
+- Wave F strings live in `src/shared/activities/i18n.ts`, isolated from Memory/M3a; reconcile with M3a PR #10 localisation after its authorised merge.
+
+## Wave F scope update (2026-10-12; historical — written when only planning docs existed; implementation status is above)
 Owner approved implementation of LG-A1 Sort, LG-A2 Sequence and LG-A3 Language Detective as **teacher-led Presentation Mode** and **individual Independent Mode** activities on existing frontend infrastructure. Detailed contracts: [Wave F](architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md), [Sort](games/sort.md), [Sequence](games/sequence.md), [Language Detective](games/language-detective.md). This docs PR itself contains no new runnable games. New control room implements all three; owner then requests Sonnet review/fixes before personal testing. No multiplayer, SQL, or hosted SPP changes authorized for this wave.

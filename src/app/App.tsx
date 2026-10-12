@@ -3,6 +3,9 @@ import { Home } from './Home';
 import { MemoryHome } from '../games/memory/MemoryHome';
 import { MemoryJoin } from '../games/memory/MemoryJoin';
 import { MemoryRoom } from '../games/memory/MemoryRoom';
+import { SortPage } from '../games/sort/SortPage';
+import { SequencePage } from '../games/sequence/SequencePage';
+import { DetectivePage } from '../games/language-detective/DetectivePage';
 
 export function App() {
   return <div className="app-shell">
@@ -12,6 +15,9 @@ export function App() {
       <Route path="/games/memory" element={<MemoryHome />} />
       <Route path="/games/memory/join" element={<MemoryJoin />} />
       <Route path="/games/memory/room/:roomCode" element={<MemoryRoom />} />
+      <Route path="/games/sort" element={<SortPage />} />
+      <Route path="/games/sequence" element={<SequencePage />} />
+      <Route path="/games/language-detective" element={<DetectivePage />} />
       <Route path="*" element={<main className="page"><h1>Seite nicht gefunden</h1><Link to="/">Zur Startseite</Link></main>} />
     </Routes>
   </div>;

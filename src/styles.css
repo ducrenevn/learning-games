@@ -70,3 +70,79 @@ a:hover {
 .local-playing-panel {
   display: contents;
 }
+
+
+/* Wave F local activities: scoped styles only; Memory layout remains untouched. */
+.activity-page { width: min(1220px, calc(100% - 28px)); }
+.activity-head { display:flex; justify-content:space-between; gap:16px; align-items:start; }
+.activity-language { display:grid; gap:6px; min-width:145px; font-weight:700; }
+.activity-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:14px 0; }
+.activity-toolbar .button { min-height:44px; }
+.activity-upload { position:relative; overflow:hidden; }
+.activity-upload input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.activity-upload:focus-within { outline:3px solid #b9664e; outline-offset:3px; }
+.activity-meta { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.activity-field { display:grid; gap:5px; font-weight:650; min-width:0; overflow-wrap:anywhere; }
+.activity-field textarea { resize:vertical; }
+.activity-editor { display:grid; gap:14px; margin-top:24px; }
+.activity-editor h2 { margin:16px 0 0; }
+.activity-list { display:grid; gap:14px; min-width:0; }
+.activity-edit-row { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1.6fr) auto; gap:12px; align-items:end; padding:14px; background:#f8f4eb; border-radius:12px; min-width:0; }
+.activity-item-tools { display:flex; flex-wrap:wrap; gap:6px; }
+.activity-item-tools .button { min-width:44px; min-height:44px; }
+.activity-play { margin-top:16px; }
+/* Presentation mode is read from across a room: scale everything in the play panel, including the fixed-rem .lead/.small text. */
+.activity-projected .activity-play { font-size:clamp(1.15rem,2.1vw,1.8rem); }
+.activity-projected .activity-play h2 { font-size:1.6em; }
+.activity-projected .activity-play .lead { font-size:1.1em; }
+.activity-projected .activity-play .small { font-size:.85em; }
+.activity-projected .activity-play .button { min-height:56px; padding:.8rem 1.3rem; }
+.activity-projected .sort-card-choice, .activity-projected .detective-segment { min-height:64px; }
+.activity-play .lead { overflow-wrap:anywhere; }
+.activity-board { display:grid; gap:20px; min-width:0; }
+.sort-trays { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr)); gap:12px; }
+.sort-tray { display:grid; align-content:start; gap:8px; min-width:0; min-height:150px; padding:16px; border:2px dashed #315b4a; border-radius:16px; background:#edf4ec; }
+.sort-tray h3 { margin:0; font-size:1.15rem; overflow-wrap:anywhere; }
+.sort-tray .button { width:100%; min-height:44px; align-self:end; }
+.sort-tray-entries { display:flex; flex-wrap:wrap; align-content:flex-start; gap:6px; margin:0; padding:0; list-style:none; }
+.sort-hint { margin:0; }
+.sort-place { display:grid; gap:8px; padding:10px; border-radius:10px; background:#edf4ec; }
+.sort-place-options { display:flex; flex-wrap:wrap; gap:8px; }
+.sort-place-options .button { min-width:44px; min-height:44px; overflow-wrap:anywhere; }
+.sort-place-options .button[aria-pressed="true"] { background:#315b4a; color:#fff; }
+.sort-place-options .button[aria-pressed="true"]::before { content:"✓"; }
+.sort-tray-entry { padding:5px 8px; border:1px solid #b3c6b8; border-radius:8px; background:white; overflow-wrap:anywhere; }
+.activity-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr)); gap:12px; align-items:start; }
+.sort-card { min-width:0; display:grid; align-content:start; gap:8px; padding:10px; border:1px solid #ded8cc; border-radius:12px; background:#fff; overflow-wrap:anywhere; }
+.sort-card-choice { display:grid; gap:7px; padding:16px; min-height:95px; background:#fffdf8; border:2px solid #ded8cc; border-radius:10px; text-align:left; font:inherit; color:inherit; cursor:pointer; }
+.sort-card-choice.selected, .detective-segment.selected { border-color:#315b4a; background:#e3eee7; }
+.sort-card-choice.selected { border-width:4px; padding:14px; }
+.sort-card-choice:disabled { cursor:default; opacity:1; }
+.activity-status { font-size:.9em; color:#244438; }
+.activity-controls { align-items:center; }
+.activity-key { background:#f6efe5; border:1px solid #dfcdb7; border-radius:14px; padding:16px; overflow-wrap:anywhere; }
+.activity-key-entry { padding:10px 0; border-bottom:1px solid #dfcdb7; }
+.activity-key-entry:last-child { border-bottom:0; }
+.activity-errors { margin-top:14px; }
+.sequence-list { display:grid; gap:10px; padding-left:2rem; }
+.sequence-card { padding:14px; border:1px solid #ded8cc; border-radius:12px; background:#fff; overflow-wrap:anywhere; }
+.sequence-card::marker { font-weight:700; }
+.sequence-card-copy { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:8px; }
+.detective-segments { display:flex; flex-wrap:wrap; gap:7px; line-height:1.6; }
+.detective-segment { display:inline-flex; flex-direction:column; align-items:flex-start; justify-content:center; min-height:48px; padding:8px 10px; font:inherit; font-size:1.08em; text-align:left; color:inherit; background:#fff; border:2px solid #ccc5bb; border-radius:10px; cursor:pointer; overflow-wrap:anywhere; max-width:100%; }
+.detective-segment:disabled { cursor:default; opacity:1; }
+/* After Check every verdict is text + icon + border style, never colour alone. */
+.detective-mark { font-weight:700; }
+.detective-segment.hit { border-color:#315b4a; background:#e3eee7; }
+.detective-segment.missed { border-style:dashed; border-color:#b9664e; background:#fbeee8; }
+.detective-segment.extra { border-style:double; border-width:4px; border-color:#8f4034; background:#f6e4dc; }
+.activity-issue-toggle { display:inline-flex; gap:8px; align-items:center; min-height:44px; font-weight:650; }
+.activity-issue-toggle input { width:20px; height:20px; }
+.activity-page button:focus-visible,.activity-page input:focus-visible,.activity-page textarea:focus-visible,.activity-page select:focus-visible,.activity-page a:focus-visible { outline:3px solid #b9664e; outline-offset:3px; }
+/* Result and answer regions receive programmatic focus (tabindex=-1) after Check/Reveal so keyboard and screen-reader users keep their place.
+   :focus-visible shows the ring for keyboard users without drawing a box around the result after a mouse click. */
+.activity-page [tabindex="-1"]:focus-visible { outline:3px solid #b9664e; outline-offset:3px; }
+.activity-page .sr-only { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
+.activity-page .back-link { min-height:44px; }
+@media(max-width:780px){.activity-edit-row { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }.activity-meta { grid-template-columns:1fr; }}
+@media(max-width:480px){.activity-page { width:calc(100% - 16px); }.activity-head { align-items:start; }.activity-head h1 { font-size:2rem; }.activity-language { min-width:110px; max-width:125px; }.activity-edit-row { grid-template-columns:minmax(0,1fr); }.activity-authoring,.activity-play { padding:14px; }.activity-toolbar .button { flex:1 1 auto; }.activity-item-tools { width:100%; }.sort-trays { grid-template-columns:1fr; }.sequence-card { padding:10px; } }
