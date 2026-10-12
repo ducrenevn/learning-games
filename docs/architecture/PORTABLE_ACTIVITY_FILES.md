@@ -74,7 +74,7 @@ Open-ended speaking/writing activities should support teacher-led evaluation rat
 
 ## Per-game AI authoring guides
 
-Future game modules should ship a human-readable spec, for example `docs/activity-specs/GAME_SPEC_quick-response.md` (path is a proposed convention, **file does not exist yet**). Each spec should include:
+Future game modules should ship a human-readable spec, for example `docs/games/quick-response.md` (path is a proposed convention, **file does not exist yet**). Each spec should include:
 
 1. Purpose, suitable adult-learning outcomes, and example classroom flow.
 2. Required and optional fields; precise schema (once finalized), accepted enums and limits.
@@ -84,7 +84,7 @@ Future game modules should ship a human-readable spec, for example `docs/activit
 6. A reusable AI prompt: generate **only valid JSON** matching the spec (no Markdown fences), and advise the teacher to review content.
 7. Version identifier and compatibility/migration policy.
 
-**Example AI request:** "Using GAME_SPEC_quick-response.md, produce a German A2 quick-response exercise on visiting a doctor: eight progressively harder prompts, mostly short free-text answers. Return one valid JSON activity file." The game validates the AI output; it never blindly trusts it.
+**Example AI request:** "Using quick-response.md, produce a German A2 quick-response exercise on visiting a doctor: eight progressively harder prompts, mostly short free-text answers. Return one valid JSON activity file." The game validates the AI output; it never blindly trusts it.
 
 ## Teacher-facing handling
 
@@ -122,7 +122,7 @@ A teaching sequence could be named `lesson_hotel-complaints.json` and contain mu
 
 ## Relationship to current milestones
 
-[ROADMAP.md](ROADMAP.md) currently prioritizes Memory/Vercel (M2), multiplayer hardening (M3), then cross-game content (M4). This file elaborates the **future M4 content requirement**; it does not reprioritize or authorize any runtime work, deploy, migration, or SPP integration. Existing [GAME_CONTRACTS.md](GAME_CONTRACTS.md) remains authoritative for Memory's present `LEFT | RIGHT | OPTIONAL_CATEGORY` input.
+[ROADMAP.md](../ROADMAP.md) currently prioritizes Memory/Vercel (M2), multiplayer hardening (M3), then cross-game content (M4). This file elaborates the **future M4 content requirement**; it does not reprioritize or authorize any runtime work, deploy, migration, or SPP integration. Existing [GAME_CONTRACTS.md](../games/memory.md) remains authoritative for Memory's present `LEFT | RIGHT | OPTIONAL_CATEGORY` input.
 
 ## Repository teaching materials (2026-10-12)
-The [short game map](GAME_MAP.md) points to [activity-library](../activity-library/README.md), containing concise teaching guides and **future** genuine reusable JSON files. Only add real JSON under `activity-library/<game>/activities/` after an approved final per-game schema and validator exist. The illustrative JSON in specs is not guaranteed import-ready. Label evidence `draft`, `schema-validated` (name validator/version), or `classroom-tested` (verified real use). Never silently overwrite proven material or embed learner names, answers, tokens, session state or private information. Repo file ≠ automatically installed game preset. LG-A1 Sort's precise slug/schema/limits remain unapproved.
+The [short game map](../GAME_MAP.md) points to [activity-library](../../library/README.md), containing concise teaching guides and **future** genuine reusable JSON files. Only add real JSON under `library/<game>/activities/` after an approved final per-game schema and validator exist. The illustrative JSON in specs is not guaranteed import-ready. Label evidence `draft`, `schema-validated` (name validator/version), or `classroom-tested` (verified real use). Never silently overwrite proven material or embed learner names, answers, tokens, session state or private information. Repo file ≠ automatically installed game preset. LG-A1 Sort's precise slug/schema/limits remain unapproved.

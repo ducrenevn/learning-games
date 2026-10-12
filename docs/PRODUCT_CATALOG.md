@@ -1,8 +1,8 @@
-# Adult Language Activity Library — Product Plan
+# Product Catalog — Adult Language Activities
 
 **Status:** Product direction agreed in planning, 2026-10-09. **Not implemented.** This plan is for future milestones and does not change the current Memory game, its vocabulary format, production deployment, or SPP/Supabase contracts.
 
-**Agent routing update 2026-10-12:** This is the strategic, longer-term catalog. Lesson-planning agents should read the short [Game Map](GAME_MAP.md) then [activity-library](../activity-library/README.md) instead. LG-A1 is now generic **Sort** (categorization only); Sequence/ordering is a separate deferred mechanic. The old `sort-sequence` label is historical and not an approved JSON file type.
+**Agent routing update 2026-10-12:** This is the strategic, longer-term catalog. Lesson-planning agents should read the short [Game Map](GAME_MAP.md) then [activity-library](../library/README.md) instead. LG-A1 is now generic **Sort** (categorization only); Sequence/ordering is a separate deferred mechanic. The old `sort-sequence` label is historical and not an approved JSON file type.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ Audience: adult learners, including general and vocational German, with scope fo
 - **Practical for real lessons:** quick startup; teacher controls pace, reveal, skip, pause, repeat, and discussion.
 - **Language production matters:** support unconstrained speaking and writing, not just auto-marked multiple choice. Open responses are teacher-reviewed unless clearly deterministic.
 - **Flexible participation:** individual, pair, small-group, or whole-class activities, depending on game mechanics.
-- **Reusable, local-first material:** each new activity format must support externally authored, portable activity files as defined in [PORTABLE_ACTIVITY_FILES.md](PORTABLE_ACTIVITY_FILES.md).
+- **Reusable, local-first material:** each new activity format must support externally authored, portable activity files as defined in [PORTABLE_ACTIVITY_FILES.md](architecture/PORTABLE_ACTIVITY_FILES.md).
 - **No account prerequisite for guests in the initial standalone live-game concept.** Anonymous room capabilities are not learner identity or durable result tracking.
 - **Independent game engines:** do not prematurely merge Memory's turn/scoring model with simultaneous-response or discussion games.
 
@@ -102,4 +102,4 @@ Before calling a future game ready:
 - **Then:** select and implement **one** additional game with genuine teacher testing before extracting cross-game authoring components.
 - **Later:** add optional collections, richer media bundles, and optional SPP integration on separate authorization.
 
-Detailed future game contracts: [Information Gap](activity-specs/GAME_SPEC_information-gap.md) and [Conversation Cards](activity-specs/GAME_SPEC_conversation-cards.md). These specify agreed behavior and illustrative, **non-final** JSON examples; neither game is implemented.\n\nSee [PORTABLE_ACTIVITY_FILES.md](PORTABLE_ACTIVITY_FILES.md) for the proposed file design. Existing Memory's `LEFT | RIGHT | OPTIONAL_CATEGORY` text input and its server validation remain as documented in [GAME_CONTRACTS.md](GAME_CONTRACTS.md).
+Detailed future game contracts: [Information Gap](games/information-gap.md) and [Conversation Cards](games/conversation-cards.md). These specify agreed behavior and illustrative, **non-final** JSON examples; neither game is implemented.\n\nSee [PORTABLE_ACTIVITY_FILES.md](architecture/PORTABLE_ACTIVITY_FILES.md) for the proposed file design. Existing Memory's `LEFT | RIGHT | OPTIONAL_CATEGORY` text input and its server validation remain as documented in [GAME_CONTRACTS.md](games/memory.md).

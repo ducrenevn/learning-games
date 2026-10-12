@@ -1,5 +1,5 @@
 # LG-A1 — Sort (categorization)
-**PLANNING v0.1 · NOT approved for implementation · 2026-10-12.** Teacher-directed generic categorization; **not a German grammar engine**. German articles/cases are possible [pedagogical applications](../../activity-library/sort/README.md), not built-in exercises.
+**PLANNING v0.1 · NOT approved for implementation · 2026-10-12.** Teacher-directed generic categorization; **not a German grammar engine**. German articles/cases are possible [pedagogical applications](../../library/sort/README.md), not built-in exercises.
 
 ## What Sort does
 The teacher defines named categories and text cards (words, phrases or sentences), each with **one correct category**. The learner assigns each card; no built-in knowledge of grammar, case, vocabulary or level. Ordering/Sequence is a separate deferred mechanic. Historical umbrella slug `sort-sequence` is not a finalized portable file type.

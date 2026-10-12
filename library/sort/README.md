@@ -1,5 +1,5 @@
 # Sort — Pedagogical Applications
-**Planning guidance, not bundled presets.** Mechanics: [LG-A1](../../docs/activity-specs/GAME_SPEC_sort.md). No validated JSON or classroom-tested activities stored yet.
+**Planning guidance, not bundled presets.** Mechanics: [LG-A1](../../docs/games/sort.md). No validated JSON or classroom-tested activities stored yet.
 
 | Learning objective | Example category labels | Teacher caution |
 | --- | --- | --- |

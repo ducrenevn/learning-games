@@ -18,3 +18,6 @@ Functions are `SECURITY DEFINER`, explicitly granted to `anon`; direct table rea
 Do not include actual host tokens, student tokens, secret keys or real learner records in code, issue bodies or debugging screenshots.
 
 Production changes to RPC logic, grants, policies, schema and SPP domain integration require a separate, reviewed proposal. Read-only inspection is permitted.
+
+## M3a language-policy note (2026-10-12)
+The later Memory language migration is reported applied and verified. See [CURRENT_STATE](../CURRENT_STATE.md); do not recreate or reapply it as part of LG-A1 documentation, sorting, or migration planning.

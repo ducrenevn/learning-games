@@ -3,7 +3,7 @@
 ## Topology
 
 ```text
-Canva presentation --link/QR--> Learning Games (standalone React app / future Vercel)
+Canva presentation --link/QR--> Learning Games (standalone React app / deployed Vercel)
                                            |
                               games/memory, future game modules
                                            |
@@ -33,3 +33,9 @@ Standalone local play needs no network. Online games authenticate using narrow p
 One monorepo-style single Vite app, not one separate app per game. One **folder** per game; never one enormous script. Shared contracts should remain small and grow from real cross-game requirements. Memory turns and live quiz simultaneous responses must have separate engines. No generic persistent result/history domain until SPP agrees an integration contract.
 
 Future routes can be `/games/:gameId`, with per-game student join links (current Memory: `/games/memory/join?room=...`).
+
+## Documentation and teaching-content boundaries
+- `src/` owns application implementation.
+- `docs/architecture/` owns cross-game architecture; `docs/games/` owns game-specific mechanics and content contracts.
+- `library/` owns teaching applications and eventual reusable JSON activity files; the latter are not automatically published in the app.
+- [Game Map](../GAME_MAP.md) provides an agent-friendly index.

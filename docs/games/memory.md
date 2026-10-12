@@ -1,4 +1,4 @@
-# Games and Content Contracts — v0
+# Memory — Gameplay and Content Contracts (v0)
 
 ## Memory vocabulary
 

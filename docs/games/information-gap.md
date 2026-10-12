@@ -2,7 +2,7 @@
 
 **Status:** Approved product behavior for future implementation, 2026-10-09; **not implemented**. The example JSON is a **non-final authoring illustration**, not a versioned parser contract or a tested import fixture. This file does not authorize backend, SPP, production, deploy, or application changes.
 
-**Related:** [Adult Activity Library](../LEARNING_ACTIVITY_LIBRARY.md) · [Portable Activity Files](../PORTABLE_ACTIVITY_FILES.md) · [Conversation Cards](GAME_SPEC_conversation-cards.md) · [Current Memory Contracts](../GAME_CONTRACTS.md)
+**Related:** [Adult Activity Library](../PRODUCT_CATALOG.md) · [Portable Activity Files](../architecture/PORTABLE_ACTIVITY_FILES.md) · [Conversation Cards](conversation-cards.md) · [Current Memory Contracts](memory.md)
 
 > **Planning-order update (2026-10-12):** The owner has selected generic Sort categorization (LG-A1) as the next planned game. The earlier suggestion to implement Conversation Cards first is superseded **for sequencing only**; this spec's product behavior remains useful. No implementation or SQL is authorized. See [ROADMAP](../ROADMAP.md).
 
@@ -84,7 +84,7 @@ Required **behavioral validation** (actual field names/enums/limits still to be 
 
 ### Illustrative activity JSON (NOT FINAL SCHEMA)
 
-Proposed envelope aligns conceptually with [PORTABLE_ACTIVITY_FILES.md](../PORTABLE_ACTIVITY_FILES.md). **Do not implement an importer by copying the field names below without schema review.**
+Proposed envelope aligns conceptually with [PORTABLE_ACTIVITY_FILES.md](../architecture/PORTABLE_ACTIVITY_FILES.md). **Do not implement an importer by copying the field names below without schema review.**
 
 ```json
 {
@@ -166,4 +166,4 @@ Language policy: `targetLanguage` is content language. UI labels/messages are lo
 
 ## 9. Future implementation boundary
 
-**Proposed order:** build [Conversation Cards](GAME_SPEC_conversation-cards.md) first to validate confidential role distribution and rounds with fewer answer mechanics; add this game next using those proven primitives, while keeping each game engine independent. No database design, production migration, or deployment approval follows from this planning spec.
+**Proposed order:** build [Conversation Cards](conversation-cards.md) first to validate confidential role distribution and rounds with fewer answer mechanics; add this game next using those proven primitives, while keeping each game engine independent. No database design, production migration, or deployment approval follows from this planning spec.
