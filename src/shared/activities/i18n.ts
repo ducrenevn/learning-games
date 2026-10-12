@@ -30,6 +30,8 @@ export const messages = {
     deleteIssue: 'Fehler entfernen', noAnswer: 'Die Auflösung bleibt bis zur Prüfung verborgen.',
     nothingSelected: 'Textteile antippen oder „Keine Fehler“ wählen.',
     all: 'Alle', answerKey: 'Lösungsschlüssel', mode: 'Modus',
+    exportError: 'Export fehlgeschlagen', importKept: 'Das bisherige Formular wurde nicht verändert.',
+    moreIssues: '… und {n} weitere', showProblems: 'Probleme anzeigen ({n})',
     problems: {
       object: 'muss ein Objekt sein', unknown: 'unbekanntes Feld', required: 'fehlt',
       text: 'muss Text sein', length: 'Länge / Pflichtfeld ungültig', slug: 'nur Kleinbuchstaben, Zahlen und Bindestriche',
@@ -68,6 +70,8 @@ export const messages = {
     deleteIssue: 'Remove issue', noAnswer: 'Answers remain hidden until checking.',
     nothingSelected: 'Select segments or choose “No errors”.',
     all: 'All', answerKey: 'Answer key', mode: 'Mode',
+    exportError: 'Export failed', importKept: 'Your current form was not changed.',
+    moreIssues: '… and {n} more', showProblems: 'Show problems ({n})',
     problems: {
       object: 'must be an object', unknown: 'unknown property', required: 'is missing',
       text: 'must be text', length: 'invalid length or blank', slug: 'use lowercase letters, digits, hyphens',
@@ -106,6 +110,8 @@ export const messages = {
     deleteIssue: 'Bỏ lỗi', noAnswer: 'Đáp án chỉ hiện sau khi kiểm tra.',
     nothingSelected: 'Chọn đoạn văn hoặc chọn “Không có lỗi”.',
     all: 'Tất cả', answerKey: 'Đáp án', mode: 'Chế độ',
+    exportError: 'Xuất tệp thất bại', importKept: 'Biểu mẫu hiện tại không bị thay đổi.',
+    moreIssues: '… và {n} mục khác', showProblems: 'Xem các lỗi ({n})',
     problems: {
       object: 'phải là đối tượng', unknown: 'trường không được hỗ trợ', required: 'bị thiếu',
       text: 'phải là văn bản', length: 'độ dài không hợp lệ hoặc để trống', slug: 'chỉ chữ thường, số, dấu gạch nối',
@@ -118,6 +124,10 @@ export const messages = {
 } as const;
 export type MessageKey = Exclude<keyof typeof messages['en'], 'problems'>;
 export function t(locale: Locale, key: MessageKey): string { return messages[locale][key] as string; }
+/** Like `t`, substituting `{name}` placeholders. Unknown placeholders are left visible rather than silently dropped. */
+export function tf(locale: Locale, key: MessageKey, vars: Record<string, string | number>): string {
+  return t(locale, key).replace(/\{(\w+)\}/g, (whole, name: string) => Object.hasOwn(vars, name) ? String(vars[name]) : whole);
+}
 export function issueText(issue: Issue, locale: Locale) {
   return issue.path + ': ' + messages[locale].problems[issue.code as ValidationCode];
 }
