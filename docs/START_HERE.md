@@ -1,18 +1,18 @@
 # Start Here — Learning Games
+First read [AGENTS.md](../AGENTS.md). Verify the current `main`, open PRs, code and tests. Documentation marked "planning" is not implementation.
 
-Read order:
-1. `AGENTS.md` — guardrails.
-2. `docs/CURRENT_STATE.md` — what has actually been built and verified.
-3. `docs/SYSTEM_OVERVIEW.md` — app and backend boundaries.
-4. `docs/GAME_CONTRACTS.md` — rules and API seams.
-5. `docs/BACKEND_BASELINE.md` — current prototype authorization.
-6. `docs/LEARNING_ACTIVITY_LIBRARY.md` — future adult-language classroom activity catalog and modes (planning only).
-7. `docs/PORTABLE_ACTIVITY_FILES.md` — future local-first JSON exchange and AI authoring requirements (proposal, not implemented).
-8. `docs/activity-specs/GAME_SPEC_information-gap.md` and `docs/activity-specs/GAME_SPEC_conversation-cards.md` — proposed detailed game behavior and illustrative JSON (not implemented).
-9. `docs/ROADMAP.md` and `docs/IMMEDIATE_NEXT_PROMPT.md` — staged future work.
+| Agent task | Short reading path |
+| --- | --- |
+| Plan a lesson or recommend an activity | [GAME_MAP](GAME_MAP.md) → matching [teaching-library entry](../activity-library/README.md) |
+| Reuse a saved activity | Game Map → corresponding library index → just that JSON |
+| Generate JSON via external AI | Game Map → **approved** game schema/spec → [portable file rules](PORTABLE_ACTIVITY_FILES.md); proposed schema = draft only |
+| Develop/review a game | [CURRENT_STATE](CURRENT_STATE.md) → [SYSTEM_OVERVIEW](SYSTEM_OVERVIEW.md) → game-specific contracts, source and tests |
+| Multiplayer/hosted database | [BACKEND_BASELINE](BACKEND_BASELINE.md), separate explicit owner-approved migration |
+| Handoff to a control room | CURRENT_STATE → [ROADMAP](ROADMAP.md) → [IMMEDIATE_NEXT_PROMPT](IMMEDIATE_NEXT_PROMPT.md) |
+
+[LEARNING_ACTIVITY_LIBRARY](LEARNING_ACTIVITY_LIBRARY.md) is the **long-form strategic catalog**, not the default lesson-agent entrypoint. Mechanics are in `docs/activity-specs/`, pedagogical uses and future real JSON in `activity-library/`.
 
 ## Setup
-
 ```bash
 npm install
 cp .env.example .env.local
@@ -21,9 +21,7 @@ npm run typecheck
 npm test
 npm run build
 ```
-
-Local Memory needs no environment settings. Online Memory uses the existing Supabase prototype RPCs; configure **only public** `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. Never use secret/service-role keys. Do not confuse a local browser smoke test with hosted production validation.
+Memory local needs no backend. Memory online uses public `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` only. Never put secret keys in frontend. Local build is not hosted proof.
 
 ## Goal
-
-An independent game site usable from Canva presentations and directly from student devices, with a future optional SPP launch/results integration. Start with one high-quality Memory game, not a broad platform.
+Independent, adult-appropriate learning activity toolkit. Memory is implemented; Sort and other activities remain planning until separately approved.

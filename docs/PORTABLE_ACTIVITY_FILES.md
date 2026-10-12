@@ -123,3 +123,6 @@ A teaching sequence could be named `lesson_hotel-complaints.json` and contain mu
 ## Relationship to current milestones
 
 [ROADMAP.md](ROADMAP.md) currently prioritizes Memory/Vercel (M2), multiplayer hardening (M3), then cross-game content (M4). This file elaborates the **future M4 content requirement**; it does not reprioritize or authorize any runtime work, deploy, migration, or SPP integration. Existing [GAME_CONTRACTS.md](GAME_CONTRACTS.md) remains authoritative for Memory's present `LEFT | RIGHT | OPTIONAL_CATEGORY` input.
+
+## Repository teaching materials (2026-10-12)
+The [short game map](GAME_MAP.md) points to [activity-library](../activity-library/README.md), containing concise teaching guides and **future** genuine reusable JSON files. Only add real JSON under `activity-library/<game>/activities/` after an approved final per-game schema and validator exist. The illustrative JSON in specs is not guaranteed import-ready. Label evidence `draft`, `schema-validated` (name validator/version), or `classroom-tested` (verified real use). Never silently overwrite proven material or embed learner names, answers, tokens, session state or private information. Repo file ≠ automatically installed game preset. LG-A1 Sort's precise slug/schema/limits remain unapproved.

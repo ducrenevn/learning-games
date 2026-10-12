@@ -1,26 +1,10 @@
-# Immediate Next Handoff — Milestone M3 (Multiplayer Polish & Hardening)
+# Next Control Room — Learning Games (LG-A1 planning, 2026-10-12)
+**Repo authority:** `ducrenevn/learning-games`. On intake verify live main SHA, open PRs and contents. Read [AGENTS](../AGENTS.md), [START_HERE](START_HERE.md), [CURRENT_STATE](CURRENT_STATE.md), then short [GAME_MAP](GAME_MAP.md). Prior context is subordinate to newer code/evidence.
 
-Scope: Implement per-player claim coloring, refine turn responsiveness, address cross-platform assets, and evaluate room lifecycle / abuse protections.
+**At documentation intake:** main `f8ac534026b4fcdcfa0ffa15e61890a4e5389c62`. Memory M3a [PR #10](https://github.com/ducrenevn/learning-games/pull/10) open/draft/unmerged at `ec5e58916406eabf7a94185d92538da535c0812c`; targeted final DE/VI browser gate remains. Never merge/deploy automatically.
 
-## Status (Verified in M2 Acceptance)
-- Live production deployment at `https://learning-games-rho.vercel.app/` verified with real smartphone user.
-- 3-participant live multiplayer test passed cleanly (turns, auto-advance, scoring, winner screen, phone refresh recovery).
-- Full audit report recorded in `docs/audits/2026-10-09-m2-hosted-acceptance.md`.
+**User-approved planning direction:** Sort as generic teacher-defined **categorization**; articles/Kasus are only teaching ideas, not presets. Sequence separate/deferred. Short Game Map → per-game mechanics contract in `docs/activity-specs/` vs evolving pedagogical ideas and real JSON storage in `activity-library/`. No actual reusable JSON committed because Sort schema isn't approved; do not pretend draft examples are import-ready or classroom-tested.
 
-## Recommended M3 Action Items
+**Next assignment — contract work, NO implementation:** review [LG-A1 spec](activity-specs/GAME_SPEC_sort.md), [portable-file proposal](PORTABLE_ACTIVITY_FILES.md), library and app code. Settle final type, JSON version, validation caps, unknown fields and safety, category/card interaction/editor, check/retry/explanation UX, projector/local behavior, DE/EN/VI and acceptance fixtures. Ask owner to finalize before starting game code.
 
-1. **Per-Player Claim Coloring (UX feedback from owner):**
-   - Assign distinct, accessible colors or badges per player in the lobby/game (e.g. Player 1: Teal, Player 2: Coral/Terracotta, Player 3: Indigo, etc.).
-   - When cards are matched, style the revealed borders/backgrounds with the claiming player's assigned color instead of the uniform terracotta frame.
-
-2. **Cross-Platform Emoji / Asset Evaluation:**
-   - Observe that system emojis render differently across OS fonts (e.g. Windows vs. iOS/Android emoji color/glyphs).
-   - If uniform appearance is desired across platforms, consider adopting an open emoji font/SVG set (e.g. Twemoji) or allow text-only/image asset pairs.
-
-3. **Multiplayer Transport & Realtime Evaluation:**
-   - Benchmark polling traffic (currently 1 Hz per client) vs. Supabase Realtime Broadcast.
-   - Profile egress and connection behavior for larger groups (e.g. 10–20 students).
-
-4. **Abuse Hardening & Room Lifecycle:**
-   - Implement client-side and RPC-level rate limiting or CAPTCHA for anonymous room creation.
-   - Clean up abandoned or inactive rooms on a regular schedule.
+**Boundaries:** no hosted SQL, SPP Auth/Homework/RLS changes, new game RPC, runtime changes, auto merge/deploy, or exposing capability tokens. Review PR #10 independently. Do not give agents an enormous indiscriminate read list.

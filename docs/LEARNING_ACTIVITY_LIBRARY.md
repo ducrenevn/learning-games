@@ -2,6 +2,8 @@
 
 **Status:** Product direction agreed in planning, 2026-10-09. **Not implemented.** This plan is for future milestones and does not change the current Memory game, its vocabulary format, production deployment, or SPP/Supabase contracts.
 
+**Agent routing update 2026-10-12:** This is the strategic, longer-term catalog. Lesson-planning agents should read the short [Game Map](GAME_MAP.md) then [activity-library](../activity-library/README.md) instead. LG-A1 is now generic **Sort** (categorization only); Sequence/ordering is a separate deferred mechanic. The old `sort-sequence` label is historical and not an approved JSON file type.
+
 ## Purpose
 
 Create a calm, adult-appropriate **classroom activity toolkit** for practicing language comprehension, production, recall, accuracy, and real communication. The software should make valuable classroom tasks easier to prepare and run, not replace natural student conversation with points or animations.
@@ -33,7 +35,7 @@ Audience: adult learners, including general and vocational German, with scope fo
 | Activity type / working slug | Core behavior | Skills | Tentative wave |
 | --- | --- | --- | --- |
 | Quick Response Board / `quick-response` | All students respond privately to a prompt; teacher selects/reveals/discusses responses | Writing, recall, speaking follow-up | 1 |
-| Sort & Sequence / `sort-sequence` | Categorize terms or arrange sentences, dialogues, or procedures | Reading, grammar, vocabulary | 1 |
+| Sort (LG-A1) / type pending | Categorize teacher-authored items; ordering deferred | Reading, grammar, vocabulary | 1 |
 | Information Gap / `information-gap` | Partners receive complementary private information and exchange it to complete a shared goal | Speaking, listening, interaction | 1 |
 | Conversation Cards / `conversation-cards` | Distribute distinct confidential roles and objectives for realistic conversations | Speaking, pragmatics, fluency | 1 |
 | Language Detective / `language-detective` | Find, correct, and explain errors or inappropriate expressions; optional sentence-auction variation | Grammar, accuracy, reasoning | 1 |
@@ -95,7 +97,7 @@ Before calling a future game ready:
 
 ## Milestone sequencing / boundaries
 
-- **Now:** keep this as documentation only while the Memory/Vercel track remains active.
+- **Now:** LG-A1 planning/documentation only. Memory M3a PR #10 release remains a separate gate.
 - **First architecture step for new activity content:** finalize the portable content envelope, per-game contracts, error messages, and round-trip tests; keep content separate from multiplayer session state.
 - **Then:** select and implement **one** additional game with genuine teacher testing before extracting cross-game authoring components.
 - **Later:** add optional collections, richer media bundles, and optional SPP integration on separate authorization.

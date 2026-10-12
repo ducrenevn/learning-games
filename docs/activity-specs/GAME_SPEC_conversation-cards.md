@@ -4,6 +4,8 @@
 
 **Related:** [Adult Activity Library](../LEARNING_ACTIVITY_LIBRARY.md) · [Portable Activity Files](../PORTABLE_ACTIVITY_FILES.md) · [Information Gap](GAME_SPEC_information-gap.md) · [Current Memory Contracts](../GAME_CONTRACTS.md)
 
+> **Planning-order update (2026-10-12):** The owner has selected generic Sort categorization (LG-A1) as the next planned game. The earlier suggestion to implement Conversation Cards first is superseded **for sequencing only**; this spec's product behavior remains useful. No implementation or SQL is authorized. See [ROADMAP](../ROADMAP.md).
+
 ## 1. Purpose
 
 Adult language learners practice a realistic conversation by receiving **one shared situation** but **different confidential roles, facts, objectives and constraints**. Students speak to reach an outcome (a solution, agreement, request, clarification, negotiation), not to win an RPG or answer a quiz. Example contexts: workplace customer support, gastronomy, healthcare reception, interviews, appointment scheduling, negotiating plans.

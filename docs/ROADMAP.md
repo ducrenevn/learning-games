@@ -1,37 +1,21 @@
-# Roadmap
+# Roadmap — updated 2026-10-12
+**Verify GitHub and [CURRENT_STATE](CURRENT_STATE.md).**
 
-## M0 — Clean foundation (COMPLETED)
-- Runnable Vite React TypeScript app, modular Memory port, docs, local build/typecheck/unit tests.
-- Audited lockfile, 0 dependency vulnerabilities.
-- Verified local build, typecheck, and tests.
+- M0 app foundation — completed.
+- M1 Memory local / online game parity — completed 2026-10-09; [acceptance](audits/2026-10-09-m1-qa-report.md).
+- M2 Memory Vercel hosted acceptance — completed 2026-10-09; [acceptance](audits/2026-10-09-m2-hosted-acceptance.md).
 
-## M1 — Memory parity & QA (COMPLETED 2026-10-09)
-- Local game mechanics and full online create/join/lobby/start/turns/auto-next/score/end flow verified.
-- 3-browser context testing (Host, Student 1, Student 2) against live Supabase prototype RPCs.
-- Refresh, reconnect, host skip/recovery, and invalid room handling verified.
-- Fixed rapid-click deadlock bug, terracotta mismatch styling, cheat sheet exposure, and finished victory screen.
-- Responsive layout verified at 1440px, 1024px, 768px, 390px, and 360px with zero horizontal overflow.
-- 20 / 20 unit tests passing; audit report completed in `docs/audits/2026-10-09-m1-qa-report.md`.
+## Parallel lanes
+**M3a — Memory multilingual release:** backend migration applied (per prior reported verification); draft [PR #10](https://github.com/ducrenevn/learning-games/pull/10) requires targeted final-browser DE/VI checks and separate owner merge/deploy approval. Older stacked PRs aren't a bulk merge path.
 
-## M2 — Vercel & hosted multiplayer acceptance (COMPLETED 2026-10-09)
-- Connected GitHub repo (`ducrenevn/learning-games`) to Vercel production deployment (`https://learning-games-rho.vercel.app/`).
-- Configured public environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`).
-- Automatic GitHub-to-Vercel CI/CD verified from `main`.
-- SPA deep linking verified via `vercel.json` rewrites.
-- 3-participant live hosted acceptance test executed (Host desktop, Automated student desktop, and Owner on real mobile phone).
-- QR code generation, room join, turns, auto-advance, matching, phone refresh recovery, and victory screen verified.
-- Audit report completed in `docs/audits/2026-10-09-m2-hosted-acceptance.md`.
+**M3 — Memory hardening backlog:** matched-pair player indicators, cross-platform emoji, performance/rate limits and anonymous room lifecycle. Outside LG-A1.
 
-## M3 — Multiplayer polish & abuse hardening (NEXT)
-- Implement per-player color coding for matched/claimed pairs (owner UX recommendation).
-- Document and evaluate cross-platform emoji font rendering quirks.
-- Measure latency and state-transport performance under varying network conditions.
-- Evaluate Supabase Realtime Broadcast vs. polling.
-- Harden anonymous room creation (rate limiting, captcha, room pruning, timeout cleanup) before broad public classroom rollout.
+**LG-A1 — Sort (next playable activity, PLANNING ONLY):**
+1. **Authorized now:** short Game Map, separated mechanics and teaching library, structure for future real reusable JSON.
+2. **Owner contract gate:** finalize portable schema/version/limits, authoring and play/check/retry UX, accessible touch/keyboard, test/acceptance.
+3. **After separate coding approval:** local Sort vertical slice with import/validate/edit/preview/play/export/reimport and DE/EN/VI UI; Memory regression.
+4. **After separate release approval:** browser/user testing and deployment. No online Sort room, new database RPC or SPP migration in LG-A1.
 
-## M4 — Cross-game shared content
-- Vocab set creation/import/versions; game-specific content adapters.
-- Add first additional game module once Memory is stable on Vercel.
+**Candidates after Sort:** Conversation Cards (role privacy), then Information Gap (complementary visibility and answer checking). Require independent contracts/migrations for hosted online versions. Quick Response, Language Detective, Listen & Reconstruct remain candidates.
 
-## M5 — Optional SPP integration
-- Explicit teacher launch/results contract; owner approval before sharing learner identity or homework attempt state.
+**SPP integration:** identities, long-term results, Homework and Auth remain separate future proposals requiring explicit owner approval.

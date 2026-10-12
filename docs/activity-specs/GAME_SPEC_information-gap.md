@@ -4,6 +4,8 @@
 
 **Related:** [Adult Activity Library](../LEARNING_ACTIVITY_LIBRARY.md) · [Portable Activity Files](../PORTABLE_ACTIVITY_FILES.md) · [Conversation Cards](GAME_SPEC_conversation-cards.md) · [Current Memory Contracts](../GAME_CONTRACTS.md)
 
+> **Planning-order update (2026-10-12):** The owner has selected generic Sort categorization (LG-A1) as the next planned game. The earlier suggestion to implement Conversation Cards first is superseded **for sequencing only**; this spec's product behavior remains useful. No implementation or SQL is authorized. See [ROADMAP](../ROADMAP.md).
+
 ## 1. Learning purpose and boundaries
 
 Two participants possess **complementary private information**. They must communicate in the learning language to obtain information missing from their own view. The app provides each partner's material and (optionally) a place to record answers; **students do the actual speaking**, in person or via external video-call/breakout facilities.
