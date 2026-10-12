@@ -1,0 +1,47 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "language-detective",
+  "id": "van-ban-khong-loi",
+  "title": "Không có lỗi",
+  "targetLanguage": "vi",
+  "instructions": "Chọn các phần sai hoặc xác nhận không có lỗi.",
+  "content": {
+    "prompt": "Câu sau có lỗi nào không?",
+    "segments": [
+      {
+        "id": "segment-1",
+        "text": "Tôi"
+      },
+      {
+        "id": "segment-2",
+        "text": "đang"
+      },
+      {
+        "id": "segment-3",
+        "text": "học"
+      },
+      {
+        "id": "segment-4",
+        "text": "tiếng"
+      },
+      {
+        "id": "segment-5",
+        "text": "Đức"
+      },
+      {
+        "id": "segment-6",
+        "text": "ở"
+      },
+      {
+        "id": "segment-7",
+        "text": "Đà"
+      },
+      {
+        "id": "segment-8",
+        "text": "Nẵng."
+      }
+    ],
+    "issues": []
+  }
+}

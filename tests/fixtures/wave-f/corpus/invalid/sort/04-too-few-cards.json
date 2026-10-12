@@ -1,0 +1,45 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sort",
+  "id": "artikel-im-alltag",
+  "title": "Artikel im Alltag",
+  "targetLanguage": "de",
+  "instructions": "Ordne jede Karte der passenden Kategorie zu.",
+  "content": {
+    "categories": [
+      {
+        "id": "category-1",
+        "label": "der"
+      },
+      {
+        "id": "category-2",
+        "label": "die"
+      },
+      {
+        "id": "category-3",
+        "label": "das"
+      }
+    ],
+    "items": [
+      {
+        "id": "card-1",
+        "text": "Tisch",
+        "categoryId": "category-1",
+        "explanation": "Der Tisch ist maskulin."
+      },
+      {
+        "id": "card-2",
+        "text": "Lampe",
+        "categoryId": "category-2",
+        "explanation": "Die Lampe ist feminin."
+      },
+      {
+        "id": "card-3",
+        "text": "Fenster",
+        "categoryId": "category-3",
+        "explanation": "Das Fenster ist neutrum."
+      }
+    ]
+  }
+}

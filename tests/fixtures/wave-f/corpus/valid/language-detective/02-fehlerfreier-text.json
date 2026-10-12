@@ -1,0 +1,44 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "language-detective",
+  "id": "alles-korrekt",
+  "title": "Alles richtig",
+  "targetLanguage": "de",
+  "instructions": "Markiere fehlerhafte Textteile und vergleiche die Lösungen.",
+  "content": {
+    "prompt": "Prüfe, ob der Text einen Fehler enthält.",
+    "segments": [
+      {
+        "id": "segment-1",
+        "text": "Heute"
+      },
+      {
+        "id": "segment-2",
+        "text": "lerne"
+      },
+      {
+        "id": "segment-3",
+        "text": "ich"
+      },
+      {
+        "id": "segment-4",
+        "text": "Deutsch"
+      },
+      {
+        "id": "segment-5",
+        "text": "in"
+      },
+      {
+        "id": "segment-6",
+        "text": "der"
+      },
+      {
+        "id": "segment-7",
+        "text": "Bibliothek."
+      }
+    ],
+    "issues": [],
+    "summary": "Der Satz enthält keine vorbereiteten Fehler. Wähle ausdrücklich „Keine Fehler“."
+  }
+}

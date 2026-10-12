@@ -1,0 +1,55 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "language-detective",
+  "id": "zwei-fehler-im-service",
+  "title": "Zwei Fehler im Service",
+  "targetLanguage": "de",
+  "instructions": "Markiere fehlerhafte Textteile und vergleiche die Lösungen.",
+  "content": {
+    "prompt": "Finde die zwei fehlerhaften Textteile.",
+    "segments": [
+      {
+        "id": "segment-1",
+        "text": "Der"
+      },
+      {
+        "id": "segment-2",
+        "text": "Gäste"
+      },
+      {
+        "id": "segment-3",
+        "text": "bestellt"
+      },
+      {
+        "id": "segment-4",
+        "text": "ein"
+      },
+      {
+        "id": "segment-5",
+        "text": "Tee"
+      },
+      {
+        "id": "segment-6",
+        "text": "und"
+      },
+      {
+        "id": "segment-7",
+        "text": "wartet."
+      }
+    ],
+    "issues": [
+      {
+        "segmentId": "segment-2",
+        "correction": "Gast",
+        "explanation": "Singular: Der Gast."
+      },
+      {
+        "segmentId": "segment-4",
+        "correction": "einen",
+        "explanation": "„bestellen“ verlangt hier den Akkusativ: einen Tee."
+      }
+    ],
+    "summary": "Überprüfe Artikel, Kasus und Kongruenz."
+  }
+}

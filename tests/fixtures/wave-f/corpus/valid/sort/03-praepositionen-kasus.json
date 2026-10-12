@@ -1,0 +1,55 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sort",
+  "id": "praepositionen-und-kasus",
+  "title": "Präpositionen und Kasus",
+  "targetLanguage": "de",
+  "instructions": "Ordne jede Karte der passenden Kategorie zu.",
+  "content": {
+    "categories": [
+      {
+        "id": "category-1",
+        "label": "Dativ"
+      },
+      {
+        "id": "category-2",
+        "label": "Akkusativ"
+      }
+    ],
+    "items": [
+      {
+        "id": "card-1",
+        "text": "mit dem Gast",
+        "categoryId": "category-1",
+        "explanation": "„mit“ verlangt den Dativ."
+      },
+      {
+        "id": "card-2",
+        "text": "für den Gast",
+        "categoryId": "category-2",
+        "explanation": "„für“ verlangt den Akkusativ."
+      },
+      {
+        "id": "card-3",
+        "text": "bei der Arbeit",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-4",
+        "text": "ohne den Schlüssel",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-5",
+        "text": "aus dem Hotel",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-6",
+        "text": "durch den Park",
+        "categoryId": "category-2"
+      }
+    ]
+  }
+}

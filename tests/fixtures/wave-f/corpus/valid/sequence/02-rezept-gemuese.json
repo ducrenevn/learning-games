@@ -1,0 +1,38 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sequence",
+  "id": "gemuese-zubereiten",
+  "title": "Gemüse zubereiten",
+  "targetLanguage": "de",
+  "instructions": "Bringe die Schritte in die richtige Reihenfolge.",
+  "content": {
+    "prompt": "Ordne die Arbeitsschritte in einer Küche.",
+    "items": [
+      {
+        "id": "step-1",
+        "text": "Arbeitsfläche reinigen und Hände waschen."
+      },
+      {
+        "id": "step-2",
+        "text": "Gemüse gründlich abspülen."
+      },
+      {
+        "id": "step-3",
+        "text": "Gemüse in gleich große Stücke schneiden."
+      },
+      {
+        "id": "step-4",
+        "text": "Wasser im Topf erhitzen."
+      },
+      {
+        "id": "step-5",
+        "text": "Gemüse garen."
+      },
+      {
+        "id": "step-6",
+        "text": "Anrichten und servieren."
+      }
+    ]
+  }
+}
