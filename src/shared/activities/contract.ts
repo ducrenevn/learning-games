@@ -1,5 +1,5 @@
 /** Wave F portable content: activity files never contain learner/session state. */
-export type ActivityType = 'sort' | 'sequence' | 'language-detective';
+export type ActivityType = 'sort' | 'sequence' | 'language-detective' | 'memory';
 export type Locale = 'de' | 'en' | 'vi';
 export type PlayMode = 'preview' | 'presentation' | 'independent';
 export interface ActivityBase<K extends ActivityType, C> {

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentType, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { UsersRound } from 'lucide-react';
 import { ArrowLeft, ArrowRight, Check, Download, FileUp, PencilLine, Presentation, UserRound } from 'lucide-react';
 import type { ActivityBase, ActivityType, Locale, PlayMode, Validator, Issue } from './contract';
 import { MAX_BYTES } from './contract';
@@ -15,13 +16,17 @@ interface Props<T extends ActivityBase<ActivityType, unknown>> {
   validate: Validator<T>;
   Editor: ComponentType<EditorProps<T>>;
   Player: ComponentType<PlayerProps<T>>;
+  /** Optional existing Memory-only room flow; never called by local preview or import. */
+  onOnline?: (activity: T) => Promise<void>;
+  joinHref?: string;
 }
 type Screen = 'choose' | 'import' | 'edit' | PlayMode;
-const LABELS: Record<ActivityType, string> = { sort:'Sort', sequence:'Sequence', 'language-detective':'Language Detective' };
+const LABELS: Record<ActivityType, string> = { sort:'Sort', sequence:'Sequence', 'language-detective':'Language Detective', memory:'Memory' };
 const STEPS: Record<ActivityType, readonly UXKey[]> = {
   sort:['details', 'categories', 'cards', 'review'],
   sequence:['details', 'steps', 'review'],
   'language-detective':['details', 'passage', 'errors', 'review'],
+  memory:['details', 'pairs', 'review'],
 };
 const LIMIT = 20;
 export function stepIssues(kind: ActivityType, step: UXKey, issues: readonly Issue[]): Issue[] {
@@ -29,6 +34,7 @@ export function stepIssues(kind: ActivityType, step: UXKey, issues: readonly Iss
   return issues.filter(issue => {
     const path = issue.path;
     if (step === 'details') return ['title', 'instructions', 'targetLanguage', 'id', 'format', 'schemaVersion', 'activityType'].some(p => path === p || path.startsWith(p + '.'));
+    if (kind === 'memory') return path.startsWith('content.pairs');
     if (kind === 'sort') return step === 'categories' ? path.startsWith('content.categories') : path.startsWith('content.items');
     if (kind === 'sequence') return path.startsWith('content.');
     if (step === 'passage') return path.startsWith('content.segments') || path === 'content.prompt';
@@ -39,15 +45,15 @@ export function stepIssues(kind: ActivityType, step: UXKey, issues: readonly Iss
 function friendlyIssue(kind:ActivityType,issue:Issue,locale:Locale){
   const raw=issueText(issue,locale);
   const description=raw.startsWith(issue.path+': ')?raw.slice(issue.path.length+2):raw;
-  const match=/^content\.(categories|items|segments|issues)\[(\d+)\](?:\.([a-zA-Z]+))?$/.exec(issue.path);
+  const match=/^content\.(categories|items|segments|issues|pairs)\[(\d+)\](?:\.([a-zA-Z]+))?$/.exec(issue.path);
   if(match){
     const collection=match[1],index=Number(match[2])+1,field=match[3];
-    const subject=collection==='categories'?'categories':collection==='segments'?'passage':collection==='issues'?'errors':kind==='sort'?'cards':'steps';
-    const label=field==='label'?'title':field==='text'?'passage':field==='categoryId'?'categories':field==='correction'?'errors':field==='explanation'?'instructions':field==='segmentId'?'errors':null;
+    const subject=collection==='pairs'?'pairs':collection==='categories'?'categories':collection==='segments'?'passage':collection==='issues'?'errors':kind==='sort'?'cards':'steps';
+    const label=field==='left'?'leftCard':field==='right'?'rightCard':field==='label'?'title':field==='text'?'passage':field==='categoryId'?'categories':field==='correction'?'errors':field==='explanation'?'instructions':field==='segmentId'?'errors':null;
     return u(locale,subject)+' '+index+(label?' · '+u(locale,label):'')+': '+description;
   }
-  const collection=/^content\.(categories|items|segments|issues)$/.exec(issue.path);
-  if(collection){const subject=collection[1]==='items'?(kind==='sort'?'cards':'steps'):collection[1]==='segments'?'passage':collection[1]==='categories'?'categories':'errors';return u(locale,subject)+': '+description;}
+  const collection=/^content\.(categories|items|segments|issues|pairs)$/.exec(issue.path);
+  if(collection){const subject=collection[1]==='pairs'?'pairs':collection[1]==='items'?(kind==='sort'?'cards':'steps'):collection[1]==='segments'?'passage':collection[1]==='categories'?'categories':'errors';return u(locale,subject)+': '+description;}
   const label=issue.path==='title'?'title':issue.path==='instructions'?'instructions':issue.path==='targetLanguage'?'language':issue.path==='id'?'activityId':issue.path==='content.prompt'?'details':null;
   return (label?u(locale,label):issue.path)+': '+description;
 }
@@ -60,7 +66,7 @@ function IssueList({ issues, locale }: { issues: readonly Issue[]; locale: Local
 }
 
 /** One local activity, guided from choice -> content -> review -> detached play. No hosted state. */
-export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>({ kind, makeBlank, validate, Editor, Player }: Props<T>) {
+export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>({ kind, makeBlank, validate, Editor, Player, onOnline, joinHref }: Props<T>) {
   const [locale,setLocale] = useState<Locale>('de');
   const [screen,setScreen] = useState<Screen>('choose');
   const [draft,setDraft] = useState<T>(makeBlank);
@@ -74,6 +80,8 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
   const [fileBusy,setFileBusy] = useState(false);
   const [dragging,setDragging] = useState(false);
   const [playing,setPlaying] = useState<T|null>(null);
+  const [onlineBusy,setOnlineBusy] = useState(false);
+  const [onlineError,setOnlineError] = useState('');
   const [playCounter,setPlayCounter] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -170,7 +178,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
   }
   function summary() {
     const c=draft.content as Record<string,unknown>;
-    const list=kind==='sort'?c.items:kind==='sequence'?c.items:c.segments;
+    const list=kind==='memory'?c.pairs:kind==='sort'?c.items:kind==='sequence'?c.items:c.segments;
     return Array.isArray(list)?list.length:0;
   }
   const languageSelect=<label className="activity-language">{t(locale,'language')}
@@ -197,6 +205,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
       <div className="activity-ux-options">
         <button type="button" className="activity-ux-option" onClick={startNew}><PencilLine aria-hidden="true" size={27}/><strong>{u(locale,'manual')}</strong><span>{u(locale,'manualHint')}</span><ArrowRight className="activity-ux-option-arrow" aria-hidden="true"/></button>
         <button type="button" className="activity-ux-option" onClick={startImport}><FileUp aria-hidden="true" size={27}/><strong>{u(locale,'importActivity')}</strong><span>{u(locale,'importHint')}</span><ArrowRight className="activity-ux-option-arrow" aria-hidden="true"/></button>
+        {joinHref && <Link className="activity-ux-option" to={joinHref}><UsersRound aria-hidden="true" size={27}/><strong>{u(locale,'joinGame')}</strong><span>{u(locale,'joinHint')}</span><ArrowRight className="activity-ux-option-arrow" aria-hidden="true"/></Link>}
       </div><p className="muted small">{u(locale,'localOnly')}</p>
     </section>}
     {screen==='import' && <section className="activity-ux-import panel padded" aria-labelledby="activity-import-heading">
@@ -215,7 +224,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
         <h3 lang={importCandidate.targetLanguage}>{importCandidate.title}</h3>
         <p lang={importCandidate.targetLanguage}>{importCandidate.instructions}</p>
         <p>{u(locale,'importSuccess')}</p>
-        <p className="muted small">{u(locale,'importSummary')}: {u(locale,'metaCount',{n:kind==='language-detective'?(importCandidate.content as {segments:unknown[]}).segments.length:(importCandidate.content as {items:unknown[]}).items.length})}</p>
+        <p className="muted small">{u(locale,'importSummary')}: {u(locale,'metaCount',{n:kind==='language-detective'?(importCandidate.content as {segments:unknown[]}).segments.length:kind==='memory'?(importCandidate.content as {pairs:unknown[]}).pairs.length:(importCandidate.content as {items:unknown[]}).items.length})}</p>
         <details><summary>{u(locale,'importKeys')}</summary><pre className="activity-import-json">{JSON.stringify(importCandidate.content,null,2)}</pre></details>
         <button type="button" className="button primary" onClick={acceptFile}>{u(locale,'openEditor')} <ArrowRight size={16}/></button>
       </section>}
@@ -267,6 +276,18 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
                 <button className="button secondary" type="button" disabled={issues.length>0} onClick={()=>play('independent')}><UserRound size={18}/>{u(locale,'practice')}</button>
                 <button className="button secondary" type="button" disabled={issues.length>0} onClick={()=>play('preview')}>{u(locale,'preview')}</button>
               </div>
+              {onOnline && <div className="activity-ux-export activity-memory-online">
+                <div><strong>{u(locale,'onlineRoom')}</strong><p className="muted small">{u(locale,'onlineHint')}</p></div>
+                <button className="button secondary" type="button" disabled={issues.length>0 || onlineBusy || summary()<2} onClick={() => {
+                  if (onlineBusy) return;
+                  const checked=validate(draft);
+                  if (!checked.value || checked.issues.length || summary()<2) return;
+                  setOnlineBusy(true);setOnlineError('');
+                  void onOnline(structuredClone(checked.value)).catch(e => setOnlineError(e instanceof Error ? e.message : u(locale,'onlineError'))).finally(() => setOnlineBusy(false));
+                }}>{onlineBusy ? u(locale,'onlineBusy') : u(locale,'createRoom')}</button>
+                {onlineError && <p className="error" role="alert">{onlineError}</p>}
+                {summary()<2 && <p className="muted small">{u(locale,'roomNeedsPairs')}</p>}
+              </div>}
               <div className="activity-ux-export"><button className="button secondary" type="button" disabled={issues.length>0} onClick={download}><Download size={16}/>{u(locale,'download')}</button>
                 <p className="muted small">{u(locale,'downloadHint')}</p></div>
             </div>}
