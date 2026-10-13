@@ -50,18 +50,24 @@ Rules
 * `prompt` and `summary` keep their v1 length limits; segment text ≤ 160, correction ≤ 300, explanation ≤ 1000 characters. Text is inert: no markup, no control characters, no invisible-only text.
 * Mixed forms fail safe: `tasks` inside `schemaVersion: 1`, or `segments`/`issues` directly in `content` of v2, are rejected as unknown keys.
 
-## 5. Limits — **provisional, owner confirmation requested**
+## 5. Limits — **approved by the owner** (UX-2 implementation authorization)
 
-These are constants (one place, `LIMITS` in `src/games/language-detective/model.ts`) so they can change with one edit and a fixture update. They are educational/product choices, not technical ones, and were proposed in the design review, not yet explicitly approved:
+The owner approved these values for v2 in the UX-2 authorization. They are constants in one place (`LIMITS` in `src/games/language-detective/model.ts`); changing one is a one-line edit plus fixture updates, and would need a new owner decision.
 
-| Limit | Value | Why / the decision behind it |
+| Limit | Value (approved) | Why |
 | --- | --- | --- |
-| Sentences (tasks) per activity | 1–10 | A classroom slide. More means two activities. **Decision:** is 10 enough, or do you want 15/20? |
-| Words per sentence | 2–40 | v1 forced ≥ 4, which rejects "Ich habe Zeit." **Decision:** is a 2-word sentence a legitimate exercise, or should the minimum be 3? |
+| Sentences (tasks) per activity | 1–10 | A classroom slide; more means two activities. |
+| Words per sentence | 2–40 | Short sentences are allowed in v2. |
 | Words per activity | ≤ 200 | Keeps a worst-case file far below 128 KiB. |
-| Marked errors per sentence | ≤ 12 and ≤ words | v1 limit, per sentence. |
-| Marked errors per activity | ≤ 30 | Keeps scoring and the review readable. **Decision:** acceptable? |
+| Marked errors per sentence | ≤ 12 (and never more than the sentence has words) | Per-sentence review stays readable. |
+| Marked errors per activity | ≤ 30 | Keeps scoring and the review readable. |
 | File size | ≤ 128 KiB | unchanged |
+
+**v1 compatibility (no data loss).** A v1 file is never converted or truncated by these limits:
+
+* A v1 file with one passage of 4–80 words and at most 12 marked errors still imports, edits, plays and exports as **v1**, byte for byte (corpus `valid/language-detective/05-eighty-segments-twelve-issues.json`, with the round-trip test in `tests/detective-v2.test.ts`). A single passage of 41–80 words therefore stays one passage in v1; it is not split for the user.
+* If a teacher converts such a passage into several sentences, each sentence must meet the v2 limits (2–40 words). The same validation that checks files runs on the editor draft, so an activity that breaks a limit is reported as invalid and is not launched or downloaded until it is fixed. Words are never dropped or re-split silently.
+* A v1 file with more than 80 words, or more than 12 marked errors, was already invalid in v1 and stays invalid.
 
 Word units remain whitespace-separated tokens (punctuation stays attached). For Vietnamese this means syllables, a known limitation that v2 does not try to solve.
 

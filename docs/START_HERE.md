@@ -26,5 +26,8 @@ Memory local needs no backend. Memory online uses public `VITE_SUPABASE_URL` and
 ## Goal
 Independent, adult-appropriate learning activity toolkit. Memory is implemented on `main`; Sort, Sequence and Language Detective exist only on the unmerged Wave F branch (reviewed, not released); other activities remain planning until separately approved.
 
-## Wave F — local teaching-game development (2026-10-12)
+## Current branch (2026-10-13)
+The authoritative state is the **UX-2 single-canvas** branch `feat/ux2-single-canvas-20261012`: see [CURRENT_STATE](CURRENT_STATE.md#ux-2-single-canvas-implementation--authoritative-2026-10-13) and the [handoff](IMMEDIATE_NEXT_PROMPT.md). Detective v2 limits are owner-approved.
+
+## Wave F — local teaching-game development (2026-10-12) (historical)
 A new control room is authorized to **build three frontend-only games**. Read [Wave F contract](architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md), then the three short specs [Sort](games/sort.md), [Sequence](games/sequence.md), [Language Detective](games/language-detective.md). **Status 2026-10-12:** all three are implemented on branch `feat/wave-f-local-games-a1-a3-20261012` and have had the independent Sonnet review and fixes ([report](audits/2026-10-12-wave-f-independent-review.md)); they are **not merged, not released and not yet owner-tested**. The current handoff is [IMMEDIATE_NEXT_PROMPT](IMMEDIATE_NEXT_PROMPT.md). Do not treat the original authorization as permission to merge to main, deploy, or change Supabase.

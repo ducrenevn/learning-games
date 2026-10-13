@@ -1,4 +1,30 @@
 # Current State — 2026-10-12 documentation reconciliation
+
+## UX-2 single-canvas implementation — AUTHORITATIVE (2026-10-13)
+**Branch:** `feat/ux2-single-canvas-20261012` (pushed to origin; based on design review `e892b31`; not merged, not deployed). The working checkout is this branch; the UX-2 design worktree was retired after its contents were committed (`876e28d`).
+
+**Implemented on the branch (owner corrections 1–8 of the UX-2 authorization):**
+- Single-canvas authoring for Sort, Sequence and Language Detective: one page with title, instructions, items and play actions; `Ausprobieren` (independent) and `Präsentieren` (teacher-led). An invalid activity is never launched; the first missing field is focused and named.
+- Compact import: loaded file strip, game-specific teacher preview, raw JSON only behind an advanced disclosure, explicit acceptance, safe rejection.
+- Global DE/EN/VI flag toggle in the app bar; Join Room card and four-game grid fixed.
+- Memory: per-player colour plus symbol and initial, matching scoreboard marks; compact pair table with paste. Local engine and online contracts unchanged.
+- Sequence: slim rows, keyboard and tap reordering, Enter and multiline paste to add steps; pointer drag via `@dnd-kit` (spike passed; cost about +17 kB gzip).
+- Sort: teacher edits bins directly (a card's bin is its answer); learner sees a separate bank and empty bins. Mobile: categories stacked left, scrollable bank right, info popover, tap-to-place.
+- Language Detective v2 (`schemaVersion: 2`, `content.tasks[]`): stacked sentence tasks, independent marking and per-sentence feedback. v1 files import, edit, play and export unchanged. Contract: [DETECTIVE_V2_CONTRACT](architecture/DETECTIVE_V2_CONTRACT.md).
+- **Detective v2 limits are approved by the owner** (1–10 sentences, 2–40 words each, 200 words total, 12 errors per sentence, 30 in total).
+
+**Verification performed (2026-10-13, local only):**
+- `npm run typecheck`: pass. `npm test`: 22 files, **332/332** pass. `npm run build`: pass. `git diff --check`: clean.
+- Browser smoke (Playwright, system Chrome, Vite dev server, not hosted): **74/74 checks** at 1440×900, 1024×768, 768×1024, 390×844, 360×740 and 1280×560. Covered: no horizontal scroll and no page errors for Sort, Sequence and Detective play; mobile Sort categories left and bank right, the info popover on screen, tap-to-place at 390 and 360, a 30-card / 5-category bank that scrolls inside itself; Detective v2 with three sentences at desktop and 390 (per-sentence badges, aggregate, no answer key before reveal, reveal inside each card, Vietnamese interface with German authored text unchanged); v1 single passage and the 80-segment / 12-error boundary file; Memory local play board renders.
+- Evidence: `docs/audits/ux2-design/evidence/` (before/after entry screens, after-state matrix, smoke results, reproducible `tools/smoke.mjs`).
+
+**Not verified:** real phones, Safari/Firefox, screen readers, real-device touch (emulated touch only), hosted Vercel, Memory online rooms and any Supabase/SPP path (none were touched). The before-capture covers entry screens only, because the old wizard flow cannot be driven by the new smoke script.
+
+**Known cosmetic issue:** on the Detective player at 390 px the "Zum Editor" link and the title wrap onto two lines. Not fixed; logged for the owner smoke test.
+
+**Gates still open (owner):** hands-on visual and pedagogical smoke test; a draft PR (not created here: no `gh` on this machine, so the compare link is `https://github.com/ducrenevn/learning-games/pull/new/feat/ux2-single-canvas-20261012`); then a separate merge/deploy decision. Memory M3a PR #10 remains a separate release gate.
+
+**Historical:** the "Wave F" sections below describe the earlier `feat/wave-f-local-games-a1-a3-20261012` branch and are kept for history. UX-2 supersedes its UI, not its contracts.
 ## Verified repository baseline at intake
 - `main`: `f8ac534026b4fcdcfa0ffa15e61890a4e5389c62`. Production: https://learning-games-rho.vercel.app/.
 - **Memory only** on main: local game and hosted anonymous room gameplay. M1/M2 previously verified with three participants and a physical phone; see [M1 report](audits/2026-10-09-m1-qa-report.md), [M2 report](audits/2026-10-09-m2-hosted-acceptance.md).

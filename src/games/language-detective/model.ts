@@ -13,7 +13,7 @@ export type DetectiveActivityV2 = ActivityBase<'language-detective', DetectiveCo
 export type DetectiveFile = DetectiveActivity | DetectiveActivityV2;
 
 /**
- * v2 limits. PROVISIONAL educational/product choices awaiting owner confirmation (DETECTIVE_V2_CONTRACT.md §5):
+ * v2 limits, approved by the owner for UX-2 (DETECTIVE_V2_CONTRACT.md §5):
  * one place, so changing a number is a one-line edit plus a fixture.
  */
 export const LIMITS = {

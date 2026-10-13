@@ -68,7 +68,7 @@ describe('Detective v2 contract', () => {
     expect(validateDetective({ ...v2([{ words: ['Ich', 'habe', 'Zeit.'] }]), schemaVersion: 3 }).issues).toContainEqual({ path: 'schemaVersion', code: 'version' });
     expect(validateDetective({ ...v2([{ words: ['Ich', 'habe', 'Zeit.'] }]), schemaVersion: '2' }).issues.map(i => i.code)).toContain('version');
   });
-  it('enforces the provisional limits (tasks, words per sentence, totals)', () => {
+  it('enforces the approved limits (tasks, words per sentence, totals)', () => {
     const many = (n: number) => v2(Array.from({ length: n }, () => ({ words: ['Ich', 'habe', 'Zeit.'] })));
     expect(validateDetective(many(LIMITS.tasks.max)).issues).toEqual([]);
     expect(validateDetective(many(LIMITS.tasks.max + 1)).issues.map(i => i.code)).toContain('count');
