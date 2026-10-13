@@ -19,6 +19,48 @@
 | `32e57a7` | Blank placeholder rows are not duplicates; strict import unchanged (B3, part) |
 | `e59e574` | Singular forms for counts of one (C) |
 | `9160c21` | Face-down Memory cards carry their position in their name (C) |
+| `5e7c67c` | Detective colour roles: copper for picks, green only for verdicts and revealed answers; one sentence verdict; neutral correction inputs; shorter caption; keyboard vs pointer focus; import preview colours and gaps; marks follow their word or wait in "Zu prüfen" (B2) |
+| `7697dd6` | Sequence: a pasted list fills the empty rows below it instead of leaving blank steps (B5) |
+| `867543f` | Owner decisions: Detective focus rings and single review list; Sort category row; Memory owner initials and 360 px scoreboard; blank rows neutral until the next attempt (B3); pressed icon hover; short-height presentation chrome |
+
+## Second pass: owner decisions and colour rules (2026-10-13)
+
+The owner reviewed the first Detective screenshots and approved the layout in principle. This pass applies the colour rules and the decisions below. The Detective interaction is **not accepted** until the owner confirms the refined visuals.
+
+Colour roles: **copper** = a word picked as an error (kept after Check, right or wrong); **green** = a verified result (the sentence verdict) and a missed teacher answer after Reveal; **neutral** = the learner's own correction text and the "Kein Fehler" pill.
+
+| Item | Verdict | Change |
+| --- | --- | --- |
+| Green on learner-correct words after Check | **Confirmed** | Correct picks stay copper with no tag. A false pick is dotted and tagged "Kein Fehler hier". |
+| Repeated "Richtig markiert" on every word | **Confirmed** | Removed. One verdict per sentence: "Richtig" or "Nicht ganz", including a single sentence. |
+| Duplicate review lists after Check and Reveal | **Confirmed** | Removed: the word tags say the same. Only "Noch nicht gefunden: n" remains, before Reveal. |
+| Long caption on every sentence | **Confirmed** | "Deine Korrektur · nicht automatisch geprüft", muted. |
+| Correction inputs green | **Confirmed** | Neutral white with a grey border. Never graded. |
+| Focus ring the same colour as errors | **Confirmed** | Ink-blue ring, scoped above the generic copper ring. Checked with a real Tab key. |
+| A touch tap should not open the keyboard | **Confirmed** | A pointer pick keeps focus on the word. A keyboard pick (Enter or Space) moves focus to that word's correction input. |
+| Import preview: green on the wrong words; no gap between sentences | **Confirmed** | Wrong word copper, replacement green; gaps 14 px (12 px on phones). |
+| Annotations lost when a word is inserted before them | **Confirmed** (B2) | An annotation follows its word when the word is the same, or the same word with an edited ending at the same position. Otherwise it moves to "Zu prüfen", which blocks export and play until the teacher attaches or discards it. Removing a sentence that holds such marks asks first. |
+| Blank rows red after an earlier attempt (B3) | **Confirmed** | Only problems that existed at the last attempt are red. A row added later is neutral until the next attempt; the problem summary still counts it. |
+| Stray × above the first Sort category | **Confirmed** | The name and its remove control share one row on phones (screenshot checked). |
+| Pressed icon invisible on hover | **Confirmed** | White on green on hover too; not dimmed by the card's inactive state. |
+| Memory default players "Spieler 1 / Spieler 2" share the badge letter "S" | **Confirmed** | The badge shows the player's number when letters collide. |
+| Scoreboard badge wraps at 360 px | **Confirmed** | Badge stays whole; one player per row below 420 px. |
+| Presentation chrome hides the first board on short screens | **Confirmed** | Below 820 px of height the title, subtitle and prompt shrink: 1280×600 board moves from 354 px to 252 px. |
+| Sequence paste leaves blank steps | **Confirmed** | Pasted lines fill the empty rows below first. |
+| Long German compounds break inside the word | **Confirmed, decision open** | See below. |
+
+**Checked in Chrome** (system Chrome against the Vite dev server): Detective at 1440 and 390 before Check, partly correct, fully correct, error-free, and Reveal; keyboard focus; import preview with three sentences; Sort headers at 390; Sort pressed icon on hover; presentation at 1280×600, 1366×768 and 1440×900; Memory presentation chips at 360. No page errors and no horizontal scroll in any state. Screenshots: `docs/audits/ux2-design/evidence/corrections-2026-10-13/` (`det-*`, `present2-*`, `sort-phone-headers.png`, `memory-chips-360.png`).
+
+**Measured, not changed:** with the Sort play screen at 390 px, 6 of 30 chips break inside a word (for example "Geschwindigkeitsbegrenzung", "Donaudampfschifffahrtsgesellschaft"). At 360 px, 9 of 30 do. No chip overflows its box. Natural wrapping cannot keep these words whole at this width without shrinking the font or hyphenating. That is the owner decision below.
+
+**Owner decisions needed**
+1. **Detective visuals:** accept or adjust the refined colours, the one-verdict line, the neutral inputs, the caption wording, and the "Kein Fehler" pill, which is now ink rather than green.
+2. **Keyboard focus:** keyboard picks move focus into the correction input. The alternative is to keep focus on the word, which leaves Tab as the only route.
+3. **Long German compounds:** (a) accept breaks inside words that are wider than the chip; (b) shrink the font for those words; (c) authors add soft hyphens.
+4. **Annotation review:** confirm that a mark which cannot be matched safely moves to "Zu prüfen" rather than being dropped or guessed.
+
+**Not done in this pass:** real touch devices, Safari and Firefox, screen readers, the hosted Vercel build, and Memory online rooms. The Memory 16-pair board at 390 px still scrolls the page (this is the owner's accepted layout).
+
 
 ## Findings: confirmed, disproved or adjusted
 
