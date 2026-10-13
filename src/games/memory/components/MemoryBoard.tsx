@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { PublicCard } from '../types';
-import { getColumns } from '../engine/local';
+import { boardColumns } from '../boardLayout';
 import type { OwnerMark } from '../ownership';
 
 export interface BoardLabels { hidden: string; revealed: string; foundBy: (name: string) => string }
@@ -16,10 +16,10 @@ interface Props {
   labels?: BoardLabels;
 }
 export function MemoryBoard({ cards, canFlip, onFlip, notice, wrong, owners, labels = GERMAN_LABELS }: Props) {
-  const cols = getColumns(cards.length);
+  const { desktop, phone } = boardColumns(cards.length);
   return <div className="board-panel">
     {notice && <div role="status" className={'feedback ' + (wrong ? 'feedback-wrong' : '')}>{notice}</div>}
-    <div className="memory-grid" style={{ gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))' }}>
+    <div className="memory-grid" style={{ '--cols': desktop, '--cols-phone': phone } as CSSProperties}>
       {cards.map(card => {
         const shown = card.visible || card.matched;
         const emoji = !!card.value && /\p{Extended_Pictographic}/u.test(card.value) && card.value.length <= 8;
