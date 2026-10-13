@@ -96,16 +96,24 @@ export function SequenceEditor({ activity, onChange, locale, field }: EditorProp
     if (lines.length < 2) return; // a single line pastes into the row as usual
     event.preventDefault();
     const item = items[index];
+    // Empty rows are placeholders: the pasted lines fill the current row (if empty) and the empty rows that follow it,
+    // before any new row is added. Otherwise a paste leaves blank steps behind that validation then flags.
     const fillCurrent = item.text.trim() === '';
-    const room = MAX_STEPS - items.length + (fillCurrent ? 1 : 0);
+    let blankAfter = 0;
+    while (index + 1 + blankAfter < items.length && items[index + 1 + blankAfter].text.trim() === '') blankAfter++;
+    const slotStart = fillCurrent ? index : index + 1;
+    const slots = items.slice(slotStart, slotStart + (fillCurrent ? 1 : 0) + blankAfter);
+    const room = MAX_STEPS - items.length + slots.length;
     const accepted = lines.slice(0, Math.max(room, 0));
     if (accepted.length === 0) return;
     const used = items.map(v => v.id);
-    const created = accepted.slice(fillCurrent ? 1 : 0).map(text => { const id = nextId(used); used.push(id); return { id, text }; });
-    const head = items.slice(0, index).concat(fillCurrent ? [{ ...item, text: accepted[0] }] : [item]);
-    update({ items: [...head, ...created, ...items.slice(index + 1)] });
+    const filled = slots.map((slot, k) => k < accepted.length ? { ...slot, text: accepted[k] } : slot);
+    const created = accepted.slice(slots.length).map(text => { const id = nextId(used); used.push(id); return { id, text }; });
+    const before = items.slice(0, slotStart);
+    const after = items.slice(slotStart + slots.length);
+    update({ items: [...before, ...filled, ...created, ...after] });
     setNotice(words[accepted.length < lines.length ? 'cut' : 'pasted'].replace('{n}', String(accepted.length)));
-    setFocusTarget({ id: (created[created.length - 1] ?? head[head.length - 1]).id, end: true });
+    setFocusTarget({ id: (created[created.length - 1] ?? filled[filled.length - 1] ?? item).id, end: true });
   }
   return <div className="activity-editor sequence-editor">
     <label className="activity-field sequence-prompt">{t(locale, 'prompt')}

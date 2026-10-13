@@ -188,8 +188,17 @@ describe('Sequence canvas: type, Enter, paste', () => {
     await create(user);
     await user.click(field('Schritt 1'));
     await user.paste('1. Aufstehen\n2) Frühstücken\n- Zur Schule gehen\n\n• Lernen\nHeimgehen');
-    expect(order()).toEqual(['Aufstehen', 'Frühstücken', 'Zur Schule gehen', 'Lernen', 'Heimgehen', '', '']);
+    // The two empty placeholder rows below are filled by the list, not left behind as blank steps.
+    expect(order()).toEqual(['Aufstehen', 'Frühstücken', 'Zur Schule gehen', 'Lernen', 'Heimgehen']);
     expect(document.querySelector('.activity-editor [role="status"].sr-only')?.textContent).toContain('5 Schritte');
+  });
+  it('a list pasted above empty rows fills those rows first and adds new ones only after them', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await create(user);
+    await user.type(field('Schritt 1'), 'Erster');
+    await user.click(field('Schritt 1'));
+    await user.paste('A\nB');
+    expect(order()).toEqual(['Erster', 'A', 'B']);
   });
   it('inserts pasted lines after a filled row and caps at 20 with a message', async () => {
     const { user } = renderPage(<SequencePage />);
