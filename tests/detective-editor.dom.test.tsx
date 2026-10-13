@@ -81,29 +81,33 @@ describe('Language Detective canvas: one sentence card', () => {
     await user.click(button('Herunterladen'));
     expect(JSON.parse(await dl.text()).content.issues).toEqual([]);
   });
-  it('keeps a mark through a typo in its word, and holds it for review when a different word takes its place', async () => {
+  it('holds a mark when its word is edited, and attaches it only when the teacher picks the word', async () => {
     const dl = captureDownload(); const { user } = renderPage(<DetectivePage />);
     await loaded(user);
     fireEvent.change(sentence(1), { target: { value: 'Ich haben heute dem Film gesehen.' } });   // "gestern" -> "heute": not marked, nothing moves
     expect(screen.getAllByLabelText(/^Musterkorrektur/)).toHaveLength(2);
     expect(screen.queryByRole('note')).toBeNull();
-    fireEvent.change(sentence(1), { target: { value: 'Ich habn heute dem Film gesehen.' } });     // a typo in the same word keeps its mark
-    expect(screen.getAllByLabelText(/^Musterkorrektur/)).toHaveLength(2);
-    expect(screen.queryByRole('note')).toBeNull();
-    fireEvent.change(sentence(1), { target: { value: 'Ich sind heute dem Film gesehen.' } });    // another word does not inherit the mark
+    fireEvent.change(sentence(1), { target: { value: 'Ich habn heute dem Film gesehen.' } });     // a typo changes the word: the mark is held, not guessed
     expect(screen.getAllByLabelText(/^Musterkorrektur/)).toHaveLength(1);
     expect(screen.getByRole('note').textContent).toContain('1 Markierung zur Prüfung verschoben');
     const review = screen.getByRole('group', { name: /^Zu prüfen/ });
-    expect(review.textContent).toContain('habn → habe');
+    expect(review.textContent).toContain('haben → habe');
     await expectBlocked(user, dl);                                  // export waits for a decision
-    await user.selectOptions(within(review).getByRole('combobox'), screen.getByRole('option', { name: '2. sind' }));
+    await user.selectOptions(within(review).getByRole('combobox'), screen.getByRole('option', { name: '2. habn' }));
     await user.click(within(review).getByRole('button', { name: 'Zuordnen' }));
     expect(screen.queryByRole('group', { name: /^Zu prüfen/ })).toBeNull();
     expect(screen.getAllByLabelText(/^Musterkorrektur/)).toHaveLength(2);
     await user.click(button('Herunterladen'));
     const data = JSON.parse(await dl.text());
-    const sind = data.content.segments.find((s: { text: string }) => s.text === 'sind');
-    expect(data.content.issues.find((i: { correction: string }) => i.correction === 'habe').segmentId).toBe(sind.id);
+    const habn = data.content.segments.find((s: { text: string }) => s.text === 'habn');
+    expect(data.content.issues.find((i: { correction: string }) => i.correction === 'habe').segmentId).toBe(habn.id);
+  });
+  it('never attaches a held mark to a changed word on its own, even when the new word looks similar', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await loaded(user);
+    fireEvent.change(sentence(1), { target: { value: 'Ich habt heute dem Film gesehen.' } });
+    expect(screen.getByRole('group', { name: /^Zu prüfen/ }).textContent).toContain('haben → habe');
+    expect(screen.getAllByLabelText(/^Musterkorrektur/)).toHaveLength(1);
   });
   it('discards a held mark only on an explicit click, and then the export is allowed again', async () => {
     const dl = captureDownload(); const { user } = renderPage(<DetectivePage />);

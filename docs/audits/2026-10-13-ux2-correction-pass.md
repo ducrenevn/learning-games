@@ -39,7 +39,7 @@ Colour roles: **copper** = a word picked as an error (kept after Check, right or
 | Focus ring the same colour as errors | **Confirmed** | Ink-blue ring, scoped above the generic copper ring. Checked with a real Tab key. |
 | A touch tap should not open the keyboard | **Confirmed** | A pointer pick keeps focus on the word. A keyboard pick (Enter or Space) moves focus to that word's correction input. |
 | Import preview: green on the wrong words; no gap between sentences | **Confirmed** | Wrong word copper, replacement green; gaps 14 px (12 px on phones). |
-| Annotations lost when a word is inserted before them | **Confirmed** (B2) | An annotation follows its word when the word is the same, or the same word with an edited ending at the same position. Otherwise it moves to "Zu prüfen", which blocks export and play until the teacher attaches or discards it. Removing a sentence that holds such marks asks first. |
+| Annotations lost when a word is inserted before them | **Confirmed** (B2) | An annotation follows its word only when the word is unchanged apart from surrounding punctuation, or when a repeated word sits in an identical head or tail of the sentence (see the third pass). Anything else moves to "Zu prüfen", which blocks export and play until the teacher attaches or discards it. Removing a sentence that holds such marks asks first. |
 | Blank rows red after an earlier attempt (B3) | **Confirmed** | Only problems that existed at the last attempt are red. A row added later is neutral until the next attempt; the problem summary still counts it. |
 | Stray × above the first Sort category | **Confirmed** | The name and its remove control share one row on phones (screenshot checked). |
 | Pressed icon invisible on hover | **Confirmed** | White on green on hover too; not dimmed by the card's inactive state. |
@@ -61,6 +61,21 @@ Colour roles: **copper** = a word picked as an error (kept after Check, right or
 
 **Not done in this pass:** real touch devices, Safari and Firefox, screen readers, the hosted Vercel build, and Memory online rooms. The Memory 16-pair board at 390 px still scrolls the page (this is the owner's accepted layout).
 
+
+## Third pass: strict annotation matching (2026-10-13)
+
+The owner accepted the visual review. One technical point had to change before sign-off: the earlier matcher let a mark follow a word that only shared a three-letter stem, so "Haus" → "Haustür" and "machen" → "Macht" could keep a correction that belonged to a different word.
+
+**Rule now** (`src/games/language-detective/align.ts`):
+- A word matches only when it is identical apart from surrounding or inner punctuation. Case is significant ("machen" / "Machen" differ), and an edited ending is a different word ("habe" → "habt", "Haus" → "Hauses", "Haus" → "Haustür").
+- A word that occurs more than once in the sentence follows its mark only inside an identical head (same index from the start) or an identical tail (same distance from the end). Anywhere else the occurrence cannot be proven, so the mark goes to "Zu prüfen".
+- Everything else (a deleted word, a split, a changed word, a moved repeated word) goes to "Zu prüfen". Recovery is one click: the teacher attaches the held mark to the intended word or discards it.
+
+**Tests:** `tests/detective-align.test.ts` covers the stem and case cases, punctuation-only changes, insertions and deletions, a modified ending, a split, repeated words (unchanged, deleted, inserted before an identical tail, moved, swapped), and the review gate. `tests/detective-editor.dom.test.tsx` now expects a typo to hold the mark for review, then attach it to the typed word on an explicit choice.
+
+**Chrome check** (system Chrome, Vite dev server, fixture `03-zwei-fehler-im-service.json`): "Gäste" → "Gästen" holds the mark; restoring the word does not reattach it silently; "ein" → "eins" holds its mark; a punctuation-only edit on a fresh page keeps both marks with no review item. No page errors, no horizontal scroll.
+
+**Known trade-off:** a mark held for review does not come back when its word is restored. The teacher attaches it again. This is deliberate: a silent reattach is the failure the owner asked to rule out.
 
 ## Findings: confirmed, disproved or adjusted
 
@@ -105,7 +120,7 @@ Colour roles: **copper** = a word picked as an error (kept after Check, right or
    - The caption "Dein Korrekturvorschlag – wird nicht automatisch bewertet" is always shown while a correction line is visible.
 2. **Memory board layout (A1):** the working default is 8×4 on desktop and 4 columns on phones. Alternatives: 4×8 on desktop with an internal scroll, or smaller square cards to reduce phone scrolling. The 16-pair phone board is about 750 px tall and scrolls the page.
 3. **Long German compounds (A2 and Memory):** Chrome here does not hyphenate German with `hyphens:auto`. Options: (a) accept a break inside a word that is wider than the card; (b) shrink the font for long words; (c) let authors insert soft hyphens in long words.
-4. **Annotation preservation (B2):** not implemented. Behaviour needs a decision first. Proposal: keep an annotation when its word is identified unambiguously after an edit; otherwise move it to a visible "needs review" list with a restore action, and never attach it silently to a different word.
+4. **Annotation review policy (B2):** implemented with the strict rule in the third pass. Please confirm that a mark which cannot be matched with certainty goes to "Zu prüfen" and is never guessed onto another word.
 5. **New blank rows after an earlier play attempt (B3):** still red once an attempt has happened. Proposal: a new blank row is neutral until the teacher leaves it or tries to play again; the problem summary keeps counting it.
 6. **Sort category header:** a stray "×" sits alone above the first category on phones. It was there before this pass; the placement is a layout decision.
 
