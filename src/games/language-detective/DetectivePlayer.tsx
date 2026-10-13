@@ -64,8 +64,6 @@ function SentenceCard(p: CardProps) {
   // Missed error locations are concealed until Reveal: after Check only the learner's own picks are marked.
   const markOf = (id: string): Mark | null => !p.checked ? null
     : p.selected.has(id) ? (issueMap.has(id) ? 'hit' : 'extra') : issueMap.has(id) && p.revealed ? 'missed' : null;
-  const textsOf = (mark: Mark) => task.segments.filter(s => markOf(s.id) === mark).map(s => s.text).join(', ');
-  const reviewHasContent = p.checked && (score.extra.length > 0 || score.missed.length > 0);
   const label = p.single ? '' : ' (' + u(locale, 'sentenceNo', { n: p.index + 1 }) + ')';
   const showCorrection = p.typing && !p.noErrors && p.selected.size > 0;
   // One concise verdict per sentence; the aggregate result stays below the sentences.
@@ -91,12 +89,9 @@ function SentenceCard(p: CardProps) {
       <span className="detective-none-mark" aria-hidden="true">{p.noErrors && <Check size={16} strokeWidth={3} />}</span>
       <span>{t(locale, 'noErrors')}</span>{label && <span className="sr-only">{label}</span>}
     </label>
-    {reviewHasContent && <div className="activity-key">
-      {score.extra.length > 0 && <p>{t(locale, 'extra')}: <span lang={lang}>{textsOf('extra')}</span></p>}
-      {score.missed.length > 0 && (p.revealed
-        ? <p>{t(locale, 'missed')}: <span lang={lang}>{textsOf('missed')}</span></p>
-        : <p>{u(locale, 'notFoundYet', { n: score.missed.length })}</p>)}
-    </div>}
+    {/* The tags on the words already say which picks were false and which answers were missed, so the only addition is the
+        count of answers not found yet, and only before Reveal. */}
+    {p.checked && !p.revealed && score.missed.length > 0 && <p className="muted small">{u(locale, 'notFoundYet', { n: score.missed.length })}</p>}
     {p.revealed && <section className="activity-key" tabIndex={-1} ref={p.keyRef} aria-labelledby={uid + 'key'}><h3 id={uid + 'key'}>{t(locale, 'answerKey')}{label}</h3>
       {!task.issues.length && <p>{t(locale, 'noErrors')}</p>}
       {task.segments.filter(s => issueMap.has(s.id)).map(s => {

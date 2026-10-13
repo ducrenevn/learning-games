@@ -71,6 +71,9 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
   const [savedAt,setSavedAt] = useState<Date|null>(null);
   const [autoId,setAutoId] = useState(true);
   const [attempted,setAttempted] = useState(false);
+  // Problems that existed at the last attempt. Only these are marked red; a problem added later (a new blank row) waits
+  // for the next attempt, while the problem summary still counts it.
+  const [flagged,setFlagged] = useState<string[]>([]);
   const [attemptToken,setAttemptToken] = useState(0);
   const [advancedOpen,setAdvancedOpen] = useState(false);
   const [importCandidate,setImportCandidate] = useState<T|null>(null);
@@ -88,7 +91,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
   const titleRef = useRef<HTMLInputElement>(null);
   const importToken = useRef(0);
   const issues = validate(draft).issues;
-  const { field, region } = makeFieldHelpers(issues, attempted);
+  const { field, region } = makeFieldHelpers(issues.filter(issue => flagged.includes(issue.path)), attempted);
   const isPlay = screen === 'play';
   const name = LABELS[kind];
 
@@ -118,6 +121,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
   },[attemptToken,screen]);
 
   function change(next:T){setDraft(next);setDirty(true);}
+  function markAttempt(found:Issue[]){setAttempted(true);setFlagged(found.map(issue=>issue.path));setAttemptToken(n=>n+1);}
   function titleChange(title:string) {
     change({...draft,title,id:autoId?cleanSlug(title,'new-'+kind):draft.id});
   }
@@ -134,7 +138,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
   function startNew() {
     if (!requestDiscard())return;
     importToken.current++;
-    setDraft(makeBlank());setAutoId(true);setDirty(false);setOrigin('new');setSavedAt(null);setAttempted(false);setAdvancedOpen(false);
+    setDraft(makeBlank());setAutoId(true);setDirty(false);setOrigin('new');setSavedAt(null);setAttempted(false);setFlagged([]);setAdvancedOpen(false);
     setFileError(null);setImportCandidate(null);setOnlineError('');setScreen('edit');
     queueMicrotask(() => titleRef.current?.focus());
   }
@@ -163,14 +167,14 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
   function acceptFile() {
     if(!importCandidate || !requestDiscard())return;
     setDraft(structuredClone(importCandidate));setDirty(false);setAutoId(false);setOrigin('file');setSavedAt(null);
-    setAttempted(false);setAdvancedOpen(false);setImportCandidate(null);setFileError(null);setOnlineError('');setScreen('edit');
+    setAttempted(false);setFlagged([]);setAdvancedOpen(false);setImportCandidate(null);setFileError(null);setOnlineError('');setScreen('edit');
   }
   /** Returns the validated activity, or flags the first problem (focus + explanation) and returns null. */
   function requireValid(): T | null {
     const result=validate(draft);
     if(result.value && !result.issues.length) return result.value;
     if(result.issues.some(issue=>issue.path==='id'))setAdvancedOpen(true);
-    setAttempted(true);setAttemptToken(n=>n+1);
+    markAttempt(result.issues);
     return null;
   }
   function play(next:PlayMode) {
@@ -284,7 +288,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
         <div className="canvas-foot">
           <p className={'canvas-status '+(issues.length?'incomplete':'ready')}>
             {issues.length===0 ? <><Check size={17} aria-hidden="true"/>{countsOf(kind,draft.content,locale)} · {u(locale,'readyChip')}</>
-              : <><span>{count(locale,'needsChip1','needsChip',issues.length)}</span> <button type="button" className="text-button" onClick={()=>{setAttempted(true);setAttemptToken(n=>n+1);}}>{u(locale,'gotoProblem')} →</button></>}
+              : <><span>{count(locale,'needsChip1','needsChip',issues.length)}</span> <button type="button" className="text-button" onClick={()=>markAttempt(issues)}>{u(locale,'gotoProblem')} →</button></>}
           </p>
           <details className="activity-ux-disclosure" open={advancedOpen} onToggle={event=>setAdvancedOpen(event.currentTarget.open)}><summary>{u(locale,'advanced')}</summary>
             <p className="muted small">{u(locale,'advancedHelp')}</p>

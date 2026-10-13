@@ -92,7 +92,6 @@ describe('Language Detective play: identification scoring', () => {
     expect(playText()).toContain('Ergebnis: Nicht richtig — 1 von 2 richtig');
     expect(playText()).toContain('Noch nicht gefunden: 1');        // the missed "dem" is counted, not named, before Reveal
     expect(playText()).not.toMatch(/Übersehen/);
-    expect(playText()).toMatch(/Fälschlich markiert: Film/);
     // A correct pick stays copper with no tag; a false pick is dotted and says it is not an error.
     expect(segment('haben').classList.contains('hit')).toBe(true);
     expect(segment('haben').textContent).not.toMatch(/markiert|Übersehen/);
@@ -101,7 +100,6 @@ describe('Language Detective play: identification scoring', () => {
     expect(segment('Film').textContent).toContain('Kein Fehler hier');
     expect(segment('Ich').textContent).not.toMatch(/markiert|Übersehen/);
     await reveal(user);
-    expect(playText()).toMatch(/Übersehen: dem/);
     expect(segment('dem').textContent).toContain('Übersehen');
   });
   it('solves exactly when the flagged set equals the issue set', async () => {
@@ -125,7 +123,7 @@ describe('Language Detective play: identification scoring', () => {
     await pick(user, 'gesehen.');
     await check(user);
     expect(playText()).toContain('Ergebnis: Nicht richtig');
-    expect(playText()).toMatch(/Fälschlich markiert: gesehen\./);
+    expect(segment('gesehen.').classList.contains('extra')).toBe(true);
   });
   it('"No errors" on a passage that has errors is wrong and reveals every miss', async () => {
     const { user } = renderPage(<DetectivePage />);
@@ -136,7 +134,8 @@ describe('Language Detective play: identification scoring', () => {
     expect(playText()).toContain('Noch nicht gefunden: 2');          // a count only, never the locations
     expect(playText()).not.toMatch(/Übersehen/);
     await reveal(user);
-    expect(playText()).toMatch(/Übersehen: haben, dem/);
+    expect(segment('haben').textContent).toContain('Übersehen');
+    expect(segment('dem').textContent).toContain('Übersehen');
   });
   it('selecting segments clears "No errors" and choosing "No errors" clears the selection', async () => {
     const { user } = renderPage(<DetectivePage />);
@@ -190,7 +189,8 @@ describe('Language Detective play: free-text corrections are never graded', () =
     expect(playText()).toContain('Noch nicht gefunden: 2');
     expect(playText()).not.toMatch(/Übersehen/);
     await reveal(user);
-    expect(playText()).toMatch(/Übersehen: haben, dem/);
+    expect(segment('haben').textContent).toContain('Übersehen');
+    expect(segment('dem').textContent).toContain('Übersehen');
   });
   it('shows the learner text beside the teacher key only after Reveal, labelled as not graded, and never marks it right or wrong', async () => {
     const { user } = renderPage(<DetectivePage />);
@@ -391,14 +391,14 @@ describe('Language Detective play: several sentences (v2)', () => {
     expect(card(2).querySelector('.sent-badge')!.textContent).toContain('Richtig');
     expect(card(3).querySelector('.sent-badge')!.textContent).toContain('Nicht ganz');
     const review=(n: number, label: string) => Array.from(card(n).querySelectorAll('p')).find(p => p.textContent!.includes(label))?.textContent ?? '';
-    expect(review(3, 'Fälschlich markiert')).toMatch(/ins/);
+    expect(chip(3, 'ins').classList.contains('extra')).toBe(true);
     expect(review(3, 'Noch nicht gefunden: 1')).toBe('Noch nicht gefunden: 1');
     expect(review(3, 'Übersehen')).toBe('');                       // the missed word "habe" is not named before Reveal
     expect(chip(3, 'habe').classList.contains('missed')).toBe(false);
     expect(card(1).textContent).not.toMatch(/Übersehen|Fälschlich|Noch nicht/);
     expect(document.activeElement?.textContent).toContain('Sätzen richtig');
     await reveal(user);
-    expect(review(3, 'Übersehen')).toMatch(/habe/);
+    expect(chip(3, 'habe').textContent).toContain('Übersehen');
     expect(chip(3, 'habe').classList.contains('missed')).toBe(true);
   });
   it('shows no review or disclaimer box for an error-free sentence after Check', async () => {

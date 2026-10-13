@@ -12,7 +12,7 @@ import type { MemoryPair } from './types';
 import type { Locale } from '../../shared/activities/contract';
 import { MemoryBoard } from './components/MemoryBoard';
 import { MemoryScoreboard } from './components/MemoryScoreboard';
-import { MAX_LOCAL_PLAYERS, ownerMark, type OwnerMark } from './ownership';
+import { MAX_LOCAL_PLAYERS, ownerMarks, type OwnerMark } from './ownership';
 
 interface Props {
   pairs: MemoryPair[];
@@ -60,7 +60,7 @@ export function LocalMemory({ pairs, errors, onPlayingChange, locale = 'de', sin
     .filter(Boolean)
     .slice(0, MAX_LOCAL_PLAYERS);
   const marks: Record<string, OwnerMark> = {};
-  players.forEach((name, i) => { marks[String(i)] = ownerMark(i, name); });
+  ownerMarks(players).forEach((mark, i) => { marks[String(i)] = mark; });
   // With one player every pair would carry the same mark, so ownership is only shown in turn-taking games.
   const showOwners = players.length > 1;
 

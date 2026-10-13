@@ -17,3 +17,13 @@ export function ownerMark(index: number, name: string): OwnerMark {
   const style = STYLES[((index % STYLES.length) + STYLES.length) % STYLES.length];
   return { ...style, initial: (Array.from(name.trim())[0] ?? '?').toLocaleUpperCase(), name };
 }
+/**
+ * Marks for every player, in order. Players whose names share a first letter (the default "Spieler 1, Spieler 2") would
+ * look alike, so for them the badge shows the player's number instead of the letter.
+ */
+export function ownerMarks(names: readonly string[]): OwnerMark[] {
+  const marks = names.map((name, i) => ownerMark(i, name));
+  const count = new Map<string, number>();
+  marks.forEach(mark => count.set(mark.initial, (count.get(mark.initial) ?? 0) + 1));
+  return marks.map((mark, i) => (count.get(mark.initial) ?? 0) > 1 ? { ...mark, initial: String(i + 1) } : mark);
+}
