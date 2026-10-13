@@ -1,3 +1,5 @@
+import type { Locale } from '../../shared/activities/contract';
+
 export interface MemoryPair { left: string; right: string; category?: string }
 export interface PublicCard { id: number; visible: boolean; matched: boolean; value: string | null }
 export interface Player { id: string; name: string; score: number }
@@ -17,6 +19,8 @@ export interface MemoryRoomState {
   lastMatch: boolean | null;
   canFlip: boolean;
   expiresAt: string;
+  roomLanguage: Locale;
+  allowStudentLanguageChoice: boolean;
 }
 export type RoomRole = 'host' | 'student';
 export interface RoomIdentity { roomCode: string; token: string; role: RoomRole }

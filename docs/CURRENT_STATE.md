@@ -1,5 +1,17 @@
 # Current State — 2026-10-12 documentation reconciliation
 
+## UX-2 + Memory M3a room integration — LG-MP0 (2026-10-13, local branch)
+**Branch:** `feat/lg-mp0-ux2-m3a-integration-20261013`, created from the accepted UX-2 SHA `d998237`. Local commit only: not pushed, not merged, not deployed. No hosted SQL, RPC, room or SPP write was performed.
+
+- **Create Room:** a dialog asks for the room language (default: the teacher's current interface language) and whether students may choose. Confirming calls the existing `game_poc_memory_create_v2` with `p_language` and `p_allow_student_language_choice`. Cancelling makes no RPC call and keeps the editor draft.
+- **Language policy:** every room state is validated (`roomLanguage` and `allowStudentLanguageChoice`). A missing or malformed policy shows a localized error instead of falling back to browser language. Mutation responses that omit the policy reuse only the previously validated policy.
+- **One-language rooms** enforce the room language on every render. **Student-choice rooms** apply the room language once per visit, so polling never overwrites a participant's selection. Choices stay in memory only.
+- **Language controls:** the global flag toggle is hidden on room routes and is shown on the join page, which is now localized. A student-choice room renders one control inside the room; a forced room renders none.
+- **Localization:** join, lobby, play, results, board/scoreboard labels, share panel, room errors and the configuration dialog are in DE/EN/VI. Room errors are reduced to stable keys, so raw backend text is never shown.
+- **Tests:** 29 new tests in `tests/memory-room-language.dom.test.tsx` and `tests/room-language-policy.test.ts`. They mock the Supabase `rpc` boundary, so the real `memoryRpc` argument shapes and policy assertion run. Full suite: 33 files, 436 tests passing. Typecheck and build pass.
+- **Browser (local Vite, RPCs intercepted):** 17 checks at 1280 and 390 px: dialog cancel and confirm, host and student lobbies, one language control per room, no horizontal overflow, no page errors.
+- **Not verified:** a real hosted Memory room, a real multi-device session, Vercel, Safari/Firefox, screen readers. The Memory game engine, `useMemoryRoom` turn/flip logic and the SPP backend are unchanged.
+
 ## UX-2 single-canvas implementation — AUTHORITATIVE (2026-10-13)
 
 **UX-2 correction pass (2026-10-13, same branch):** findings, commits, verification and open owner decisions are in [the correction log](audits/2026-10-13-ux2-correction-pass.md). Detective, Sort, Sequence and Memory layout and copy corrections are committed; the Detective refinement awaits the owner's visual opinion; annotation preservation (B2) is not implemented.

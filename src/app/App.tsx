@@ -10,8 +10,11 @@ import { DetectivePage } from '../games/language-detective/DetectivePage';
 import { LanguageFlags, LocaleProvider, useLocale } from '../shared/locale/LocaleProvider';
 
 const NOTE = { de: 'Gemeinsam spielen und lernen', en: 'Play and learn together', vi: 'Cùng chơi và học' } as const;
-/** The online room pages are still German-only; a switcher there would promise a translation that does not exist. */
-const hasLocalisedPage = (path: string) => !/^\/games\/memory\/(join|room)(\/|$)/.test(path);
+/**
+ * Online room routes never show this global toggle. A room's language is set by the server's policy: a forced room
+ * must not offer an override, and a student-choice room renders its own control inside the room (RoomLanguageBar).
+ */
+const hasLocalisedPage = (path: string) => !/^\/games\/memory\/room(\/|$)/.test(path);
 
 /** The single app bar: wordmark, tagline and the global interface-language toggle. Shared by the app and by DOM tests. */
 export function AppShell({ children }: { children: ReactNode }) {

@@ -1,5 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react';
 import { useState } from 'react';
+import type { Locale } from '../activities/contract';
+import { roomText } from './roomCopy';
 
 export function makeJoinUrl(roomCode: string, origin: string): string {
   const url = new URL('/games/memory/join', origin);
@@ -7,7 +9,7 @@ export function makeJoinUrl(roomCode: string, origin: string): string {
   return url.toString();
 }
 
-export function RoomShare({ roomCode }: { roomCode: string }) {
+export function RoomShare({ roomCode, locale }: { roomCode: string; locale: Locale }) {
   const [copied, setCopied] = useState(false);
   const link = makeJoinUrl(roomCode, window.location.origin);
   async function copy() {
@@ -15,12 +17,14 @@ export function RoomShare({ roomCode }: { roomCode: string }) {
     catch { setCopied(false); }
   }
   return <aside className="share-panel panel">
-    <h2>Mit der Gruppe teilen</h2>
-    <p>Raumcode <strong className="room-code">{roomCode}</strong></p>
+    <h2>{roomText(locale, 'shareTitle')}</h2>
+    <p>{roomText(locale, 'shareCode')} <strong className="room-code">{roomCode}</strong></p>
     <div className="qr"><QRCodeSVG value={link} size={190} level="M" /></div>
-    <label htmlFor="join-url">Beitrittslink</label>
+    <label htmlFor="join-url">{roomText(locale, 'shareLink')}</label>
     <input id="join-url" className="field" readOnly value={link} onFocus={event => event.currentTarget.select()} />
-    <button className="button secondary stretch" type="button" onClick={() => void copy()}>{copied ? 'Kopiert!' : 'Link kopieren'}</button>
-    <p className="muted small">Alternativ: Website öffnen und den Raumcode eingeben.</p>
+    <button className="button secondary stretch" type="button" onClick={() => void copy()}>
+      {copied ? roomText(locale, 'shareCopied') : roomText(locale, 'shareCopy')}
+    </button>
+    <p className="muted small">{roomText(locale, 'shareAlt')}</p>
   </aside>;
 }
