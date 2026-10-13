@@ -1,0 +1,109 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 2,
+  "activityType": "language-detective",
+  "id": "drei-kurze-saetze",
+  "title": "Drei kurze Sätze",
+  "targetLanguage": "de",
+  "instructions": "Finde in jedem Satz den Fehler – oder entscheide, dass er richtig ist.",
+  "content": {
+    "prompt": "Lies jeden Satz einzeln.",
+    "tasks": [
+      {
+        "id": "task-1",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Der"
+          },
+          {
+            "id": "segment-2",
+            "text": "Gäste"
+          },
+          {
+            "id": "segment-3",
+            "text": "bestellt"
+          },
+          {
+            "id": "segment-4",
+            "text": "einen"
+          },
+          {
+            "id": "segment-5",
+            "text": "Tee."
+          }
+        ],
+        "issues": [
+          {
+            "segmentId": "segment-2",
+            "correction": "Gast",
+            "explanation": "Nach „der“ steht der Singular: der Gast."
+          }
+        ]
+      },
+      {
+        "id": "task-2",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Wir"
+          },
+          {
+            "id": "segment-2",
+            "text": "bleiben"
+          },
+          {
+            "id": "segment-3",
+            "text": "heute"
+          },
+          {
+            "id": "segment-4",
+            "text": "im"
+          },
+          {
+            "id": "segment-5",
+            "text": "Hotel."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-3",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "gestern"
+          },
+          {
+            "id": "segment-4",
+            "text": "ins"
+          },
+          {
+            "id": "segment-5",
+            "text": "Kino"
+          },
+          {
+            "id": "segment-6",
+            "text": "gegangen."
+          }
+        ],
+        "issues": [
+          {
+            "segmentId": "segment-2",
+            "correction": "bin",
+            "explanation": "„gehen“ bildet das Perfekt mit „sein“: Ich bin ins Kino gegangen."
+          }
+        ]
+      }
+    ],
+    "summary": "Achte auf Singular und Plural und auf das Hilfsverb im Perfekt."
+  }
+}

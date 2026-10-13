@@ -80,13 +80,13 @@ describe('single-canvas entry and local authoring',()=>{
     const {user}=renderPage(<DetectivePage/>);
     await user.click(button(/Selbst erstellen/));
     await user.type(screen.getByLabelText('Aufgabe'),'Finde die falschen Wörter.');
-    const passage=screen.getByLabelText('Text') as HTMLTextAreaElement;
+    const passage=screen.getByLabelText('Satz 1') as HTMLTextAreaElement;
     await user.type(passage,'Ich haben heute Zeit.');
     expect(splitPassage(passage.value)).toEqual(['Ich','haben','heute','Zeit.']);
-    const text=within(screen.getByRole('group',{name:'Fehler markieren'}));
+    const text=within(screen.getByRole('group',{name:'Fehler markieren · Satz 1'}));
     await user.click(text.getByRole('button',{name:'haben'}));
     await user.type(screen.getByLabelText(/Musterkorrektur/),'habe');
-    await user.type(screen.getByLabelText(/Erklärung/),'Kongruenz.');
+    await user.type(screen.getByLabelText(/^Erklärung · Satz 1/),'Kongruenz.');
     await waitFor(()=>expect(screen.getByText(/spielbereit/)).toBeTruthy());
     await user.click(button('Ausprobieren'));
     expect(document.querySelector('.activity-ux-play')).toBeTruthy();

@@ -15,7 +15,9 @@ export function makeFieldHelpers(issues: readonly Issue[], showing: boolean) {
   };
 }
 
-const COLLECTIONS = /^content\.(categories|items|segments|issues|pairs|tasks)\[(\d+)\](?:\.([a-zA-Z]+))?$/;
+const COLLECTIONS = /^content\.(categories|items|segments|issues|pairs)\[(\d+)\](?:\.([a-zA-Z]+))?$/;
+/** Language Detective v2: content.tasks[i], .segments / .segments[j].text, .issues / .issues[k].correction … */
+const TASK_PATH = /^content\.tasks\[(\d+)\](?:\.(segments|issues)(?:\[(\d+)\])?(?:\.(\w+))?)?$/;
 /** Teacher-facing wording; raw schema paths only ever appear in import diagnostics. */
 export function friendlyIssue(kind: ActivityType, issue: Issue, locale: Locale): string {
   const raw = issueText(issue, locale);
@@ -30,6 +32,13 @@ export function friendlyIssue(kind: ActivityType, issue: Issue, locale: Locale):
     : field === 'categoryId' ? t(locale, 'category') : field === 'correction' ? t(locale, 'correction')
     : field === 'explanation' ? t(locale, 'issueExplanation') : field === 'segmentId' ? t(locale, 'issue')
     : field === 'category' ? t(locale, 'category') : null;
+  const task = TASK_PATH.exec(issue.path);
+  if (task) {
+    const where = u(locale, 'sentenceOne') + ' ' + (Number(task[1]) + 1);
+    const part = task[4] === 'correction' ? t(locale, 'correction') : task[4] === 'explanation' ? t(locale, 'issueExplanation')
+      : task[2] === 'issues' ? t(locale, 'issue') : task[2] === 'segments' ? u(locale, 'passage') : null;
+    return where + (part ? ' · ' + part : '') + ': ' + description;
+  }
   const indexed = COLLECTIONS.exec(issue.path);
   if (indexed) {
     const label = indexed[3] ? fieldOf(indexed[3]) : null;

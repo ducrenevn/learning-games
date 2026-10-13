@@ -2,9 +2,10 @@
 export type ActivityType = 'sort' | 'sequence' | 'language-detective' | 'memory';
 export type Locale = 'de' | 'en' | 'vi';
 export type PlayMode = 'preview' | 'presentation' | 'independent';
-export interface ActivityBase<K extends ActivityType, C> {
+/** `V` is the content-contract version; every type is version 1 except Language Detective, which also has version 2. */
+export interface ActivityBase<K extends ActivityType, C, V extends 1 | 2 = 1> {
   format: 'learning-games.activity';
-  schemaVersion: 1;
+  schemaVersion: V;
   activityType: K;
   id: string;
   title: string;
@@ -80,10 +81,11 @@ export function distinct(items: unknown[], field: string, path: string, issues: 
     seen.add(key);
   });
 }
-export function envelope(raw: unknown, kind: ActivityType, issues: Issue[]): raw is Record<string, unknown> {
+/** `allowedVersions` is per activity type: everything accepts only version 1 except Language Detective (see DETECTIVE_V2_CONTRACT.md). */
+export function envelope(raw: unknown, kind: ActivityType, issues: Issue[], allowedVersions: readonly number[] = [1]): raw is Record<string, unknown> {
   if (!record(raw, '', ['format', 'schemaVersion', 'activityType', 'id', 'title', 'targetLanguage', 'instructions', 'content'], issues)) return false;
   if (raw.format !== 'learning-games.activity') issues.push({ path: 'format', code: 'format' });
-  if (raw.schemaVersion !== 1) issues.push({ path: 'schemaVersion', code: 'version' });
+  if (typeof raw.schemaVersion !== 'number' || !allowedVersions.includes(raw.schemaVersion)) issues.push({ path: 'schemaVersion', code: 'version' });
   if (raw.activityType !== kind) issues.push({ path: 'activityType', code: 'kind' });
   slugField(raw, 'id', '', issues);
   textField(raw, 'title', '', 1, 120, issues);

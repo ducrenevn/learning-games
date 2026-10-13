@@ -1,11 +1,12 @@
 # Learning Games — activity import / rejection corpus v1
 
-**Status:** source-validated fixture candidates; **not classroom-tested**, not bundled application presets. The 20 JSON files under `valid/` are intended to be imported into the four local-first games in this review branch. The 28 JSON files under `invalid/` are deliberately rejected by those validators. Never use the invalid files as lessons.
+**Status:** source-validated fixture candidates; **not classroom-tested**, not bundled application presets. The 24 JSON files under `valid/` are intended to be imported into the four local-first games in this review branch. The 38 JSON files under `invalid/` are deliberately rejected by those validators. Never use the invalid files as lessons.
 
 - `manifest.json` is the machine-readable file list, game type and expected acceptance/rejection reason. Keep it updated when adding a fixture.
 - `valid/sort/` contains 2–5-category tasks, German article, gastronomy, German case expressions, Vietnamese greetings, and a 30-card capacity test.
 - `valid/sequence/` contains appointment conversation, cooking procedure, English support-email, Vietnamese hotel check-in, and a 20-step capacity test.
 - `valid/language-detective/` contains one-issue, two-issue, explicit no-error, Vietnamese no-error and 80-segment/12-issue stress cases. Model corrections are teacher-reviewed, **not** automatically graded.
+- `valid/language-detective/06…09` are **schemaVersion 2** (stacked sentence tasks, see `docs/architecture/DETECTIVE_V2_CONTRACT.md`): three short sentences with one error-free sentence, a three-word sentence, ten sentences, Vietnamese. `invalid/language-detective/08…17` cover the v2 rules: cross-task reference, 0 and 11 sentences, one-word sentence, unknown task key, v1 keys mixed into v2 and v2 keys into v1, unsupported version 3, duplicate task id, too many errors in total. The v1 fixtures `01…05` / `01…07` are unchanged.
 - `invalid/` covers unknown keys, wrong references, duplicate IDs/text, invalid counts, malicious markup, unsupported version, control/invisible-only characters and missing explanations.
 - Additional runtime-generated negative tests must cover **malformed JSON, >128 KiB input, wrong-game import, simultaneous imports, cancelled/replaced file loads, and replay/download** without committing huge or invalid binary files.
 

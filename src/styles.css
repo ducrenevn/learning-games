@@ -73,23 +73,9 @@ a:hover {
 
 
 /* Wave F local activities: scoped styles only; Memory layout remains untouched. */
-.activity-page { width: min(1220px, calc(100% - 28px)); }
-.activity-head { display:flex; justify-content:space-between; gap:16px; align-items:start; }
-.activity-language { display:grid; gap:6px; min-width:145px; font-weight:700; }
-.activity-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:14px 0; }
-.activity-toolbar .button { min-height:44px; }
-.activity-upload { position:relative; overflow:hidden; }
-.activity-upload input { position:absolute; inset:0; opacity:0; cursor:pointer; }
-.activity-upload:focus-within { outline:3px solid #b9664e; outline-offset:3px; }
-.activity-meta { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
 .activity-field { display:grid; gap:5px; font-weight:650; min-width:0; overflow-wrap:anywhere; }
 .activity-field textarea { resize:vertical; }
 .activity-editor { display:grid; gap:14px; margin-top:24px; }
-.activity-editor h2 { margin:16px 0 0; }
-.activity-list { display:grid; gap:14px; min-width:0; }
-.activity-edit-row { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1.6fr) auto; gap:12px; align-items:end; padding:14px; background:#f8f4eb; border-radius:12px; min-width:0; }
-.activity-item-tools { display:flex; flex-wrap:wrap; gap:6px; }
-.activity-item-tools .button { min-width:44px; min-height:44px; }
 .activity-play { margin-top:16px; }
 /* Presentation mode is read from across a room: scale everything in the play panel, including the fixed-rem .lead/.small text. */
 .activity-projected .activity-play { font-size:clamp(1.15rem,2.1vw,1.8rem); }
@@ -106,7 +92,6 @@ a:hover {
 .activity-key { background:#f6efe5; border:1px solid #dfcdb7; border-radius:14px; padding:16px; overflow-wrap:anywhere; }
 .activity-key-entry { padding:10px 0; border-bottom:1px solid #dfcdb7; }
 .activity-key-entry:last-child { border-bottom:0; }
-.activity-errors { margin-top:14px; }
 .detective-segments { display:flex; flex-wrap:wrap; gap:7px; line-height:1.6; }
 .detective-segment { display:inline-flex; flex-direction:column; align-items:flex-start; justify-content:center; min-height:48px; padding:8px 10px; font:inherit; font-size:1.08em; text-align:left; color:inherit; background:#fff; border:2px solid #ccc5bb; border-radius:10px; cursor:pointer; overflow-wrap:anywhere; max-width:100%; }
 .detective-segment:disabled { cursor:default; opacity:1; }
@@ -117,14 +102,9 @@ a:hover {
 .detective-segment.extra { border-style:double; border-width:4px; border-color:#8f4034; background:#f6e4dc; }
 .activity-issue-toggle { display:inline-flex; gap:8px; align-items:center; min-height:44px; font-weight:650; }
 .activity-issue-toggle input { width:20px; height:20px; }
-.activity-page button:focus-visible,.activity-page input:focus-visible,.activity-page textarea:focus-visible,.activity-page select:focus-visible,.activity-page a:focus-visible { outline:3px solid #b9664e; outline-offset:3px; }
 /* Result and answer regions receive programmatic focus (tabindex=-1) after Check/Reveal so keyboard and screen-reader users keep their place.
    :focus-visible shows the ring for keyboard users without drawing a box around the result after a mouse click. */
-.activity-page [tabindex="-1"]:focus-visible { outline:3px solid #b9664e; outline-offset:3px; }
-.activity-page .sr-only { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
-.activity-page .back-link { min-height:44px; }
-@media(max-width:780px){.activity-edit-row { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }.activity-meta { grid-template-columns:1fr; }}
-@media(max-width:480px){.activity-page { width:calc(100% - 16px); }.activity-head { align-items:start; }.activity-head h1 { font-size:2rem; }.activity-language { min-width:110px; max-width:125px; }.activity-edit-row { grid-template-columns:minmax(0,1fr); }.activity-authoring,.activity-play { padding:14px; }.activity-toolbar .button { flex:1 1 auto; }.activity-item-tools { width:100%; } }
+@media(max-width:480px){.activity-play { padding:14px; }}
 
 /* ===== UX-2: shared chrome, cards, single-canvas authoring ===== */
 :root{--ink:#283c34;--green:#315b4a;--green-deep:#244438;--copper:#b9664e;--line:#e0d8ca;--paper:#fffdf8;--tray:#edf4ec;--muted:#607168;--danger:#8f4034}
@@ -269,27 +249,6 @@ a:hover {
   .activity-ux-play{padding:14px}
 }
 @media(min-width:901px){.activity-bar{position:sticky;top:0;z-index:20;background:#f8f4ebf0;backdrop-filter:blur(4px)}}
-
-/* Transitional editor rules (removed as each game's canvas lands) */
-.activity-ux-row-list{gap:10px}
-.activity-ux-page .activity-editor{margin:0;gap:18px}
-.activity-ux-page .activity-edit-row{grid-template-columns:minmax(0,2.1fr) minmax(0,1.4fr) minmax(0,1.5fr) auto;gap:12px;padding:15px;border:1px solid #efece5}
-.activity-ux-page .activity-edit-row .button{min-height:44px}
-.activity-ux-page .activity-ux-optional .field{min-width:0}
-.activity-ux-page .activity-edit-row.activity-ux-simple-row{grid-template-columns:minmax(0,1fr) auto}
-.activity-ux-editor-section{display:grid;gap:16px}
-.activity-ux-passage-input{font-size:1.15rem;line-height:1.7;min-height:145px}
-.activity-ux-segment-preview{border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-wrap:wrap;gap:7px;background:#fcfaf6;min-height:70px}
-.activity-ux-segment-preview span{padding:5px;border-radius:5px;background:#ebeee6}
-.activity-ux-mark-text{display:flex;flex-wrap:wrap;gap:9px;padding:22px;border:1px solid var(--line);border-radius:14px;line-height:1.8;background:#f7f5f0}
-.activity-ux-mark{font:inherit;font-size:1.1rem;min-height:44px;padding:6px 10px;border:1px solid #c4c7bd;border-radius:9px;background:#fff;color:inherit;cursor:pointer;overflow-wrap:anywhere;max-width:100%}
-.activity-ux-mark.active{background:#dceee2;border:2px solid var(--green);padding:5px 9px}
-.activity-ux-mark[disabled]{opacity:.45;cursor:default}
-.activity-ux-note{background:#e9eee6;border-radius:12px;padding:14px;color:#345342}
-.activity-ux-issue-edit{display:grid;gap:12px;background:#f8f4eb;border:1px solid #e5dfd1;padding:17px;border-radius:12px}
-.activity-ux-issue-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
-@media(max-width:900px){.activity-ux-page .activity-edit-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
-@media(max-width:560px){.activity-ux-page .activity-edit-row,.activity-ux-page .activity-edit-row.activity-ux-simple-row{grid-template-columns:minmax(0,1fr)}}
 
 /* Memory guided authoring and local board: reuse the same shell as Wave F. */
 .activity-ux-play .play-layout { width:100%; margin:16px 0; min-height:0; }
@@ -460,3 +419,33 @@ a:hover {
 .card-edit.dragging{opacity:.4}
 .sort-bin.edit.over{background:#c9e3cf;box-shadow:0 0 0 4px #315b4a44}
 .card-edit-main .seq-grip{width:22px;height:40px}
+
+/* Language Detective: stacked sentence cards (editor and player) */
+.sentence-stack{display:grid;gap:12px;min-width:0}
+.sent-card{display:grid;gap:10px;min-width:0;padding:14px 18px 16px;background:var(--paper);border:1px solid var(--line);border-radius:16px}
+.sent-card.single{padding:0;background:transparent;border:0;border-radius:0}
+.sent-card header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sent-card header b{font:700 1.1rem "Fraunces",Georgia,serif}
+.sent-badge{font-size:.78rem;font-weight:700;border-radius:99px;padding:2px 10px;background:#f6e4dc;color:var(--danger)}
+.sent-badge.none,.sent-badge.good{background:#e3eee7;color:#27543e}
+.sent-badge.bad{background:#f6e4dc;color:var(--danger)}
+.sent-card.good{border-color:#9fbfae}
+.sent-card.bad{border-color:#e0b3a5}
+.word-count{margin-left:auto}
+.word-count.warn{color:var(--danger);font-weight:700}
+.sent-tools{display:inline-flex;gap:2px}
+.sent-tools .icon-button{width:40px;height:40px;color:var(--green)}
+.sent-tools .icon-button.danger{color:var(--danger)}
+.sent-card.edit:focus-within{border-color:var(--green);box-shadow:0 0 0 3px #315b4a22}
+.sentence-input{width:100%;display:block;font:inherit;font-size:1.2rem;line-height:1.4;color:var(--ink);background:#fff;border:1px solid #cfc7ba;border-radius:10px;padding:10px 12px;resize:none;overflow:hidden}
+.mark-words{gap:8px}
+.mark-words .detective-segment{min-height:44px}
+.fix-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f8f4eb;border:1px solid #e5dfd1;border-radius:12px;padding:8px 12px}
+.fix-word{font-size:1.05rem}
+.fix-field{flex:1 1 150px;min-width:0;display:block}
+.fix-field.wide{flex:2 1 240px}
+.fix-field .field{padding:8px 10px}
+.detective-summary{margin:0;background:#f6efe5;border:1px solid #dfcdb7;border-radius:12px;padding:10px 14px}
+.rb-sentence-no{font:700 1rem "Fraunces",Georgia,serif}
+.activity-projected .detective-segment{font-size:1.1em}
+@media(max-width:560px){.sent-card{padding:12px}.sentence-input{font-size:1.05rem}.word-count{margin-left:0}}

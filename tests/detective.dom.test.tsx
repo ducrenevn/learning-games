@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
@@ -296,4 +298,130 @@ describe('Language Detective play: locales and text', () => {
     await check(user);
     expect(playText()).toContain('Ergebnis: richtig — 12 von 12 richtig');
   }, 30000);
+});
+
+describe('Language Detective play: several sentences (v2)', () => {
+  type V2 = { title: string; content: { tasks: { segments: { id: string; text: string }[]; issues: { segmentId: string; correction: string; explanation: string }[] }[]; summary?: string } };
+  const v2 = (): V2 & Record<string, unknown> => JSON.parse(readFileSync(resolve(process.cwd(), 'tests/fixtures/wave-f/corpus/valid/language-detective/06-drei-kurze-saetze.json'), 'utf8'));
+  async function playV2(user: UserEvent, mode: 'Ausprobieren' | 'Präsentieren' = 'Ausprobieren', mutate?: (a: ReturnType<typeof v2>) => void) {
+    const a = v2(); mutate?.(a);
+    await importActivity(user, a);
+    await waitFor(() => expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe(a.title));
+    await user.click(screen.getByRole('button', { name: mode }));
+  }
+  const card = (n: number) => document.querySelectorAll('.sent-card')[n - 1] as HTMLElement;
+  const chip = (n: number, text: string) => within(card(n)).getByRole('button', { name: new RegExp('^' + text + '(?![a-zäöüß])') });
+  const none = (n: number) => card(n).querySelector('input[type="checkbox"]') as HTMLInputElement;
+  const checkBtn = () => screen.getByRole('button', { name: 'Prüfen' }) as HTMLButtonElement;
+
+  it('stacks one card per sentence, each with its own words and its own "no errors" choice', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await playV2(user);
+    expect(document.querySelectorAll('.sent-card')).toHaveLength(3);
+    expect([1, 2, 3].map(n => card(n).querySelector('header b')!.textContent)).toEqual(['Satz 1', 'Satz 2', 'Satz 3']);
+    expect(screen.getByRole('group', { name: 'Textteile · Satz 2' })).toBeTruthy();
+    expect(within(card(3)).getAllByRole('button')).toHaveLength(6);
+    expect(playText().split('Lies jeden Satz einzeln.').length - 1).toBe(1);
+  });
+  it('keeps Check disabled until every sentence is answered, and counts the open ones', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await playV2(user);
+    expect(checkBtn().disabled).toBe(true);
+    expect(screen.getByText('Offene Sätze: 3.')).toBeTruthy();
+    await user.click(chip(1, 'Gäste'));
+    expect(screen.getByText('Offene Sätze: 2.')).toBeTruthy();
+    await user.click(none(2));
+    expect(screen.getByText('Offene Sätze: 1.')).toBeTruthy();
+    await user.click(chip(3, 'habe'));
+    expect(checkBtn().disabled).toBe(false);
+    expect(screen.queryByText(/Offene Sätze/)).toBeNull();
+  });
+  it('treats each sentence independently: identical segment ids and identical words never leak between sentences', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await playV2(user, 'Ausprobieren', a => { a.content.tasks[1].segments[1].text = 'Gäste'; });
+    await user.click(chip(1, 'Gäste'));
+    expect(chip(1, 'Gäste').getAttribute('aria-pressed')).toBe('true');
+    expect(chip(2, 'Gäste').getAttribute('aria-pressed')).toBe('false');
+    await user.click(none(1));
+    expect(chip(1, 'Gäste').getAttribute('aria-pressed')).toBe('false');
+    await user.click(chip(2, 'Gäste'));
+    expect(none(2).checked).toBe(false);
+    expect(none(1).checked).toBe(true);
+  });
+  it('scores per sentence: a badge on each card and an aggregate of sentences and errors found', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await playV2(user);
+    await user.click(chip(1, 'Gäste'));          // right
+    await user.click(none(2));                   // right (no error in sentence 2)
+    await user.click(chip(3, 'ins'));            // wrong word; the real error "habe" is missed
+    await check(user);
+    expect(playText()).toContain('Ergebnis: 2 von 3 Sätzen richtig');
+    expect(playText()).toContain('1 von 2 Fehlern gefunden');
+    expect(card(1).querySelector('.sent-badge')!.textContent).toContain('Richtig');
+    expect(card(2).querySelector('.sent-badge')!.textContent).toContain('Richtig');
+    expect(card(3).querySelector('.sent-badge')!.textContent).toContain('Nicht ganz');
+    const review=(n: number, label: string) => Array.from(card(n).querySelectorAll('p')).find(p => p.textContent!.includes(label))?.textContent ?? '';
+    expect(review(3, 'Übersehen')).toMatch(/habe/);
+    expect(review(3, 'Fälschlich markiert')).toMatch(/ins/);
+    expect(card(1).textContent).not.toMatch(/Übersehen|Fälschlich/);
+    expect(document.activeElement?.textContent).toContain('Sätzen richtig');
+  });
+  it('keeps every correction, explanation and the summary hidden until Reveal, then shows each inside its own card', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await playV2(user);
+    expect(playText()).not.toMatch(/Singular: der Gast|mit „sein“|Achte auf Singular|→/);
+    await user.click(chip(1, 'Gäste')); await user.click(none(2)); await user.click(chip(3, 'habe'));
+    await check(user);
+    expect(playText()).not.toMatch(/Singular: der Gast|mit „sein“|Achte auf Singular|→/);
+    await reveal(user);
+    expect(within(card(1)).getByText('Gäste → Gast')).toBeTruthy();
+    expect(within(card(1)).getByText('Nach „der“ steht der Singular: der Gast.')).toBeTruthy();
+    expect(within(card(2)).getByText('Keine Fehler', { selector: 'p' })).toBeTruthy();
+    expect(within(card(3)).getByText('habe → bin')).toBeTruthy();
+    expect(within(card(1)).queryByText(/mit „sein“/)).toBeNull();
+    expect(playText()).toContain('Achte auf Singular und Plural und auf das Hilfsverb im Perfekt.');
+    expect(document.activeElement?.classList.contains('activity-key')).toBe(true);
+    expect(card(1).contains(document.activeElement)).toBe(true);
+  });
+  it('retry clears every sentence, verdict and key', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await playV2(user);
+    await user.click(chip(1, 'Gäste')); await user.click(none(2)); await user.click(none(3));
+    await check(user); await reveal(user);
+    await user.click(screen.getByRole('button', { name: 'Erneut versuchen' }));
+    expect(playText()).not.toMatch(/Ergebnis|→|Nicht ganz/);
+    expect(document.querySelectorAll('.sent-card .activity-key')).toHaveLength(0);
+    expect([1, 2, 3].every(n => !none(n).checked)).toBe(true);
+    expect(chip(1, 'Gäste').getAttribute('aria-pressed')).toBe('false');
+    expect(checkBtn().disabled).toBe(true);
+  });
+  it('offers typed suggestions per sentence when trying, but none when presenting', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await playV2(user);
+    await user.click(chip(1, 'Gäste'));
+    expect(within(card(1)).getByLabelText(/^Gäste — Eigener Korrekturvorschlag/)).toBeTruthy();
+    expect(within(card(2)).queryByRole('textbox')).toBeNull();
+    await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
+    await user.click(screen.getByRole('button', { name: 'Präsentieren' }));
+    await user.click(chip(1, 'Gäste'));
+    expect(document.querySelectorAll('.activity-play textarea')).toHaveLength(0);
+    expect(document.querySelector('main')!.classList.contains('activity-projected')).toBe(true);
+  });
+  it('translates the interface only: sentence labels, badges and aggregates in Vietnamese; authored text unchanged', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await playV2(user);
+    await chooseLocale(user, 'vi');
+    expect(card(1).querySelector('header b')!.textContent).toBe('Câu 1');
+    await user.click(chip(1, 'Gäste')); await user.click(none(2)); await user.click(none(3));
+    await user.click(screen.getByRole('button', { name: 'Kiểm tra' }));
+    expect(playText()).toContain('Kết quả: đúng 2/3 câu');
+    expect(card(1).textContent).toContain('Gäste');
+    expect(card(3).querySelector('.sent-badge')!.textContent).toContain('Chưa đúng');
+  });
+  it('a v1 file still plays as one plain passage, with no sentence chrome', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    expect(document.querySelector('.sent-card')!.classList.contains('single')).toBe(true);
+    expect(document.querySelector('.sent-card header')).toBeNull();
+  });
 });

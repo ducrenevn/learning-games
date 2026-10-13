@@ -19,7 +19,7 @@ export interface EditorProps<T> {
 }
 export interface PlayerProps<T> { activity: T; mode: PlayMode; locale: Locale }
 export interface PreviewProps<T> { activity: T; locale: Locale }
-interface Props<T extends ActivityBase<ActivityType, unknown>> {
+interface Props<T extends ActivityBase<ActivityType, unknown, 1 | 2>> {
   kind: ActivityType;
   makeBlank: () => T;
   validate: Validator<T>;
@@ -27,6 +27,9 @@ interface Props<T extends ActivityBase<ActivityType, unknown>> {
   Player: ComponentType<PlayerProps<T>>;
   /** Read-only, human-readable rendering of an activity (import review). */
   Preview: ComponentType<PreviewProps<T>>;
+  /** Games whose editing model differs from the portable file (Language Detective): file -> model on import, model -> file on download. */
+  fromFile?: (file: never) => T;
+  toFile?: (activity: T) => unknown;
   /** Optional existing Memory-only room flow; never called by local preview or import. */
   onOnline?: (activity: T) => Promise<void>;
   joinHref?: string;
@@ -58,7 +61,7 @@ function countsOf(kind: ActivityType, content: unknown, locale: Locale) {
 }
 
 /** One local activity: choose -> single authoring canvas -> detached play. No hosted state. */
-export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>({ kind, makeBlank, validate, Editor, Player, Preview, onOnline, joinHref }: Props<T>) {
+export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 1 | 2>>({ kind, makeBlank, validate, Editor, Player, Preview, fromFile, toFile, onOnline, joinHref }: Props<T>) {
   const { locale } = useLocale();
   const [screen,setScreen] = useState<Screen>('choose');
   const [mode,setMode] = useState<PlayMode>('independent');
@@ -143,7 +146,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
       if(token!==importToken.current)return;
       const parsed=validateImported(text,kind);
       if(parsed.issues.length || !parsed.value){setFileError(parsed.issues);return;}
-      setImportCandidate(parsed.value as T);
+      setImportCandidate(fromFile ? fromFile(parsed.value as never) : parsed.value as T);
     } catch {
       if(token===importToken.current)setFileError([{path:'file',code:'json'}]);
     } finally {if(token===importToken.current)setFileBusy(false);}
@@ -168,7 +171,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown>>
   }
   function download() {
     if(!requireValid())return;
-    const out=serializeActivity(draft,validate);
+    const out=serializeActivity(draft,validate,toFile);
     if(!out.value)return;
     downloadActivity(kind+'_'+draft.id+'.json',out.value);
     setDirty(false);setSavedAt(new Date());

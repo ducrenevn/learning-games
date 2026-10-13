@@ -1,0 +1,32 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 2,
+  "activityType": "language-detective",
+  "id": "ein-kurzer-satz",
+  "title": "Ein kurzer Satz",
+  "targetLanguage": "de",
+  "instructions": "Ist der Satz richtig?",
+  "content": {
+    "prompt": "Markiere einen Fehler – oder wähle „Keine Fehler“.",
+    "tasks": [
+      {
+        "id": "task-1",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 2,
+  "activityType": "language-detective",
+  "id": "ungueltig",
+  "title": "Ungültig",
+  "targetLanguage": "de",
+  "instructions": "Nur zum Testen.",
+  "content": {
+    "prompt": "Test.",
+    "tasks": [
+      {
+        "id": "task-1",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": [
+          {
+            "segmentId": "segment-2",
+            "correction": "bin",
+            "explanation": "Test."
+          }
+        ]
+      },
+      {
+        "id": "task-2",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Wir"
+          },
+          {
+            "id": "segment-2",
+            "text": "bleiben"
+          }
+        ],
+        "issues": [
+          {
+            "segmentId": "segment-3",
+            "correction": "x",
+            "explanation": "Das Wort segment-3 gibt es nur in Satz 1."
+          }
+        ]
+      }
+    ]
+  }
+}

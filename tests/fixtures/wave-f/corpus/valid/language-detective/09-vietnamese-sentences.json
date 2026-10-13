@@ -1,0 +1,66 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 2,
+  "activityType": "language-detective",
+  "id": "cau-tieng-viet",
+  "title": "Câu tiếng Việt",
+  "targetLanguage": "vi",
+  "instructions": "Mỗi câu đều đúng. Hãy kiểm tra từng câu.",
+  "content": {
+    "prompt": "Đọc từng câu và chọn \"Không có lỗi\" nếu câu đúng.",
+    "tasks": [
+      {
+        "id": "task-1",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Xin"
+          },
+          {
+            "id": "segment-2",
+            "text": "chào,"
+          },
+          {
+            "id": "segment-3",
+            "text": "tôi"
+          },
+          {
+            "id": "segment-4",
+            "text": "là"
+          },
+          {
+            "id": "segment-5",
+            "text": "Lan."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-2",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Cảm"
+          },
+          {
+            "id": "segment-2",
+            "text": "ơn"
+          },
+          {
+            "id": "segment-3",
+            "text": "bạn"
+          },
+          {
+            "id": "segment-4",
+            "text": "rất"
+          },
+          {
+            "id": "segment-5",
+            "text": "nhiều."
+          }
+        ],
+        "issues": []
+      }
+    ]
+  }
+}
