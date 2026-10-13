@@ -1,6 +1,8 @@
 # Current State — 2026-10-12 documentation reconciliation
 
 ## UX-2 single-canvas implementation — AUTHORITATIVE (2026-10-13)
+
+**UX-2 correction pass (2026-10-13, same branch):** findings, commits, verification and open owner decisions are in [the correction log](audits/2026-10-13-ux2-correction-pass.md). Detective, Sort, Sequence and Memory layout and copy corrections are committed; the Detective refinement awaits the owner's visual opinion; annotation preservation (B2) is not implemented.
 **Branch:** `feat/ux2-single-canvas-20261012` (pushed to origin; based on design review `e892b31`; not merged, not deployed). The working checkout is this branch; the UX-2 design worktree was retired after its contents were committed (`876e28d`).
 
 **Implemented on the branch (owner corrections 1–8 of the UX-2 authorization):**
