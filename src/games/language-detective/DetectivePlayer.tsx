@@ -1,4 +1,5 @@
 import { useId, useState, type Ref } from 'react';
+import { Check } from 'lucide-react';
 import { t } from '../../shared/activities/i18n';
 import { u } from '../../shared/activities/uxCopy';
 import { useFocusFirstOnChange, useFocusWhen } from '../../shared/activities/focus';
@@ -6,7 +7,7 @@ import type { PlayerProps } from '../../shared/activities/Workspace';
 import type { Locale } from '../../shared/activities/contract';
 import { scoreDetective } from './engine';
 import type { DetectiveDraft } from './draft';
-import type { DetectiveTask } from './model';
+import type { DetectiveTask, Segment } from './model';
 
 type Mark = 'hit' | 'extra' | 'missed';
 const MARK_ICON: Record<Mark, string> = { hit: '✓', extra: '✗', missed: '!' };
@@ -19,6 +20,32 @@ interface CardProps {
   checked: boolean; revealed: boolean; summary?: string; keyRef?: Ref<HTMLElement>;
   onToggle: (segmentId: string) => void; onNoErrors: (value: boolean) => void; onSuggest: (segmentId: string, value: string) => void;
 }
+
+/** The same words as the original, with each picked word replaced by an empty input in its own position. */
+function CorrectedLine({ task, lang, locale, selected, suggestions, checked, label, onSuggest }: {
+  task: DetectiveTask; lang: string; locale: Locale; selected: ReadonlySet<string>; suggestions: ReadonlyMap<string, string>;
+  checked: boolean; label: string; onSuggest: (segmentId: string, value: string) => void;
+}) {
+  return <div className="detective-corrected">
+    <p className="detective-corrected-caption small">{u(locale, 'yourCorrection')}</p>
+    <div className="detective-segments corrected" lang={lang}>
+      {task.segments.map(segment => selected.has(segment.id)
+        ? <FixInput key={segment.id} segment={segment} value={suggestions.get(segment.id) ?? ''} lang={lang} locale={locale} label={label}
+            disabled={checked} onChange={value => onSuggest(segment.id, value)} />
+        : <span key={segment.id} className="detective-word" lang={lang}>{segment.text}</span>)}
+    </div>
+  </div>;
+}
+function FixInput({ segment, value, lang, locale, label, disabled, onChange }: {
+  segment: Segment; value: string; lang: string; locale: Locale; label: string; disabled: boolean; onChange: (value: string) => void;
+}) {
+  // Sized from the original word so typing does not shift the sentence; a longer answer grows the box.
+  const chars = Math.max(segment.text.length, value.length, 5) + 2;
+  return <input type="text" className="detective-fix" lang={lang} value={value} disabled={disabled}
+    placeholder="…" style={{ width: chars + 'ch' }} aria-label={u(locale, 'fixFor', { word: segment.text }) + label}
+    onChange={e => onChange(Array.from(e.target.value).slice(0, MAX_SUGGESTION).join(''))} />;
+}
+
 /** One sentence: its own words, "no errors" choice, verdict and key. With a single sentence it looks like the original passage. */
 function SentenceCard(p: CardProps) {
   const uid = useId();
@@ -31,6 +58,7 @@ function SentenceCard(p: CardProps) {
   const textsOf = (mark: Mark) => task.segments.filter(s => markOf(s.id) === mark).map(s => s.text).join(', ');
   const reviewHasContent = p.checked && (score.extra.length > 0 || score.missed.length > 0);
   const label = p.single ? '' : ' (' + u(locale, 'sentenceNo', { n: p.index + 1 }) + ')';
+  const showCorrection = p.typing && !p.noErrors && p.selected.size > 0;
   return <article className={'sent-card' + (p.single ? ' single' : '') + (p.checked && !p.single ? (score.solved ? ' good' : ' bad') : '')}>
     {!p.single && <header><b>{u(locale, 'sentenceNo', { n: p.index + 1 })}</b>
       {p.checked && <span className={'sent-badge ' + (score.solved ? 'good' : 'bad')}><span aria-hidden="true">{score.solved ? '✓' : '✗'}</span> {u(locale, score.solved ? 'sentenceRight' : 'sentenceWrong')}</span>}</header>}
@@ -44,11 +72,13 @@ function SentenceCard(p: CardProps) {
         </button>;
       })}
     </div>
-    <label className="activity-issue-toggle"><input type="checkbox" checked={p.noErrors} disabled={p.checked} onChange={e => p.onNoErrors(e.target.checked)}/> {t(locale, 'noErrors')}{label && <span className="sr-only">{label}</span>}</label>
-    {p.typing && task.segments.filter(s => p.selected.has(s.id)).map(segment => <label className="activity-field" key={segment.id}>
-      <span><span lang={lang}>{segment.text}</span> — {t(locale, 'suggestion')}</span>
-      <textarea className="field" rows={2} disabled={p.checked} value={p.suggestions.get(segment.id) ?? ''} onChange={e => p.onSuggest(segment.id, e.target.value)}/>
-    </label>)}
+    {showCorrection && <CorrectedLine task={task} lang={lang} locale={locale} selected={p.selected} suggestions={p.suggestions}
+      checked={p.checked} label={label} onSuggest={p.onSuggest} />}
+    <label className={'detective-none' + (p.noErrors ? ' on' : '') + (p.checked ? ' locked' : '')}>
+      <input type="checkbox" className="detective-none-input" checked={p.noErrors} disabled={p.checked} onChange={e => p.onNoErrors(e.target.checked)}/>
+      <span className="detective-none-mark" aria-hidden="true">{p.noErrors && <Check size={16} strokeWidth={3} />}</span>
+      <span>{t(locale, 'noErrors')}</span>{label && <span className="sr-only">{label}</span>}
+    </label>
     {reviewHasContent && <div className="activity-key">
       {score.extra.length > 0 && <p>{t(locale, 'extra')}: <span lang={lang}>{textsOf('extra')}</span></p>}
       {score.missed.length > 0 && (p.revealed
@@ -108,7 +138,7 @@ export function DetectivePlayer({ activity, mode, locale }: PlayerProps<Detectiv
     if (value) setSelected(prev => new Map(prev).set(task.id, new Set()));
   }
   function suggest(task: DetectiveTask, id: string, value: string) {
-    setSuggestions(prev => new Map(prev).set(task.id, new Map(prev.get(task.id) ?? []).set(id, Array.from(value).slice(0, MAX_SUGGESTION).join(''))));
+    setSuggestions(prev => new Map(prev).set(task.id, new Map(prev.get(task.id) ?? []).set(id, value)));
   }
   function retry() {
     setSelected(new Map()); setNone(new Set()); setSuggestions(new Map()); setChecked(false); setRevealed(false);

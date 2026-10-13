@@ -97,11 +97,29 @@ a:hover {
 .detective-segment:disabled { cursor:default; opacity:1; }
 /* After Check every verdict is text + icon + border style, never colour alone. */
 .detective-mark { font-weight:700; }
+/* A picked word is red before Check; after Check the verdict rules below take over. */
+.detective-segment.selected { border-color:#b9664e; background:#fbeee8; }
 .detective-segment.hit { border-color:#315b4a; background:#e3eee7; }
 .detective-segment.missed { border-style:dashed; border-color:#b9664e; background:#fbeee8; }
 .detective-segment.extra { border-style:double; border-width:4px; border-color:#8f4034; background:#f6e4dc; }
 .activity-issue-toggle { display:inline-flex; gap:8px; align-items:center; min-height:44px; font-weight:650; }
 .activity-issue-toggle input { width:20px; height:20px; }
+.detective-segment:focus-visible, .detective-fix:focus-visible, .detective-none:focus-within { outline:3px solid #315b4a; outline-offset:2px; }
+/* "Kein Fehler" is a pill; the native checkbox stays in the tab order and keeps its state, only its look changes. */
+.detective-none { display:inline-flex; align-items:center; gap:10px; justify-self:start; min-height:44px; padding:6px 16px 6px 7px; font-weight:650; background:#fff; color:var(--ink); border:2px solid #b9b0a3; border-radius:999px; cursor:pointer; position:relative; }
+.detective-none:hover:not(.locked) { border-color:var(--green); }
+.detective-none.on { background:#e3eee7; border-color:var(--green); color:#27543e; }
+.detective-none.locked { cursor:default; }
+.detective-none-input { position:absolute; width:1px; height:1px; opacity:0; margin:0; pointer-events:none; }
+.detective-none-mark { display:inline-grid; place-items:center; width:26px; height:26px; border-radius:50%; border:2px solid #b9b0a3; background:#fff; color:#fff; }
+.detective-none.on .detective-none-mark { background:var(--green); border-color:var(--green); }
+/* The second version of the sentence: unpicked words unchanged, picked words replaced by soft green inputs. */
+.detective-corrected { display:grid; gap:6px; min-width:0; }
+.detective-corrected-caption { margin:0; color:#27543e; font-weight:650; }
+.detective-word { display:inline-flex; align-items:center; min-height:48px; padding:8px 10px; border:2px solid transparent; font-size:1.08em; overflow-wrap:anywhere; max-width:100%; }
+.detective-fix { box-sizing:border-box; min-height:48px; max-width:100%; padding:8px 10px; font:inherit; font-size:1.08em; color:var(--ink); background:#eef6f1; border:2px solid #9fbfae; border-radius:10px; }
+.detective-fix::placeholder { color:#7a8d80; }
+.detective-fix:disabled { opacity:1; color:var(--ink); background:#f4f8f5; }
 /* Result and answer regions receive programmatic focus (tabindex=-1) after Check/Reveal so keyboard and screen-reader users keep their place.
    :focus-visible shows the ring for keyboard users without drawing a box around the result after a mouse click. */
 @media(max-width:480px){.activity-play { padding:14px; }}

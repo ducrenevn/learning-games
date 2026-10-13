@@ -19,7 +19,7 @@ const segment = (text: string) => screen.getByRole('button', { name: new RegExp(
 const pick = async (user: UserEvent, ...texts: string[]) => { for (const t of texts) await user.click(segment(t)); };
 const check = (user: UserEvent) => user.click(screen.getByRole('button', { name: 'Prüfen' }));
 const reveal = (user: UserEvent) => user.click(screen.getByRole('button', { name: /Lösung & Erklärung/ }));
-const suggestionBox = (text: string) => screen.getByLabelText(new RegExp('^' + text + ' — Eigener Korrekturvorschlag')) as HTMLTextAreaElement;
+const suggestionBox = (text: string) => screen.getByLabelText(new RegExp('^Korrektur für „' + text + '“')) as HTMLInputElement;
 const answerKey = () => document.querySelector('section.activity-key')!;
 const SECRETS = /habe(?!n)|Verb mit ich|Akkusativ|Achte auf Verbendung|→/;
 
@@ -78,7 +78,7 @@ describe('Language Detective play: answer secrecy', () => {
     expect(screen.queryByText(/Textteile antippen oder/)).toBeNull();
     await pick(user, 'Ich');
     expect(btn.disabled).toBe(true);
-    await user.click(screen.getByLabelText('Keine Fehler'));
+    await user.click(screen.getByLabelText('Kein Fehler'));
     expect(btn.disabled).toBe(false);
   });
 });
@@ -112,12 +112,12 @@ describe('Language Detective play: identification scoring', () => {
   it('a clean passage needs an explicit "No errors"; flagging anything is wrong; no "0 of 0" wording', async () => {
     const { user } = renderPage(<DetectivePage />);
     await play(user, 'Ausprobieren', detectiveCleanFixture);
-    await user.click(screen.getByLabelText('Keine Fehler'));
+    await user.click(screen.getByLabelText('Kein Fehler'));
     await check(user);
     expect(playText()).toContain('Ergebnis: richtig');
     expect(playText()).not.toMatch(/0 von 0/);
     await reveal(user);
-    expect(answerKey().textContent).toContain('Keine Fehler');
+    expect(answerKey().textContent).toContain('Kein Fehler');
     await user.click(screen.getByRole('button', { name: 'Erneut versuchen' }));
     await pick(user, 'gesehen.');
     await check(user);
@@ -127,7 +127,7 @@ describe('Language Detective play: identification scoring', () => {
   it('"No errors" on a passage that has errors is wrong and reveals every miss', async () => {
     const { user } = renderPage(<DetectivePage />);
     await play(user);
-    await user.click(screen.getByLabelText('Keine Fehler'));
+    await user.click(screen.getByLabelText('Kein Fehler'));
     await check(user);
     expect(playText()).toContain('Ergebnis: Nicht richtig — 0 von 2 richtig');
     expect(playText()).toContain('Noch nicht gefunden: 2');          // a count only, never the locations
@@ -138,7 +138,7 @@ describe('Language Detective play: identification scoring', () => {
   it('selecting segments clears "No errors" and choosing "No errors" clears the selection', async () => {
     const { user } = renderPage(<DetectivePage />);
     await play(user);
-    const none = screen.getByLabelText('Keine Fehler') as HTMLInputElement;
+    const none = screen.getByLabelText('Kein Fehler') as HTMLInputElement;
     await user.click(none);
     expect(none.checked).toBe(true);
     await pick(user, 'Ich');
@@ -269,7 +269,7 @@ describe('Language Detective play: focus, retry and modes', () => {
     await pick(user, 'haben');
     await check(user);
     expect(segment('haben').disabled).toBe(true);
-    expect((screen.getByLabelText('Keine Fehler') as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByLabelText('Kein Fehler') as HTMLInputElement).disabled).toBe(true);
     expect(suggestionBox('haben').disabled).toBe(true);
   });
   it('Presentation mode has no typing boxes and a projected layout; Independent and Preview offer them', async () => {
@@ -304,7 +304,7 @@ describe('Language Detective play: locales and text', () => {
     await chooseLocale(user, 'en');
     expect(playText()).toContain('Result: correct — 2 of 2 correct');
     expect(playText()).toContain('Achte auf Verbendung und Kasus.');
-    expect(playText()).toContain('Suggested correction (not automatically graded)');
+    expect(playText()).toContain('Your proposed correction – not graded automatically');
   });
   it('renders markup-like text literally and tags authored text with the target language', async () => {
     const { user } = renderPage(<DetectivePage />);
@@ -420,7 +420,7 @@ describe('Language Detective play: several sentences (v2)', () => {
     await reveal(user);
     expect(within(card(1)).getByText('Gäste → Gast')).toBeTruthy();
     expect(within(card(1)).getByText('Nach „der“ steht der Singular: der Gast.')).toBeTruthy();
-    expect(within(card(2)).getByText('Keine Fehler', { selector: 'p' })).toBeTruthy();
+    expect(within(card(2)).getByText('Kein Fehler', { selector: 'p' })).toBeTruthy();
     expect(within(card(3)).getByText('habe → bin')).toBeTruthy();
     expect(within(card(1)).queryByText(/mit „sein“/)).toBeNull();
     expect(playText()).toContain('Achte auf Singular und Plural und auf das Hilfsverb im Perfekt.');
@@ -443,12 +443,12 @@ describe('Language Detective play: several sentences (v2)', () => {
     const { user } = renderPage(<DetectivePage />);
     await playV2(user);
     await user.click(chip(1, 'Gäste'));
-    expect(within(card(1)).getByLabelText(/^Gäste — Eigener Korrekturvorschlag/)).toBeTruthy();
+    expect(within(card(1)).getByLabelText(/^Korrektur für „Gäste“/)).toBeTruthy();
     expect(within(card(2)).queryByRole('textbox')).toBeNull();
     await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
     await user.click(screen.getByRole('button', { name: 'Präsentieren' }));
     await user.click(chip(1, 'Gäste'));
-    expect(document.querySelectorAll('.activity-play textarea')).toHaveLength(0);
+    expect(document.querySelectorAll('.activity-play input.detective-fix')).toHaveLength(0);
     expect(document.querySelector('main')!.classList.contains('activity-projected')).toBe(true);
   });
   it('translates the interface only: sentence labels, badges and aggregates in Vietnamese; authored text unchanged', async () => {
@@ -467,5 +467,54 @@ describe('Language Detective play: several sentences (v2)', () => {
     await play(user);
     expect(document.querySelector('.sent-card')!.classList.contains('single')).toBe(true);
     expect(document.querySelector('.sent-card header')).toBeNull();
+  });
+});
+
+describe('Language Detective play: the corrected sentence line', () => {
+  const originalWords = () => Array.from(document.querySelectorAll('.detective-segments:not(.corrected) .detective-segment > span:first-child')).map(s => s.textContent!);
+  const correctedLine = () => Array.from(document.querySelectorAll('.detective-segments.corrected > *')).map(el => el.tagName === 'INPUT' ? '_' : el.textContent!);
+  it('appears only once words are picked, copies unpicked words unchanged, and leaves each picked position empty', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    expect(document.querySelector('.detective-corrected')).toBeNull();          // nothing picked: the sentence is not duplicated
+    await pick(user, 'haben', 'dem');
+    const words = originalWords();
+    const expected = words.map(w => (w === 'haben' || w === 'dem') ? '_' : w);
+    expect(correctedLine()).toEqual(expected);
+    const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('.detective-fix'));
+    expect(inputs.map(i => i.value)).toEqual(['', '']);                          // never prefilled with the model answer
+    expect(inputs[0].getAttribute('aria-label')).toBe('Korrektur für „haben“');
+    expect(playText()).not.toMatch(SECRETS);                                     // no model answer appears in the line
+  });
+  it('keeps a typed correction when its word is deselected and picked again, and drops the line for "Kein Fehler"', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    await pick(user, 'haben');
+    await user.type(suggestionBox('haben'), 'hab');
+    await user.click(segment('haben'));                                          // deselect: the line goes
+    expect(document.querySelector('.detective-corrected')).toBeNull();
+    await user.click(segment('haben'));                                          // reselect: the text is still there
+    expect(suggestionBox('haben').value).toBe('hab');
+    await user.click(screen.getByLabelText('Kein Fehler'));                      // "Kein Fehler" clears picks and the line
+    expect(document.querySelector('.detective-corrected')).toBeNull();
+    expect(document.querySelectorAll('.detective-segment.selected')).toHaveLength(0);
+  });
+  it('marks picked words red before Check, not green', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    await pick(user, 'haben');
+    expect(segment('haben').classList.contains('selected')).toBe(true);
+    expect(segment('haben').classList.contains('hit')).toBe(false);
+  });
+  it('keeps the "Kein Fehler" pill a native checkbox, toggled by keyboard and pointer', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    const box = screen.getByLabelText('Kein Fehler') as HTMLInputElement;
+    expect(box.type).toBe('checkbox');
+    box.focus();
+    await user.keyboard(' ');
+    expect(box.checked).toBe(true);
+    await user.click(screen.getByText('Kein Fehler', { selector: 'span' }));
+    expect(box.checked).toBe(false);
   });
 });
