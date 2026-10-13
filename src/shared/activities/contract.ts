@@ -76,6 +76,8 @@ export function distinct(items: unknown[], field: string, path: string, issues: 
     if (item === null || typeof item !== 'object' || Array.isArray(item)) return;
     const val = (item as Record<string, unknown>)[field];
     if (typeof val !== 'string') return;
+    // Blank placeholders are reported as missing text by each field rule, not as duplicates of each other.
+    if (val.trim() === '') return;
     const key = insensitive ? val.trim().normalize('NFC').toLocaleLowerCase() : val;
     if (seen.has(key)) issues.push({ path: path + '[' + index + '].' + field, code: 'duplicate' });
     seen.add(key);

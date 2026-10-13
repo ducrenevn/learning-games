@@ -30,6 +30,7 @@ export function validateMemory(raw: unknown): Result<MemoryActivity> {
     if (!pair || typeof pair !== 'object' || Array.isArray(pair)) return;
     const p = pair as Partial<MemoryActivityPair>;
     if (typeof p.left !== 'string' || typeof p.right !== 'string') return;
+    if (p.left.trim() === '' && p.right.trim() === '') return;   // blank placeholder pairs are not duplicates
     const key = JSON.stringify([p.left.trim().normalize('NFC').toLocaleLowerCase(), p.right.trim().normalize('NFC').toLocaleLowerCase()]);
     if (seen.has(key)) issues.push({ path: `content.pairs[${i}]`, code: 'duplicate' });
     seen.add(key);
