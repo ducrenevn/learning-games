@@ -389,10 +389,13 @@ a:hover {
 @media(forced-colors:active){.sort-chip.selected{outline:3px solid Highlight}.sort-chip.bad{border-style:dashed}}
 @media(max-width:700px){
   /* Phone: categories stacked on the left, the scrollable bank of remaining cards on the right. */
-  .sort-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:10px}
+  /* The bank gets the wider column: long German compounds fit on one line, and the bank heading is not crushed. */
+  .sort-layout{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:start;gap:10px}
   .sort-bins{grid-template-columns:1fr;gap:8px}
   .sort-bin{min-height:96px;padding:10px}
-  .sort-bin h3{font-size:1.05rem}
+  /* A category name never breaks mid-word: the count badge wraps to its own line instead. */
+  .sort-bin header{flex-wrap:wrap}
+  .sort-bin h3{font-size:1rem;overflow-wrap:normal}
   .sort-bank{position:sticky;top:8px;max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;padding:10px}
   .sort-bank-chips{gap:6px}
   .sort-chip{padding:8px 10px;font-size:1rem}
@@ -427,7 +430,7 @@ a:hover {
 .sort-bin.ghost:disabled{opacity:.5;cursor:default}
 @media(max-width:700px){.sort-bin.ghost{flex:1 1 100%;min-height:72px}}
 .sort-bank header{grid-template-columns:minmax(0,1fr) auto auto}
-@media(max-width:700px){.sort-bank h3{font-size:1rem;overflow-wrap:anywhere}.sort-bank header{gap:6px}.hint-trigger{width:36px;height:36px}}
+@media(max-width:700px){.sort-bank h3{font-size:1rem;overflow-wrap:normal}.sort-bank header{gap:6px}.hint-trigger{width:36px;height:36px}}
 .sort-chip{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .sort-chip.dragging{opacity:.35;border-style:dashed}
 /* dnd-kit sizes the overlay wrapper to the source card, so the ghost sizes itself to its text: a word wraps only when it cannot fit the viewport. */
