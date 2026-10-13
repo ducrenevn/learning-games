@@ -16,3 +16,12 @@ export function scoreDetective(source: Scorable, selected: ReadonlySet<string>, 
   const solved = extra.length === 0 && missed.length === 0 && (answer.size > 0 ? !noErrors : noErrors && selected.size === 0);
   return { correct: hits.length, hits, total: answer.size, extra, missed, solved };
 }
+
+/**
+ * Feedback only, never part of the score: does a typed correction equal the teacher's model answer? Case is significant
+ * ("habe" ≠ "Habe"); leading, trailing and repeated spaces are not. A non-match does not mean the learner is wrong.
+ */
+export function matchesModel(typed: string, model: string): boolean {
+  const normal = (text: string) => text.trim().replace(/\s+/gu, ' ');
+  return normal(typed) === normal(model);
+}

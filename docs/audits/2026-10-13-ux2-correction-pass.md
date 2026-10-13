@@ -79,6 +79,29 @@ The owner accepted the visual review. One technical point had to change before s
 
 **Known trade-off:** a mark held for review does not come back when its word is restored. The teacher attaches it again. This is deliberate: a silent reattach is the failure the owner asked to rule out.
 
+## Fourth pass: final feedback polish (2026-10-13)
+
+The owner's final polish brief. No redesign. Scoring by identification only, Detective v1/v2 compatibility, annotation recovery and the Check → Retry → Reveal secrecy are unchanged.
+
+**Colour and state rules** (`src/games/language-detective/DetectivePlayer.tsx`, `src/styles.css`):
+- Copper: a picked word, before and after Check, right or wrong; and a missed error after Reveal (dashed frame, "!"). A false pick after Check has a dotted copper frame and "✗".
+- Green: the sentence verdict, a correct "Kein Fehler", a correction that matches the model after Check, and the model answer in the key after Reveal. No green is ever put on a word of the original sentence.
+- Corrections after Check: a match is soft green; a different text is discreet grey and never reveals the model answer; an empty box is dashed and labelled as not filled in. A correction on a false pick has no model answer, so it stays neutral.
+- Matching (`matchesModel` in `src/games/language-detective/engine.ts`): case-sensitive; leading, trailing and repeated spaces are ignored. It is feedback only, not part of the score, and a non-match is not presented as an error.
+- A wrong "Kein Fehler" pill is copper with "✗"; a correct one is green with a tick. Both show only after Check.
+
+**Word cards:** the glyph sits beside the word on the same line, and the status name is visually hidden inside the button. Every card keeps its height before and after Check (48px in the browser check). A legend under the sentence names the marks on screen; "Übersehen" appears only after Reveal.
+
+**Caption:** before Check it stays "nicht automatisch geprüft". After Check it reads "Vergleich mit der Musterkorrektur, keine Bewertung" (DE, EN, VI), so it no longer says the answer is not checked at all.
+
+**Answer panels:** an error-free sentence shows one confirmation line after Reveal, not a panel. Sentences with errors use a tighter panel, and the model answer is green. Once the solutions are shown, the Reveal button is removed rather than left disabled.
+
+**Tests:** `tests/detective-feedback.dom.test.tsx` (14 tests) covers matching, differing and empty corrections; neutral corrections on false picks; the caption before and after Check; false-pick and missed marks; the glyph-free correct pick; the green and copper "Kein Fehler" pill; the compact confirmation; green model answers; and the removed Reveal button. `tests/detective.dom.test.tsx` has two assertions updated for the new markup and the English caption.
+
+**Browser check** (system Chrome, Vite dev server, corpus `06-drei-kurze-saetze.json`, 1440×900, 390×844 and 360×780): card heights stay 48px before and after Check; matches go green; the legend names the false pick; after Reveal the Reveal button is gone, model answers are green and the error-free sentence shows the compact line; a wrong "Kein Fehler" shows copper with "✗"; the EN and VI captions are as above. No horizontal scroll and no page errors. Screenshots and `feedback-check.json` are in `docs/audits/ux2-design/evidence/corrections-2026-10-13/` (`fb-*.png`).
+
+**Not verified:** real touch devices, Safari and Firefox, screen readers, the hosted Vercel build, and wrapping of long German compounds beyond the 360px sample (the owner accepted readable wrapping earlier).
+
 ## Findings: confirmed, disproved or adjusted
 
 | Finding | Verdict | Notes |

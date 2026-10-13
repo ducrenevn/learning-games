@@ -307,7 +307,7 @@ describe('Language Detective play: locales and text', () => {
     await chooseLocale(user, 'en');
     expect(playText()).toContain('Result: correct — 2 of 2 correct');
     expect(playText()).toContain('Achte auf Verbendung und Kasus.');
-    expect(playText()).toContain('Your correction · not checked automatically');
+    expect(playText()).toContain('Your correction · compared with the model, not graded');
   });
   it('renders markup-like text literally and tags authored text with the target language', async () => {
     const { user } = renderPage(<DetectivePage />);
@@ -421,10 +421,10 @@ describe('Language Detective play: several sentences (v2)', () => {
     await check(user);
     expect(playText()).not.toMatch(/Singular: der Gast|mit „sein“|Achte auf Singular|→/);
     await reveal(user);
-    expect(within(card(1)).getByText('Gäste → Gast')).toBeTruthy();
+    expect(card(1).querySelector('strong')!.textContent).toBe('Gäste → Gast');
     expect(within(card(1)).getByText('Nach „der“ steht der Singular: der Gast.')).toBeTruthy();
     expect(within(card(2)).getByText('Kein Fehler', { selector: 'p' })).toBeTruthy();
-    expect(within(card(3)).getByText('habe → bin')).toBeTruthy();
+    expect(card(3).querySelector('strong')!.textContent).toBe('habe → bin');
     expect(within(card(1)).queryByText(/mit „sein“/)).toBeNull();
     expect(playText()).toContain('Achte auf Singular und Plural und auf das Hilfsverb im Perfekt.');
     expect(document.activeElement?.classList.contains('activity-key')).toBe(true);

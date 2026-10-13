@@ -106,18 +106,28 @@ a:hover {
 .activity-key { background:#f6efe5; border:1px solid #dfcdb7; border-radius:14px; padding:16px; overflow-wrap:anywhere; }
 .activity-key-entry { padding:10px 0; border-bottom:1px solid #dfcdb7; }
 .activity-key-entry:last-child { border-bottom:0; }
+/* Inside a sentence card the key is a tighter panel; an error-free sentence drops the panel for one confirmation line. */
+.sent-card .activity-key { padding:12px 14px; }
+.sent-card .activity-key-entry { padding:8px 0; }
+.activity-key.compact { background:transparent; border:0; padding:0; }
+.key-clear { display:flex; align-items:center; gap:8px; color:#27543e; font-weight:650; }
+.key-clear p { margin:0; }
+/* The teacher's model correction is green once revealed; it is the only green word in the key. */
+.key-model { color:#27543e; font-weight:700; }
 .detective-segments { display:flex; flex-wrap:wrap; gap:7px; line-height:1.6; }
-.detective-segment { display:inline-flex; flex-direction:column; align-items:flex-start; justify-content:center; min-height:48px; padding:8px 10px; font:inherit; font-size:1.08em; text-align:left; color:inherit; background:#fff; border:2px solid #ccc5bb; border-radius:10px; cursor:pointer; overflow-wrap:anywhere; max-width:100%; }
+.detective-segment { display:inline-flex; flex-wrap:wrap; align-items:center; column-gap:6px; justify-content:flex-start; min-height:48px; padding:8px 10px; font:inherit; font-size:1.08em; text-align:left; color:inherit; background:#fff; border:2px solid #ccc5bb; border-radius:10px; cursor:pointer; overflow-wrap:anywhere; max-width:100%; }
 .detective-segment:disabled { cursor:default; opacity:1; }
 /*
- * Colour meaning (matches DetectivePlayer): copper = a word picked as an error, kept after Check whether it was right;
- * green = a verified result (sentence verdict) or a missed teacher answer after Reveal; neutral = the learner's own text.
- * Focus rings are ink-blue so they are never mistaken for an error or a verdict.
+ * Colour meaning (matches DetectivePlayer): copper = a word picked as an error (kept after Check, right or wrong) and a
+ * missed error after Reveal; green = a verified result (verdict, correct "Kein Fehler", matching correction, model answer).
+ * Non-colour cues: a false pick has a dotted frame and ✗; a missed error has a dashed frame and !. Focus rings are ink-blue.
  */
-.detective-mark { font-weight:700; }
+.detective-mark { font-weight:700; font-size:.9em; line-height:1; color:#8a3d27; }
 .detective-segment.selected, .detective-segment.hit { border-color:#b9664e; background:#fbeee8; }
-.detective-segment.missed { border-style:dashed; border-color:#315b4a; background:#e3eee7; }
-.detective-segment.extra { border-style:dotted; border-width:2px; border-color:#8a8072; background:#f4f1ec; color:#4a4238; }
+.detective-segment.extra { border-style:dotted; border-width:2px; border-color:#b9664e; background:#fbeee8; }
+.detective-segment.missed { border-style:dashed; border-color:#b9664e; background:#fff; }
+.detective-legend { display:flex; flex-wrap:wrap; gap:4px 16px; margin:0; color:#4a4238; }
+.detective-legend > span { display:inline-flex; align-items:center; gap:4px; }
 .sent-verdict { margin:0; }
 .activity-issue-toggle { display:inline-flex; gap:8px; align-items:center; min-height:44px; font-weight:650; }
 .activity-issue-toggle input { width:20px; height:20px; }
@@ -131,6 +141,11 @@ a:hover {
 .detective-none-input { position:absolute; width:1px; height:1px; opacity:0; margin:0; pointer-events:none; }
 .detective-none-mark { display:inline-grid; place-items:center; width:26px; height:26px; border-radius:50%; border:2px solid #b9b0a3; background:#fff; color:#3a342c; }
 .detective-none.on .detective-none-mark { background:#fff; border-color:#fff; color:#3a342c; }
+/* After Check the pill shows whether "Kein Fehler" was right: green when correct, copper with ✗ when wrong. */
+.detective-none.on.good { background:#e3eee7; border-color:#315b4a; color:#1f3d30; }
+.detective-none.on.good .detective-none-mark { background:#315b4a; border-color:#315b4a; color:#fff; }
+.detective-none.on.bad { background:#fbeee8; border-color:#b9664e; color:#7a3a28; }
+.detective-none.on.bad .detective-none-mark { background:#b9664e; border-color:#b9664e; color:#fff; }
 /* The second version of the sentence: unpicked words unchanged, picked words replaced by neutral inputs (never graded). */
 .detective-corrected { display:grid; gap:6px; min-width:0; }
 .detective-corrected-caption { margin:0; color:#596c61; font-weight:500; }
@@ -138,6 +153,10 @@ a:hover {
 .detective-fix { box-sizing:border-box; min-height:48px; max-width:100%; padding:8px 10px; font:inherit; font-size:1.08em; color:var(--ink); background:#fff; border:2px solid #8a8072; border-radius:10px; }
 .detective-fix::placeholder { color:#6b6358; }
 .detective-fix:disabled { opacity:1; color:var(--ink); background:#f6f3ee; border-color:#b9b0a3; }
+/* After Check: a match is soft green; a difference is discreet grey (never an error colour, never a verdict); an empty box is dashed. */
+.detective-fix.fix-match, .detective-fix.fix-match:disabled { background:#e3eee7; border-color:#315b4a; }
+.detective-fix.fix-differs, .detective-fix.fix-differs:disabled { background:#f4f1ec; border-color:#8a8072; }
+.detective-fix.fix-empty, .detective-fix.fix-empty:disabled { background:#fff; border-style:dashed; border-color:#8a8072; }
 /* Marks waiting for a decision: a dashed frame, copper for the word, and a visible action for each one. */
 .detective-review { display:grid; gap:10px; min-width:0; padding:12px 14px; border:1px dashed #b9664e; border-radius:12px; background:#fdf8f5; }
 .detective-review-title { margin:0; overflow-wrap:anywhere; }
