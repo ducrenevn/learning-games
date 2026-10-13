@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentType, type DragEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useBlocker } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Download, FileUp, PencilLine, Presentation, Play, UsersRound, AlertTriangle } from 'lucide-react';
 import type { ActivityBase, ActivityType, Locale, PlayMode, Validator, Issue } from './contract';
 import { MAX_BYTES } from './contract';
@@ -98,6 +98,15 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
     window.addEventListener('beforeunload',warn);
     return () => window.removeEventListener('beforeunload',warn);
   },[dirty,fileBusy,importCandidate]);
+  // Internal navigation (logo, homepage links, browser back/forward) is blocked like the browser close warning. Confirmed
+  // discards reset the flag in the in-page flows, so the same unsaved work does not prompt twice.
+  const unsaved = dirty || fileBusy || !!importCandidate;
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => unsaved && currentLocation.pathname !== nextLocation.pathname);
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return;
+    if (window.confirm(dirty ? t(locale, 'unsavedWarn') : u(locale, 'discard'))) blocker.proceed();
+    else blocker.reset();
+  }, [blocker, dirty, locale]);
   // After a play/download attempt on an incomplete activity: focus the first flagged field (DOM order = reading order),
   // otherwise the problem summary, which names the first problem in the teacher's words.
   useLayoutEffect(() => {
@@ -116,7 +125,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
   function backToChoice() {
     if (!requestDiscard())return;
     importToken.current++;
-    setFileBusy(false);setFileError(null);setImportCandidate(null);setScreen('choose');
+    setDirty(false);setFileBusy(false);setFileError(null);setImportCandidate(null);setScreen('choose');
   }
   function backFromImport() {
     if((importCandidate || fileBusy) && !window.confirm(u(locale,'discard')))return;

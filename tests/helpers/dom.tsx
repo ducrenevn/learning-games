@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { AppShell } from '../../src/app/App';
 import { LocaleProvider } from '../../src/shared/locale/LocaleProvider';
 import { afterEach, vi } from 'vitest';
@@ -11,8 +11,10 @@ afterEach(() => cleanup());
 export type Locale = 'de' | 'en' | 'vi';
 export function renderPage(ui: ReactElement) {
   const user = userEvent.setup();
-  const view = render(<MemoryRouter><LocaleProvider><AppShell>{ui}</AppShell></LocaleProvider></MemoryRouter>);
-  return { user, ...view };
+  // A data router, like the app: Workspace blocks unsaved navigation with useBlocker, which needs one.
+  const router = createMemoryRouter([{ path: '*', element: <LocaleProvider><AppShell>{ui}</AppShell></LocaleProvider> }], { initialEntries: ['/under-test'] });
+  const view = render(<RouterProvider router={router} />);
+  return { user, router, ...view };
 }
 export function jsonFile(name: string, data: unknown): File {
   return new File([typeof data === 'string' ? data : JSON.stringify(data)], name, { type: 'application/json' });

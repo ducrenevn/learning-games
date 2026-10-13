@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Outlet, RouterProvider, useLocation, type RouteObject, type RouterProviderProps } from 'react-router-dom';
 import { Home } from './Home';
 import { MemoryHome } from '../games/memory/MemoryHome';
 import { MemoryJoin } from '../games/memory/MemoryJoin';
@@ -27,17 +27,26 @@ export function AppShell({ children }: { children: ReactNode }) {
   </div>;
 }
 
-export function App() {
-  return <LocaleProvider><AppShell>
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/games/memory" element={<MemoryHome />} />
-      <Route path="/games/memory/join" element={<MemoryJoin />} />
-      <Route path="/games/memory/room/:roomCode" element={<MemoryRoom />} />
-      <Route path="/games/sort" element={<SortPage />} />
-      <Route path="/games/sequence" element={<SequencePage />} />
-      <Route path="/games/language-detective" element={<DetectivePage />} />
-      <Route path="*" element={<main className="page"><h1>Seite nicht gefunden</h1><Link to="/">Zur Startseite</Link></main>} />
-    </Routes>
-  </AppShell></LocaleProvider>;
+/** Every page sits under one layout, so the shell and locale wrap all navigation. A data router lets Workspace block unsaved navigation. */
+function AppLayout() {
+  return <LocaleProvider><AppShell><Outlet /></AppShell></LocaleProvider>;
+}
+
+export const appRoutes: RouteObject[] = [{
+  element: <AppLayout />,
+  children: [
+    { path: '/', element: <Home /> },
+    { path: '/games/memory', element: <MemoryHome /> },
+    { path: '/games/memory/join', element: <MemoryJoin /> },
+    { path: '/games/memory/room/:roomCode', element: <MemoryRoom /> },
+    { path: '/games/sort', element: <SortPage /> },
+    { path: '/games/sequence', element: <SequencePage /> },
+    { path: '/games/language-detective', element: <DetectivePage /> },
+    { path: '*', element: <main className="page"><h1>Seite nicht gefunden</h1><Link to="/">Zur Startseite</Link></main> },
+  ],
+}];
+
+/** The app is rendered from a router created by the caller: browser history in main.tsx, memory history in tests. */
+export function App({ router }: { router: RouterProviderProps['router'] }) {
+  return <RouterProvider router={router} />;
 }
