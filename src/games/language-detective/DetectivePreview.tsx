@@ -3,7 +3,10 @@ import { u } from '../../shared/activities/uxCopy';
 import type { PreviewProps } from '../../shared/activities/Workspace';
 import type { DetectiveDraft } from './draft';
 
-/** Read-only Language Detective review: every sentence with its marked words, corrections and explanations. */
+/**
+ * Read-only Language Detective review: every sentence with its marked words, corrections and explanations. This is the
+ * teacher's own screen, so the model answers are shown on purpose: the wrong word in copper, the correct replacement in green.
+ */
 export function DetectivePreview({ activity, locale }: PreviewProps<DetectiveDraft>) {
   const lang = activity.targetLanguage;
   const { prompt, tasks, summary } = activity.content;
@@ -17,7 +20,7 @@ export function DetectivePreview({ activity, locale }: PreviewProps<DetectiveDra
         {task.issues.length === 0 && <p className="rb-badge">{t(locale, 'noErrors')}</p>}
         <ul className="rb-fixes">{task.segments.filter(segment => issueOf.has(segment.id)).map(segment => {
           const issue = issueOf.get(segment.id)!;
-          return <li key={segment.id} lang={lang}><strong>{segment.text} → {issue.correction}</strong> <span>{issue.explanation}</span></li>;
+          return <li key={segment.id} lang={lang}><strong>{segment.text}</strong> → <span className="rb-fix-correct">{issue.correction}</span> <span>{issue.explanation}</span></li>;
         })}</ul>
       </div>;
     })}

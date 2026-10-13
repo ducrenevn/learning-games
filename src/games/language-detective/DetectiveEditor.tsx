@@ -6,8 +6,11 @@ import { moveKey, useMoveFocus } from '../../shared/activities/focus';
 import { splitLines } from '../../shared/activities/listPaste';
 import { AutoTextarea } from '../../shared/activities/canvasParts';
 import type { EditorProps } from '../../shared/activities/Workspace';
-import { fitsV1, type DetectiveDraft } from './draft';
-import { LIMITS, V1_LIMITS, type DetectiveTask } from './model';
+import type { Locale } from '../../shared/activities/contract';
+import type { RegionAttrs } from '../../shared/activities/issues';
+import { alignWords } from './align';
+import { fitsV1, reviewPath, type DetectiveDraft, type ReviewItem } from './draft';
+import { LIMITS, V1_LIMITS, type DetectiveIssue, type DetectiveTask, type Segment } from './model';
 
 /** Word units are whitespace-separated tokens; punctuation stays attached (unchanged from v1). */
 export function splitPassage(text: string) {
@@ -24,25 +27,31 @@ function freshTask(tasks: readonly DetectiveTask[], text = ''): DetectiveTask {
   const id = nextId('task', tasks.map(t => t.id));
   return { id, segments: splitPassage(text).map((word, i) => ({ id: 'segment-' + (i + 1), text: word })), issues: [] };
 }
+let reviewSeq = 0;
 /**
- * New words for a task: ids stay stable by position, and a mark survives only while the word at its position is unchanged
- * (a changed word is a different question, so its model correction would no longer fit).
+ * New words for a task. A word that is carried over (same word, or the same word with an edited ending) keeps its id and
+ * its mark. Any other mark is returned as an orphan: it is not attached to whatever word now sits in its place.
  */
-function retokenize(task: DetectiveTask, text: string): { task: DetectiveTask; removed: number } {
+function retokenize(task: DetectiveTask, text: string): { task: DetectiveTask; orphans: Array<{ text: string; issue: DetectiveIssue }> } {
   const words = splitPassage(text);
-  const used = new Set(task.segments.map(s => s.id));
+  const { carried } = alignWords(task.segments.map(s => s.text), words);
+  const inherited = carried.map(i => i === null ? null : task.segments[i].id);
+  const used = new Set(inherited.filter((id): id is string => id !== null));
   let counter = 1;
-  const segments = words.map((word, i) => {
-    if (task.segments[i]) return { id: task.segments[i].id, text: word };
+  const segments: Segment[] = words.map((word, j) => {
+    const id = inherited[j];
+    if (id !== null) return { id, text: word };
     while (used.has('segment-' + counter)) counter++;
-    const id = 'segment-' + counter; used.add(id);
-    return { id, text: word };
+    const fresh = 'segment-' + counter; used.add(fresh);
+    return { id: fresh, text: word };
   });
-  const kept = task.issues.filter(issue => {
-    const old = task.segments.findIndex(s => s.id === issue.segmentId);
-    return old >= 0 && segments[old]?.text === task.segments[old].text;
+  const kept = new Set(inherited.filter((id): id is string => id !== null));
+  const issues = task.issues.filter(issue => kept.has(issue.segmentId));
+  const orphans = task.issues.filter(issue => !kept.has(issue.segmentId)).flatMap(issue => {
+    const segment = task.segments.find(s => s.id === issue.segmentId);
+    return segment ? [{ text: segment.text, issue }] : [];
   });
-  return { task: { ...task, segments, issues: kept }, removed: task.issues.length - kept.length };
+  return { task: { ...task, segments, issues }, orphans };
 }
 
 interface SentenceInputProps { value: string; label: string; placeholder: string; maxLength: number; attrs: object; onText: (text: string) => void;
@@ -55,11 +64,40 @@ function SentenceInput(p: SentenceInputProps) {
     inputRef={p.inputRef} onKeyDown={p.onKeyDown} onPaste={p.onPaste} onChange={e => { const next = oneLine(e.target.value); setText(next); p.onText(next); }} />;
 }
 
+interface ReviewListProps {
+  items: ReviewItem[]; words: readonly Segment[]; marked: ReadonlyMap<string, unknown>; full: boolean; lang: string; locale: Locale;
+  name: string; attrs: RegionAttrs; onAttach: (item: ReviewItem, segmentId: string) => void; onDiscard: (item: ReviewItem) => void;
+}
+/** Marks the editor could not carry to a word safely. Each one is attached by the teacher or discarded; nothing is dropped silently. */
+function ReviewList({ items, words, marked, full, lang, locale, name, attrs, onAttach, onDiscard }: ReviewListProps) {
+  return <div className="detective-review" role="group" aria-label={u(locale, 'reviewTitle') + ' · ' + name} {...attrs}>
+    <p className="detective-review-title"><b>{u(locale, 'reviewTitle')}</b> <span className="muted small">{u(locale, 'reviewHelp')}</span></p>
+    {items.map(item => <ReviewRow key={item.key} item={item} words={words} marked={marked} full={full} lang={lang} locale={locale}
+      onAttach={onAttach} onDiscard={onDiscard} />)}
+  </div>;
+}
+function ReviewRow({ item, words, marked, full, lang, locale, onAttach, onDiscard }: Omit<ReviewListProps, 'items' | 'name' | 'attrs'> & { item: ReviewItem }) {
+  const [target, setTarget] = useState('');
+  const free = words.filter(word => !marked.has(word.id));
+  return <div className="detective-review-row">
+    <p><strong lang={lang}>{item.text}</strong> → <span lang={lang}>{item.correction}</span>{item.explanation && <span className="muted small"> · {item.explanation}</span>}</p>
+    <div className="row">
+      <label className="detective-review-pick"><span className="sr-only">{u(locale, 'reviewPick')}</span>
+        <select className="field" value={target} onChange={e => setTarget(e.target.value)} disabled={full || free.length === 0}>
+          <option value="">{u(locale, 'reviewPick')}</option>
+          {words.map((word, k) => marked.has(word.id) ? null : <option key={word.id} value={word.id} lang={lang}>{k + 1}. {word.text}</option>)}
+        </select></label>
+      <button type="button" className="button secondary" disabled={!target || full} onClick={() => onAttach(item, target)}>{u(locale, 'reviewAttach')}</button>
+      <button type="button" className="text-button danger" onClick={() => onDiscard(item)}>{u(locale, 'reviewDiscard')}</button>
+    </div>
+  </div>;
+}
+
 /**
  * Stacked sentence cards: each is a text field, the same word chips the learner will tap, and — beneath each marked
  * word — its model correction and explanation. A sentence with no marks is an error-free sentence.
  */
-export function DetectiveEditor({ activity, onChange, locale, field }: EditorProps<DetectiveDraft>) {
+export function DetectiveEditor({ activity, onChange, locale, field, region }: EditorProps<DetectiveDraft>) {
   const { tasks, summary } = activity.content;
   const [notice, setNotice] = useState('');
   const [removedMarks, setRemovedMarks] = useState<{ id: string; n: number } | null>(null);
@@ -83,11 +121,28 @@ export function DetectiveEditor({ activity, onChange, locale, field }: EditorPro
   // A lone sentence may still be a v1 file (up to 80 words); with several sentences each is limited to the v2 maximum.
   const maxWords = tasks.length === 1 ? V1_LIMITS.segments.max : LIMITS.segmentsPerTask.max;
 
+  const review = activity.review ?? [];
+  /** One change to the draft, so the sentence and its review list always move together. */
+  function commit(nextTasks: DetectiveTask[], nextReview: ReviewItem[]) {
+    onChange({ ...activity, content: { ...activity.content, tasks: nextTasks }, review: nextReview });
+  }
   function editText(task: DetectiveTask, text: string) {
-    const { task: next, removed } = retokenize(task, text);
-    patchTask(task.id, () => next);
-    setRemovedMarks(removed ? { id: task.id, n: removed } : null);
-    if (removed) setNotice(u(locale, removed === 1 ? 'markedGone' : 'markedGoneMany', { n: removed }));
+    const { task: next, orphans } = retokenize(task, text);
+    const moved = orphans.map(({ text: word, issue }) => ({ key: 'review-' + (++reviewSeq), taskId: task.id, text: word, correction: issue.correction, explanation: issue.explanation }));
+    commit(tasks.map(t => t.id === task.id ? next : t), [...review, ...moved]);
+    setRemovedMarks(moved.length ? { id: task.id, n: moved.length } : null);
+    if (moved.length) setNotice(u(locale, moved.length === 1 ? 'markedMoved' : 'markedMovedMany', { n: moved.length }));
+  }
+  function attach(item: ReviewItem, segmentId: string) {
+    const task = tasks.find(t => t.id === item.taskId);
+    if (!task || task.issues.length >= LIMITS.issuesPerTask) return;
+    const mark: DetectiveIssue = { segmentId, correction: item.correction, explanation: item.explanation };
+    commit(tasks.map(t => t.id === task.id ? { ...t, issues: [...t.issues, mark] } : t), review.filter(r => r.key !== item.key));
+    setNotice(u(locale, 'reviewAttached', { word: item.text }));
+  }
+  function discard(item: ReviewItem) {
+    commit(tasks, review.filter(r => r.key !== item.key));
+    setNotice(u(locale, 'reviewDiscarded', { word: item.text }));
   }
   function toggleMark(task: DetectiveTask, segmentId: string) {
     const marked = task.issues.some(v => v.segmentId === segmentId);
@@ -107,8 +162,11 @@ export function DetectiveEditor({ activity, onChange, locale, field }: EditorPro
   }
   function removeTask(index: number) {
     if (tasks.length <= LIMITS.tasks.min) return;
+    const gone = tasks[index];
+    // Marks waiting for review would be lost with the sentence, so removing it needs an explicit confirmation.
+    if (review.some(r => r.taskId === gone.id) && !window.confirm(u(locale, 'discardReview'))) return;
     const neighbour = tasks[index - 1] ?? tasks[index + 1];
-    setTasks(tasks.filter((_, i) => i !== index));
+    commit(tasks.filter((_, i) => i !== index), review.filter(r => r.taskId !== gone.id));
     setFocus(neighbour ? { id: neighbour.id, end: true } : { id: 'add' });
   }
   function move(index: number, direction: -1 | 1) {
@@ -179,7 +237,7 @@ export function DetectiveEditor({ activity, onChange, locale, field }: EditorPro
           <SentenceInput value={joined(task)} label={name(i)} placeholder={u(locale, 'sentencePlaceholder')} maxLength={4000} attrs={field('content.tasks[' + i + '].segments')}
             inputRef={el => { if (el) inputs.current.set(task.id, el); else inputs.current.delete(task.id); }}
             onText={text => editText(task, text)} onKeyDown={e => keys(e, i)} onPaste={e => pasteInto(e, i)} />
-          {removedMarks?.id === task.id && <p className="muted small" role="note">{u(locale, removedMarks.n === 1 ? 'markedGone' : 'markedGoneMany', { n: removedMarks.n })}</p>}
+          {removedMarks?.id === task.id && <p className="muted small" role="note">{u(locale, removedMarks.n === 1 ? 'markedMoved' : 'markedMovedMany', { n: removedMarks.n })}</p>}
           {words === 0 ? <p className="muted small">{u(locale, 'wordsAdvice')}</p>
             : <div className="detective-segments mark-words" role="group" aria-label={u(locale, 'errors') + ' · ' + name(i)} lang={activity.targetLanguage}>
               {task.segments.map(segment => <button type="button" key={segment.id} className={'detective-segment' + (marked.has(segment.id) ? ' selected' : '')} aria-pressed={marked.has(segment.id)}
@@ -199,6 +257,9 @@ export function DetectiveEditor({ activity, onChange, locale, field }: EditorPro
               <button type="button" className="icon-button danger" aria-label={t(locale, 'deleteIssue') + ': ' + name(i) + ' · ' + s.text} onClick={() => toggleMark(task, s.id)}><X size={16} aria-hidden="true"/></button>
             </div>;
           })}
+          {review.some(r => r.taskId === task.id) && <ReviewList items={review.filter(r => r.taskId === task.id)} words={task.segments} marked={marked}
+            full={task.issues.length >= LIMITS.issuesPerTask} lang={activity.targetLanguage} locale={locale} name={name(i)}
+            attrs={region(reviewPath(activity, task.id))} onAttach={attach} onDiscard={discard} />}
         </article>;
       })}
       <button type="button" className="seq-row seq-add" data-add ref={addButton} disabled={tasks.length >= maxTasks}

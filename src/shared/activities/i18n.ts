@@ -39,7 +39,7 @@ export const messages = {
     problems: {
       object: 'muss ein Objekt sein', unknown: 'unbekanntes Feld', required: 'fehlt',
       text: 'muss Text sein', length: 'Länge / Pflichtfeld ungültig', slug: 'nur Kleinbuchstaben, Zahlen und Bindestriche',
-      language: 'ungültiger Sprachcode', count: 'ungültige Anzahl', duplicate: 'doppelter Wert',
+      language: 'ungültiger Sprachcode', count: 'ungültige Anzahl', duplicate: 'doppelter Wert', review: 'eine Markierung braucht noch eine Zuordnung oder muss verworfen werden',
       reference: 'unbekannte Referenz', version: 'nicht unterstützte Version', format: 'unbekanntes Dateiformat',
       kind: 'falscher Spieltyp', markup: 'HTML/Skripte sind nicht erlaubt', control: 'unzulässige Steuerzeichen', json: 'ungültige JSON-Datei',
       size: 'Datei zu groß (max. 128 KiB)'
@@ -83,7 +83,7 @@ export const messages = {
     problems: {
       object: 'must be an object', unknown: 'unknown property', required: 'is missing',
       text: 'must be text', length: 'invalid length or blank', slug: 'use lowercase letters, digits, hyphens',
-      language: 'invalid language tag', count: 'invalid number of entries', duplicate: 'duplicate value',
+      language: 'invalid language tag', count: 'invalid number of entries', duplicate: 'duplicate value', review: 'a mark needs to be attached to a word or discarded',
       reference: 'unknown reference', version: 'unsupported version', format: 'invalid file format',
       kind: 'wrong game type', markup: 'HTML/scripts are not allowed', control: 'contains invalid control characters', json: 'invalid JSON',
       size: 'file exceeds 128 KiB'
@@ -127,7 +127,7 @@ export const messages = {
     problems: {
       object: 'phải là đối tượng', unknown: 'trường không được hỗ trợ', required: 'bị thiếu',
       text: 'phải là văn bản', length: 'độ dài không hợp lệ hoặc để trống', slug: 'chỉ chữ thường, số, dấu gạch nối',
-      language: 'mã ngôn ngữ không hợp lệ', count: 'số lượng không hợp lệ', duplicate: 'giá trị trùng lặp',
+      language: 'mã ngôn ngữ không hợp lệ', count: 'số lượng không hợp lệ', duplicate: 'giá trị trùng lặp', review: 'dấu lỗi cần được gắn lại vào một từ hoặc bỏ đi',
       reference: 'tham chiếu không tồn tại', version: 'phiên bản không hỗ trợ', format: 'định dạng không hợp lệ',
       kind: 'không đúng loại trò chơi', markup: 'không cho phép HTML/script', control: 'chứa ký tự điều khiển không hợp lệ', json: 'JSON không hợp lệ',
       size: 'tệp vượt quá 128 KiB'

@@ -81,19 +81,41 @@ describe('Language Detective canvas: one sentence card', () => {
     await user.click(button('Herunterladen'));
     expect(JSON.parse(await dl.text()).content.issues).toEqual([]);
   });
-  it('keeps marks while the words at their positions are unchanged, and says when a changed marked word loses its mark', async () => {
+  it('keeps a mark through a typo in its word, and holds it for review when a different word takes its place', async () => {
     const dl = captureDownload(); const { user } = renderPage(<DetectivePage />);
     await loaded(user);
-    fireEvent.change(sentence(1), { target: { value: 'Ich haben heute dem Film gesehen.' } });   // "gestern" -> "heute": not marked, nothing lost
+    fireEvent.change(sentence(1), { target: { value: 'Ich haben heute dem Film gesehen.' } });   // "gestern" -> "heute": not marked, nothing moves
     expect(screen.getAllByLabelText(/^Musterkorrektur/)).toHaveLength(2);
     expect(screen.queryByRole('note')).toBeNull();
-    fireEvent.change(sentence(1), { target: { value: 'Ich habn heute dem Film gesehen.' } });     // the marked word "haben" changed
+    fireEvent.change(sentence(1), { target: { value: 'Ich habn heute dem Film gesehen.' } });     // a typo in the same word keeps its mark
+    expect(screen.getAllByLabelText(/^Musterkorrektur/)).toHaveLength(2);
+    expect(screen.queryByRole('note')).toBeNull();
+    fireEvent.change(sentence(1), { target: { value: 'Ich sind heute dem Film gesehen.' } });    // another word does not inherit the mark
     expect(screen.getAllByLabelText(/^Musterkorrektur/)).toHaveLength(1);
-    expect(screen.getByRole('note').textContent).toContain('1 Markierung entfernt');
+    expect(screen.getByRole('note').textContent).toContain('1 Markierung zur Prüfung verschoben');
+    const review = screen.getByRole('group', { name: /^Zu prüfen/ });
+    expect(review.textContent).toContain('habn → habe');
+    await expectBlocked(user, dl);                                  // export waits for a decision
+    await user.selectOptions(within(review).getByRole('combobox'), screen.getByRole('option', { name: '2. sind' }));
+    await user.click(within(review).getByRole('button', { name: 'Zuordnen' }));
+    expect(screen.queryByRole('group', { name: /^Zu prüfen/ })).toBeNull();
+    expect(screen.getAllByLabelText(/^Musterkorrektur/)).toHaveLength(2);
     await user.click(button('Herunterladen'));
     const data = JSON.parse(await dl.text());
-    expect(data.content.issues.map((i: { segmentId: string }) => i.segmentId)).toEqual(['s4']);
-    expect(data.content.segments.map((s: { id: string }) => s.id)).toEqual(['s1', 's2', 's3', 's4', 's5', 's6']); // ids are stable by position
+    const sind = data.content.segments.find((s: { text: string }) => s.text === 'sind');
+    expect(data.content.issues.find((i: { correction: string }) => i.correction === 'habe').segmentId).toBe(sind.id);
+  });
+  it('discards a held mark only on an explicit click, and then the export is allowed again', async () => {
+    const dl = captureDownload(); const { user } = renderPage(<DetectivePage />);
+    await loaded(user);
+    fireEvent.change(sentence(1), { target: { value: 'Ich sind heute dem Film gesehen.' } });
+    const review = screen.getByRole('group', { name: /^Zu prüfen/ });
+    await user.click(within(review).getByRole('button', { name: 'Verwerfen' }));
+    expect(screen.queryByRole('group', { name: /^Zu prüfen/ })).toBeNull();
+    await user.click(button('Herunterladen'));
+    const data = JSON.parse(await dl.text());
+    // Only the mark that stayed on "dem" is exported; the discarded one is gone for good.
+    expect(data.content.issues.map((i: { correction: string }) => i.correction)).toEqual(['den']);
   });
   it('keeps the typed text (including a trailing space) while the words are derived from it', async () => {
     const { user } = renderPage(<DetectivePage />);

@@ -16,7 +16,7 @@ export interface ActivityBase<K extends ActivityType, C, V extends 1 | 2 = 1> {
 export type ValidationCode =
   | 'object' | 'unknown' | 'required' | 'text' | 'length' | 'slug'
   | 'language' | 'count' | 'duplicate' | 'reference' | 'version'
-  | 'format' | 'kind' | 'markup' | 'control' | 'json' | 'size';
+  | 'format' | 'kind' | 'markup' | 'control' | 'json' | 'size' | 'review';
 export interface Issue { path: string; code: ValidationCode }
 export interface Result<T> { value?: T; issues: Issue[] }
 export type Validator<T> = (raw: unknown) => Result<T>;

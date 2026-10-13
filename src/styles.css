@@ -86,7 +86,6 @@ a:hover {
 .activity-projected .detective-segment { min-height:64px; }
 .activity-play .lead { overflow-wrap:anywhere; }
 .activity-board { display:grid; gap:20px; min-width:0; }
-.detective-segment.selected { border-color:#315b4a; background:#e3eee7; }
 .activity-status { font-size:.9em; color:#244438; }
 .activity-controls { align-items:center; }
 .activity-key { background:#f6efe5; border:1px solid #dfcdb7; border-radius:14px; padding:16px; overflow-wrap:anywhere; }
@@ -95,31 +94,41 @@ a:hover {
 .detective-segments { display:flex; flex-wrap:wrap; gap:7px; line-height:1.6; }
 .detective-segment { display:inline-flex; flex-direction:column; align-items:flex-start; justify-content:center; min-height:48px; padding:8px 10px; font:inherit; font-size:1.08em; text-align:left; color:inherit; background:#fff; border:2px solid #ccc5bb; border-radius:10px; cursor:pointer; overflow-wrap:anywhere; max-width:100%; }
 .detective-segment:disabled { cursor:default; opacity:1; }
-/* After Check every verdict is text + icon + border style, never colour alone. */
+/*
+ * Colour meaning (matches DetectivePlayer): copper = a word picked as an error, kept after Check whether it was right;
+ * green = a verified result (sentence verdict) or a missed teacher answer after Reveal; neutral = the learner's own text.
+ * Focus rings are ink-blue so they are never mistaken for an error or a verdict.
+ */
 .detective-mark { font-weight:700; }
-/* A picked word is red before Check; after Check the verdict rules below take over. */
-.detective-segment.selected { border-color:#b9664e; background:#fbeee8; }
-.detective-segment.hit { border-color:#315b4a; background:#e3eee7; }
-.detective-segment.missed { border-style:dashed; border-color:#b9664e; background:#fbeee8; }
-.detective-segment.extra { border-style:double; border-width:4px; border-color:#8f4034; background:#f6e4dc; }
+.detective-segment.selected, .detective-segment.hit { border-color:#b9664e; background:#fbeee8; }
+.detective-segment.missed { border-style:dashed; border-color:#315b4a; background:#e3eee7; }
+.detective-segment.extra { border-style:dotted; border-width:2px; border-color:#8a8072; background:#f4f1ec; color:#4a4238; }
+.sent-verdict { margin:0; }
 .activity-issue-toggle { display:inline-flex; gap:8px; align-items:center; min-height:44px; font-weight:650; }
 .activity-issue-toggle input { width:20px; height:20px; }
-.detective-segment:focus-visible, .detective-fix:focus-visible, .detective-none:focus-within { outline:3px solid #315b4a; outline-offset:2px; }
+.detective-segment:focus-visible, .detective-fix:focus-visible, .detective-none:focus-within { outline:3px solid #1d3b5c; outline-offset:2px; }
 /* "Kein Fehler" is a pill; the native checkbox stays in the tab order and keeps its state, only its look changes. */
 .detective-none { display:inline-flex; align-items:center; gap:10px; justify-self:start; min-height:44px; padding:6px 16px 6px 7px; font-weight:650; background:#fff; color:var(--ink); border:2px solid #b9b0a3; border-radius:999px; cursor:pointer; position:relative; }
-.detective-none:hover:not(.locked) { border-color:var(--green); }
-.detective-none.on { background:#e3eee7; border-color:var(--green); color:#27543e; }
+.detective-none:hover:not(.locked) { border-color:#6b6358; }
+.detective-none.on { background:#3a342c; border-color:#3a342c; color:#fff; }
 .detective-none.locked { cursor:default; }
 .detective-none-input { position:absolute; width:1px; height:1px; opacity:0; margin:0; pointer-events:none; }
-.detective-none-mark { display:inline-grid; place-items:center; width:26px; height:26px; border-radius:50%; border:2px solid #b9b0a3; background:#fff; color:#fff; }
-.detective-none.on .detective-none-mark { background:var(--green); border-color:var(--green); }
-/* The second version of the sentence: unpicked words unchanged, picked words replaced by soft green inputs. */
+.detective-none-mark { display:inline-grid; place-items:center; width:26px; height:26px; border-radius:50%; border:2px solid #b9b0a3; background:#fff; color:#3a342c; }
+.detective-none.on .detective-none-mark { background:#fff; border-color:#fff; color:#3a342c; }
+/* The second version of the sentence: unpicked words unchanged, picked words replaced by neutral inputs (never graded). */
 .detective-corrected { display:grid; gap:6px; min-width:0; }
-.detective-corrected-caption { margin:0; color:#27543e; font-weight:650; }
+.detective-corrected-caption { margin:0; color:#596c61; font-weight:500; }
 .detective-word { display:inline-flex; align-items:center; min-height:48px; padding:8px 10px; border:2px solid transparent; font-size:1.08em; overflow-wrap:anywhere; max-width:100%; }
-.detective-fix { box-sizing:border-box; min-height:48px; max-width:100%; padding:8px 10px; font:inherit; font-size:1.08em; color:var(--ink); background:#eef6f1; border:2px solid #9fbfae; border-radius:10px; }
-.detective-fix::placeholder { color:#7a8d80; }
-.detective-fix:disabled { opacity:1; color:var(--ink); background:#f4f8f5; }
+.detective-fix { box-sizing:border-box; min-height:48px; max-width:100%; padding:8px 10px; font:inherit; font-size:1.08em; color:var(--ink); background:#fff; border:2px solid #8a8072; border-radius:10px; }
+.detective-fix::placeholder { color:#6b6358; }
+.detective-fix:disabled { opacity:1; color:var(--ink); background:#f6f3ee; border-color:#b9b0a3; }
+/* Marks waiting for a decision: a dashed frame, copper for the word, and a visible action for each one. */
+.detective-review { display:grid; gap:10px; min-width:0; padding:12px 14px; border:1px dashed #b9664e; border-radius:12px; background:#fdf8f5; }
+.detective-review-title { margin:0; overflow-wrap:anywhere; }
+.detective-review-row { display:grid; gap:6px; min-width:0; }
+.detective-review-row p { margin:0; overflow-wrap:anywhere; }
+.detective-review-row .row { align-items:center; }
+.detective-review-pick select { min-height:44px; max-width:100%; }
 /* Result and answer regions receive programmatic focus (tabindex=-1) after Check/Reveal so keyboard and screen-reader users keep their place.
    :focus-visible shows the ring for keyboard users without drawing a box around the result after a mouse click. */
 @media(max-width:480px){.activity-play { padding:14px; }}
@@ -205,12 +214,13 @@ a:hover {
 .rb-pairs ul{display:grid;gap:6px}
 .rb-pair{display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow-wrap:anywhere}
 .rb-pair span{flex:1;min-width:0}.rb-pair i{font-style:normal;color:var(--green)}.rb-pair em{font-style:normal;font-size:.75rem;border:1px solid #c9d6cc;border-radius:99px;padding:1px 9px;color:#3f5a4c;background:#f1f6f1}
+.rb-detective{display:grid;gap:14px;min-width:0}
 .rb-sentence{display:grid;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#fff}
 .rb-words{display:flex;flex-wrap:wrap;gap:6px;font-size:1.1rem}
 .rb-word{padding:4px 10px;border:1px solid #ccc5bb;border-radius:9px;background:#fff}
-.rb-word.marked{border:2px solid var(--green);background:#e3eee7;font-weight:600}
+.rb-word.marked{border:2px solid #b9664e;background:#fbeee8;font-weight:600}
 .rb-badge{margin:0;display:inline-block;font-size:.8rem;font-weight:700;border-radius:99px;padding:2px 10px;background:#e3eee7;color:#27543e;width:fit-content}
-.rb-fixes{display:grid;gap:4px}.rb-fixes li span{color:#596c61}
+.rb-fixes{display:grid;gap:6px}.rb-fixes li span{color:#596c61}.rb-fixes li strong{color:#8f4034}.rb-fixes li .rb-fix-correct{color:#27543e;font-weight:700;background:#e3eee7;border-radius:6px;padding:0 4px}
 
 /* The authoring canvas: type where it will appear */
 .canvas-edit{display:grid;min-width:0}
@@ -486,4 +496,4 @@ a:hover {
 .detective-summary{margin:0;background:#f6efe5;border:1px solid #dfcdb7;border-radius:12px;padding:10px 14px}
 .rb-sentence-no{font:700 1rem "Fraunces",Georgia,serif}
 .activity-projected .detective-segment{font-size:1.1em}
-@media(max-width:560px){.sent-card{padding:12px}.sentence-input{font-size:1.05rem}.word-count{margin-left:0}}
+@media(max-width:560px){.rb-detective{gap:12px}.rb-sentence{padding:12px}.sent-card{padding:12px}.sentence-input{font-size:1.05rem}.word-count{margin-left:0}}

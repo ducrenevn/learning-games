@@ -5,7 +5,13 @@ import { V1_LIMITS, validateDetective, type DetectiveActivity, type DetectiveAct
  * The editor and player always work on stacked sentence tasks. A v1 file opens as one task; export writes the lowest
  * version that can represent the activity (DETECTIVE_V2_CONTRACT.md §6). All three functions are pure.
  */
-export type DetectiveDraft = DetectiveActivityV2;
+export type DetectiveDraft = DetectiveActivityV2 & { review?: ReviewItem[] };
+
+/**
+ * A mark the editor could not carry to a word with certainty after the text changed. It lives only in the editor draft,
+ * is never written to the file, and blocks export and play until the teacher attaches it to a word or discards it.
+ */
+export interface ReviewItem { key: string; taskId: string; text: string; correction: string; explanation: string }
 
 export function makeBlankDraft(): DetectiveDraft {
   return { format: 'learning-games.activity', schemaVersion: 2, activityType: 'language-detective',
@@ -49,6 +55,11 @@ function draftPath(path: string) { return path.replace(/^content\.(segments|issu
 /** A draft is valid exactly when the file it would export is valid. */
 export function validateDraft(raw: unknown): Result<DetectiveDraft> {
   const draft = raw as DetectiveDraft;
+  if (draft.review?.length) {
+    // Each unresolved mark is a problem, so the existing export gate and problem list cover it.
+    const issues: Issue[] = draft.review.map(item => ({ path: reviewPath(draft, item.taskId), code: 'review' }));
+    return { issues };
+  }
   const file = fromDraft(draft);
   const checked = validateDetective(file);
   if (checked.issues.length || !checked.value) {
@@ -59,4 +70,10 @@ export function validateDraft(raw: unknown): Result<DetectiveDraft> {
   return { value: draft, issues: [] };
 }
 
-export const taskById = (draft: DetectiveDraft, id: string): DetectiveTask | undefined => draft.content.tasks.find(task => task.id === id);
+/** The editor's path for the sentence that holds a review item, so the first problem can be focused there. */
+export function reviewPath(draft: DetectiveDraft, taskId: string): string {
+  const index = draft.content.tasks.findIndex(task => task.id === taskId);
+  return index >= 0 ? 'content.tasks[' + index + '].issues' : 'content.tasks';
+}
+
+export const taskById =(draft: DetectiveDraft, id: string): DetectiveTask | undefined => draft.content.tasks.find(task => task.id === id);

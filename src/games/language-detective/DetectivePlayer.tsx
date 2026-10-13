@@ -1,4 +1,4 @@
-import { useId, useState, type Ref } from 'react';
+import { useId, useRef, useState, type Ref } from 'react';
 import { Check } from 'lucide-react';
 import { t } from '../../shared/activities/i18n';
 import { u } from '../../shared/activities/uxCopy';
@@ -9,8 +9,13 @@ import { scoreDetective } from './engine';
 import type { DetectiveDraft } from './draft';
 import type { DetectiveTask, Segment } from './model';
 
+/**
+ * Colour meaning: copper = a word the learner picked as an error (kept after Check, correct or not); green = a verified
+ * result (the sentence verdict, and missed teacher answers after Reveal). A false pick carries a text tag, so it does not
+ * depend on colour. A correct pick carries no tag: repeating a tick and a label on every word adds noise.
+ */
 type Mark = 'hit' | 'extra' | 'missed';
-const MARK_ICON: Record<Mark, string> = { hit: '✓', extra: '✗', missed: '!' };
+const MARK_ICON: Partial<Record<Mark, string>> = { extra: '✗', missed: '!' };
 const MAX_SUGGESTION = 300;
 const EMPTY: ReadonlySet<string> = new Set();
 
@@ -18,30 +23,34 @@ interface CardProps {
   task: DetectiveTask; index: number; single: boolean; lang: string; locale: Locale; typing: boolean;
   selected: ReadonlySet<string>; noErrors: boolean; suggestions: ReadonlyMap<string, string>;
   checked: boolean; revealed: boolean; summary?: string; keyRef?: Ref<HTMLElement>;
-  onToggle: (segmentId: string) => void; onNoErrors: (value: boolean) => void; onSuggest: (segmentId: string, value: string) => void;
+  onToggle: (segmentId: string, fromKeyboard: boolean) => void; onNoErrors: (value: boolean) => void; onSuggest: (segmentId: string, value: string) => void;
+  pending: Pending;
 }
+/** A keyboard pick asks for its correction input to take focus; a pointer pick never moves focus (no keyboard on touch). */
+type Pending = { current: string | null };
 
 /** The same words as the original, with each picked word replaced by an empty input in its own position. */
-function CorrectedLine({ task, lang, locale, selected, suggestions, checked, label, onSuggest }: {
+function CorrectedLine({ task, lang, locale, selected, suggestions, checked, label, onSuggest, pending }: {
   task: DetectiveTask; lang: string; locale: Locale; selected: ReadonlySet<string>; suggestions: ReadonlyMap<string, string>;
-  checked: boolean; label: string; onSuggest: (segmentId: string, value: string) => void;
+  checked: boolean; label: string; onSuggest: (segmentId: string, value: string) => void; pending: Pending;
 }) {
   return <div className="detective-corrected">
     <p className="detective-corrected-caption small">{u(locale, 'yourCorrection')}</p>
     <div className="detective-segments corrected" lang={lang}>
       {task.segments.map(segment => selected.has(segment.id)
         ? <FixInput key={segment.id} segment={segment} value={suggestions.get(segment.id) ?? ''} lang={lang} locale={locale} label={label}
-            disabled={checked} onChange={value => onSuggest(segment.id, value)} />
+            disabled={checked} focusKey={task.id + ':' + segment.id} pending={pending} onChange={value => onSuggest(segment.id, value)} />
         : <span key={segment.id} className="detective-word" lang={lang}>{segment.text}</span>)}
     </div>
   </div>;
 }
-function FixInput({ segment, value, lang, locale, label, disabled, onChange }: {
-  segment: Segment; value: string; lang: string; locale: Locale; label: string; disabled: boolean; onChange: (value: string) => void;
+function FixInput({ segment, value, lang, locale, label, disabled, focusKey, pending, onChange }: {
+  segment: Segment; value: string; lang: string; locale: Locale; label: string; disabled: boolean; focusKey: string; pending: Pending; onChange: (value: string) => void;
 }) {
   // Sized from the original word so typing does not shift the sentence; a longer answer grows the box.
   const chars = Math.max(segment.text.length, value.length, 5) + 2;
   return <input type="text" className="detective-fix" lang={lang} value={value} disabled={disabled}
+    ref={el => { if (el && pending.current === focusKey) { pending.current = null; el.focus(); } }}
     placeholder="…" style={{ width: chars + 'ch' }} aria-label={u(locale, 'fixFor', { word: segment.text }) + label}
     onChange={e => onChange(Array.from(e.target.value).slice(0, MAX_SUGGESTION).join(''))} />;
 }
@@ -59,21 +68,24 @@ function SentenceCard(p: CardProps) {
   const reviewHasContent = p.checked && (score.extra.length > 0 || score.missed.length > 0);
   const label = p.single ? '' : ' (' + u(locale, 'sentenceNo', { n: p.index + 1 }) + ')';
   const showCorrection = p.typing && !p.noErrors && p.selected.size > 0;
+  // One concise verdict per sentence; the aggregate result stays below the sentences.
+  const verdict = p.checked && <span className={'sent-badge ' + (score.solved ? 'good' : 'bad')}><span aria-hidden="true">{score.solved ? '✓' : '✗'}</span> {u(locale, score.solved ? 'sentenceRight' : 'sentenceWrong')}</span>;
+  const markLabel = (mark: Mark) => mark === 'extra' ? u(locale, 'notAnError') : t(locale, 'missed');
   return <article className={'sent-card' + (p.single ? ' single' : '') + (p.checked && !p.single ? (score.solved ? ' good' : ' bad') : '')}>
-    {!p.single && <header><b>{u(locale, 'sentenceNo', { n: p.index + 1 })}</b>
-      {p.checked && <span className={'sent-badge ' + (score.solved ? 'good' : 'bad')}><span aria-hidden="true">{score.solved ? '✓' : '✗'}</span> {u(locale, score.solved ? 'sentenceRight' : 'sentenceWrong')}</span>}</header>}
+    {!p.single && <header><b>{u(locale, 'sentenceNo', { n: p.index + 1 })}</b>{verdict}</header>}
     <div className="detective-segments" role="group" aria-label={t(locale, 'passage') + (p.single ? '' : ' · ' + u(locale, 'sentenceNo', { n: p.index + 1 }))}>
       {task.segments.map(segment => {
         const mark = markOf(segment.id);
         return <button type="button" key={segment.id} className={'detective-segment' + (p.selected.has(segment.id) ? ' selected' : '') + (mark ? ' ' + mark : '')}
-          aria-pressed={p.selected.has(segment.id)} disabled={p.checked} onClick={() => p.onToggle(segment.id)}>
+          aria-pressed={p.selected.has(segment.id)} disabled={p.checked} onClick={e => p.onToggle(segment.id, e.detail === 0)}>
           <span lang={lang}>{segment.text}</span>
-          {mark && <span className="detective-mark small"><span aria-hidden="true">{MARK_ICON[mark]}</span> {t(locale, mark)}</span>}
+          {mark && mark !== 'hit' && <span className="detective-mark small"><span aria-hidden="true">{MARK_ICON[mark]}</span> {markLabel(mark)}</span>}
         </button>;
       })}
     </div>
+    {p.single && verdict && <p className="sent-verdict">{verdict}</p>}
     {showCorrection && <CorrectedLine task={task} lang={lang} locale={locale} selected={p.selected} suggestions={p.suggestions}
-      checked={p.checked} label={label} onSuggest={p.onSuggest} />}
+      checked={p.checked} label={label} onSuggest={p.onSuggest} pending={p.pending} />}
     <label className={'detective-none' + (p.noErrors ? ' on' : '') + (p.checked ? ' locked' : '')}>
       <input type="checkbox" className="detective-none-input" checked={p.noErrors} disabled={p.checked} onChange={e => p.onNoErrors(e.target.checked)}/>
       <span className="detective-none-mark" aria-hidden="true">{p.noErrors && <Check size={16} strokeWidth={3} />}</span>
@@ -116,6 +128,7 @@ export function DetectivePlayer({ activity, mode, locale }: PlayerProps<Detectiv
   const [checked, setChecked] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [restarts, setRestarts] = useState(0);
+  const pending = useRef<string | null>(null);
   const boardRef = useFocusFirstOnChange<HTMLDivElement>(restarts);
   const resultRef = useFocusWhen<HTMLDivElement>(checked);
   const keyRef = useFocusWhen<HTMLElement>(revealed);
@@ -124,8 +137,9 @@ export function DetectivePlayer({ activity, mode, locale }: PlayerProps<Detectiv
   const answered = tasks.filter(task => pickedIn(task).size > 0 || none.has(task.id)).length;
   const canCheck = answered === tasks.length;
 
-  function toggle(task: DetectiveTask, id: string) {
+  function toggle(task: DetectiveTask, id: string, fromKeyboard: boolean) {
     if (checked) return;
+    if (fromKeyboard && !pickedIn(task).has(id)) pending.current = task.id + ':' + id;
     setSelected(prev => {
       const next = new Map(prev), copy = new Set(prev.get(task.id) ?? EMPTY);
       if (copy.has(id)) copy.delete(id); else copy.add(id);
@@ -157,7 +171,7 @@ export function DetectivePlayer({ activity, mode, locale }: PlayerProps<Detectiv
       {tasks.map((task, index) => <SentenceCard key={task.id} task={task} index={index} single={single} lang={lang} locale={locale} typing={typing}
         selected={pickedIn(task)} noErrors={none.has(task.id)} suggestions={suggestions.get(task.id) ?? new Map()} checked={checked} revealed={revealed}
         summary={summary} keyRef={index === 0 ? keyRef : undefined}
-        onToggle={id => toggle(task, id)} onNoErrors={value => setNoErrors(task, value)} onSuggest={(id, value) => suggest(task, id, value)} />)}
+        pending={pending} onToggle={(id, fromKeyboard) => toggle(task, id, fromKeyboard)} onNoErrors={value => setNoErrors(task, value)} onSuggest={(id, value) => suggest(task, id, value)} />)}
     </div>
     <div className="row activity-controls">{!checked
       ? <button type="button" className="button primary" disabled={!canCheck} onClick={() => setChecked(true)}>{t(locale, 'check')}</button>

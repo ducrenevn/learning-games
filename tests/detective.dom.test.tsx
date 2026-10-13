@@ -93,9 +93,12 @@ describe('Language Detective play: identification scoring', () => {
     expect(playText()).toContain('Noch nicht gefunden: 1');        // the missed "dem" is counted, not named, before Reveal
     expect(playText()).not.toMatch(/Übersehen/);
     expect(playText()).toMatch(/Fälschlich markiert: Film/);
-    expect(segment('haben').textContent).toContain('Richtig markiert');
+    // A correct pick stays copper with no tag; a false pick is dotted and says it is not an error.
+    expect(segment('haben').classList.contains('hit')).toBe(true);
+    expect(segment('haben').textContent).not.toMatch(/markiert|Übersehen/);
     expect(segment('dem').textContent).not.toMatch(/Übersehen/);
-    expect(segment('Film').textContent).toContain('Fälschlich markiert');
+    expect(segment('Film').classList.contains('extra')).toBe(true);
+    expect(segment('Film').textContent).toContain('Kein Fehler hier');
     expect(segment('Ich').textContent).not.toMatch(/markiert|Übersehen/);
     await reveal(user);
     expect(playText()).toMatch(/Übersehen: dem/);
@@ -304,7 +307,7 @@ describe('Language Detective play: locales and text', () => {
     await chooseLocale(user, 'en');
     expect(playText()).toContain('Result: correct — 2 of 2 correct');
     expect(playText()).toContain('Achte auf Verbendung und Kasus.');
-    expect(playText()).toContain('Your proposed correction – not graded automatically');
+    expect(playText()).toContain('Your correction · not checked automatically');
   });
   it('renders markup-like text literally and tags authored text with the target language', async () => {
     const { user } = renderPage(<DetectivePage />);
@@ -516,5 +519,46 @@ describe('Language Detective play: the corrected sentence line', () => {
     expect(box.checked).toBe(true);
     await user.click(screen.getByText('Kein Fehler', { selector: 'span' }));
     expect(box.checked).toBe(false);
+  });
+});
+
+describe('Language Detective play: focus, verdict and caption after the colour rules', () => {
+  it('a pointer pick keeps focus on the word, so a touch does not open the keyboard', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    await user.click(segment('haben'));
+    expect(document.activeElement).toBe(segment('haben'));
+    expect(document.activeElement).not.toBe(suggestionBox('haben'));
+  });
+  it("a keyboard pick moves focus to the correction input of that word", async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    segment('haben').focus();
+    await user.keyboard('{Enter}');
+    expect(document.activeElement).toBe(suggestionBox('haben'));
+  });
+  it('shows one caption that says the correction is not checked automatically, and no caption before a pick', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    expect(document.querySelector('.detective-corrected-caption')).toBeNull();
+    await pick(user, 'haben');
+    expect(document.querySelector('.detective-corrected-caption')!.textContent).toBe('Deine Korrektur · nicht automatisch geprüft');
+  });
+  it('gives a single sentence one verdict after Check: Richtig when every error and no other word is picked', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    await pick(user, 'haben');
+    await check(user);
+    expect(document.querySelector('.sent-verdict .sent-badge')!.textContent).toContain('Nicht ganz');
+    expect(document.querySelectorAll('.sent-verdict')).toHaveLength(1);
+  });
+  it('says Richtig when the sentence is fully and only correctly picked', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    await pick(user, 'haben', 'dem');
+    await check(user);
+    expect(document.querySelector('.sent-verdict .sent-badge')!.textContent).toContain('Richtig');
+    expect(segment('haben').classList.contains('hit')).toBe(true);
+    expect(segment('haben').textContent).not.toMatch(/markiert|Richtig/);
   });
 });
