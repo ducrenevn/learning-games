@@ -346,6 +346,10 @@ a:hover {
   .seq-input{font-size:1rem}
   /* On a phone only the row being edited shows its tools, so the sentence keeps the full width. */
   .seq-edit:not(:focus-within) .seq-tools{display:none}
+  /* The focused row's tools move to a line beneath the sentence, so the sentence keeps its width while being edited. */
+  .seq-edit{flex-wrap:wrap;row-gap:2px}
+  .seq-edit .seq-text{flex:1 1 0}
+  .seq-edit .seq-tools{flex:1 0 100%;justify-content:flex-end;padding-bottom:4px}
 }
 
 /* Sort: unsorted bank + category bins (player), and the bins as the author canvas */
@@ -445,6 +449,14 @@ a:hover {
 .card-edit.dragging{opacity:.4}
 .sort-bin.edit.over{background:#c9e3cf;box-shadow:0 0 0 4px #315b4a44}
 .card-edit-main .seq-grip{width:22px;height:40px}
+.card-edit-tools{display:flex;flex:none;gap:0}
+/* Phones: the card text takes the full row beside the grip; move, note and delete sit on a compact line beneath it. */
+@media(max-width:700px){
+  .card-edit-main{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center}
+  .card-edit-main .seq-grip{grid-row:1 / span 2}
+  .card-edit-main .chip-input{grid-column:2;grid-row:1;min-width:0;width:100%}
+  .card-edit-tools{grid-column:2;grid-row:2;justify-self:end}
+}
 
 /* Language Detective: stacked sentence cards (editor and player) */
 .sentence-stack{display:grid;gap:12px;min-width:0}

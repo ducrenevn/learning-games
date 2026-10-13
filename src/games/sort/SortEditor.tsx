@@ -175,12 +175,14 @@ export function SortEditor({ activity, onChange, locale, field, region }: Editor
                 <input className="chip-input" aria-label={cardName(item.id)} placeholder={u(locale, 'cardHint')} value={item.text} {...field('content.items[' + realIndex + '].text')}
                   ref={el => { if (el) cardInputs.current.set(item.id, el); else cardInputs.current.delete(item.id); }}
                   onKeyDown={e => cardKeys(e, item)} onPaste={e => paste(e, item)} onChange={e => setText(item.id, e.target.value)}/>
-                <button type="button" className="icon-button" aria-pressed={moving === item.id} aria-label={u(locale, 'moveCard') + ': ' + cardName(item.id)}
-                  onClick={() => setMoving(moving === item.id ? null : item.id)}><ArrowRightLeft size={16} aria-hidden="true"/></button>
-                <button type="button" className="icon-button" aria-expanded={showExplanation} aria-label={u(locale, 'explainCard') + ': ' + cardName(item.id)}
-                  onClick={() => setOpen(prev => { const next = new Set(prev); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; })}><MessageSquareText size={16} aria-hidden="true"/></button>
-                <button type="button" className="icon-button danger" disabled={items.length <= MIN_CARDS} title={items.length <= MIN_CARDS ? u(locale, 'minCards') : undefined}
-                  aria-label={tf(locale, 'removeRow', { what: cardName(item.id) })} onClick={() => removeCard(item.id)}><X size={16} aria-hidden="true"/></button>
+                <div className="card-edit-tools">
+                  <button type="button" className="icon-button" aria-pressed={moving === item.id} aria-label={u(locale, 'moveCard') + ': ' + cardName(item.id)}
+                    onClick={() => setMoving(moving === item.id ? null : item.id)}><ArrowRightLeft size={16} aria-hidden="true"/></button>
+                  <button type="button" className="icon-button" aria-expanded={showExplanation} aria-label={u(locale, 'explainCard') + ': ' + cardName(item.id)}
+                    onClick={() => setOpen(prev => { const next = new Set(prev); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; })}><MessageSquareText size={16} aria-hidden="true"/></button>
+                  <button type="button" className="icon-button danger" disabled={items.length <= MIN_CARDS} title={items.length <= MIN_CARDS ? u(locale, 'minCards') : undefined}
+                    aria-label={tf(locale, 'removeRow', { what: cardName(item.id) })} onClick={() => removeCard(item.id)}><X size={16} aria-hidden="true"/></button>
+                </div>
               </div>
               {showExplanation && <input className="chip-input chip-explanation" aria-label={u(locale, 'explainCard') + ' · ' + cardName(item.id)} placeholder={u(locale, 'explainCard')}
                 value={item.explanation ?? ''} {...field('content.items[' + realIndex + '].explanation')} onChange={e => setExplanation(item.id, e.target.value)}/>}
