@@ -6,17 +6,29 @@ import type { Locale } from '../activities/contract';
  * not remember a previous teacher's choice. Without a provider (isolated component tests) the language stays German.
  * When the M3a `LanguageProvider` is merged it can sit behind this same hook.
  */
-interface LocaleState { locale: Locale; setLocale: (next: Locale) => void }
-const LocaleContext = createContext<LocaleState>({ locale: 'de', setLocale: () => {} });
+interface LocaleState {
+  locale: Locale;
+  /** Programmatic change (for example a room policy). Does not count as a student's explicit choice. */
+  setLocale: (next: Locale) => void;
+  /** The last language a person picked with the flag toggle in this page session; null until they pick one. */
+  chosenLocale: Locale | null;
+  /** A person's own flag choice: changes the interface and records the choice. */
+  chooseLocale: (next: Locale) => void;
+}
+const LocaleContext = createContext<LocaleState>({ locale: 'de', setLocale: () => {}, chosenLocale: null, chooseLocale: () => {} });
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>('de');
+  const [chosenLocale, setChosenLocale] = useState<Locale | null>(null);
   useEffect(() => {
     const before = document.documentElement.lang;
     document.documentElement.lang = locale;
     return () => { document.documentElement.lang = before; };
   }, [locale]);
-  const value = useMemo(() => ({ locale, setLocale }), [locale]);
+  const value = useMemo(() => ({
+    locale, setLocale, chosenLocale,
+    chooseLocale: (next: Locale) => { setChosenLocale(next); setLocale(next); },
+  }), [locale, chosenLocale]);
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 export const useLocale = () => useContext(LocaleContext);
@@ -50,10 +62,10 @@ function Flag({ code }: { code: Locale }) {
 
 /** Three-position flag toggle: a labelled group of toggle buttons (`aria-pressed`), same look as the M3a prototype. */
 export function LanguageFlags() {
-  const { locale, setLocale } = useLocale();
+  const { locale, chooseLocale } = useLocale();
   return <div className="language-switcher language-switcher--flags" role="group" aria-label={GROUP_LABEL[locale]}>
     {LOCALE_OPTIONS.map(({ code, label }) => <button key={code} className="language-flag-button" type="button"
-      aria-label={label} aria-pressed={locale === code} title={label} onClick={() => setLocale(code)}>
+      aria-label={label} aria-pressed={locale === code} title={label} onClick={() => chooseLocale(code)}>
       <span className="language-flag-icon"><Flag code={code}/></span>
     </button>)}
   </div>;

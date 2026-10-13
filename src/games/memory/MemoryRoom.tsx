@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import type { Locale } from '../../shared/activities/contract';
 import { clearRoomIdentity, loadRoomIdentity } from '../../shared/classroom/identity';
 import { RoomShare } from '../../shared/classroom/RoomShare';
 import { roomText } from '../../shared/classroom/roomCopy';
+import { isRoomLanguage } from '../../shared/classroom/roomLanguagePolicy';
 import { useRoomInterfaceLocale } from '../../shared/classroom/useRoomInterfaceLocale';
 import { LanguageFlags, useLocale } from '../../shared/locale/LocaleProvider';
 import { useMemoryRoom } from './hooks/useMemoryRoom';
@@ -13,11 +14,18 @@ import { MemoryResults } from './components/MemoryResults';
 import { memoryText } from './roomCopy';
 import type { RoomIdentity } from './types';
 
+/** The language a student picked on the Join page, handed over as transient router state. Only a valid code is used. */
+function studentLocaleFrom(state: unknown): Locale | null {
+  const value = (state as { studentLocale?: unknown } | null)?.studentLocale;
+  return isRoomLanguage(value) ? value : null;
+}
+
 export function MemoryRoom() {
   const { roomCode = '' } = useParams();
+  const location = useLocation();
   const identity = useMemo(() => loadRoomIdentity(roomCode), [roomCode]);
   if (!identity) return <NoAccess roomCode={roomCode} />;
-  return <ActiveRoom key={identity.roomCode + identity.role} identity={identity} />;
+  return <ActiveRoom key={identity.roomCode + identity.role} identity={identity} studentLocale={studentLocaleFrom(location.state)} />;
 }
 
 /** No room policy is known here, so this is the one place a room route shows a global-style language control. */
@@ -39,10 +47,10 @@ function RoomLanguageBar({ locale }: { locale: Locale }) {
   </div>;
 }
 
-function ActiveRoom({ identity }: { identity: RoomIdentity }) {
+function ActiveRoom({ identity, studentLocale }: { identity: RoomIdentity; studentLocale: Locale | null }) {
   const { state, busy, error, refresh, start, flip, skip, recover } = useMemoryRoom(identity);
-  const { locale } = useLocale();
-  useRoomInterfaceLocale(state?.roomLanguage ?? null, state?.allowStudentLanguageChoice ?? null);
+  // The room's displayed language, correct on the first render (no previous-language frame).
+  const locale = useRoomInterfaceLocale(state?.roomLanguage ?? null, state?.allowStudentLanguageChoice ?? null, studentLocale);
   const isHost = identity.role === 'host';
   const roomCode = identity.roomCode;
   const errorText = error ? roomText(locale, error) : null;

@@ -1,5 +1,5 @@
 # Handoff — UX-2 owner smoke test (2026-10-13)
-> **Newer local branch:** `feat/lg-mp0-ux2-m3a-integration-20261013` (local commit, not pushed) integrates the M3a room-language policy into UX-2. See the LG-MP0 section of [CURRENT_STATE](CURRENT_STATE.md). Audit it before any push, PR or merge.
+> **Newer branch:** `feat/lg-mp0-ux2-m3a-integration-20261013` integrates the M3a room-language policy into UX-2. Integration commit `3f1854b` is on origin, and a source-audit correction commit follows it on the same branch. Vercel Preview status is owner-reported. Not merged, not promoted to Production. See the LG-MP0 sections of [CURRENT_STATE](CURRENT_STATE.md).
 **Supersedes the 2026-10-12 Wave F acceptance handoff for the Learning Games UI.** The Wave F branch is historical; its review gates still apply to that branch only.
 
 ## State

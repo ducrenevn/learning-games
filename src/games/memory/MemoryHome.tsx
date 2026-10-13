@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ActivityWorkspace } from '../../shared/activities/Workspace';
 import { LocalMemory } from './LocalMemory';
@@ -16,23 +16,39 @@ function MemoryPlayer({ activity, locale, mode }: PlayerProps<MemoryActivity>) {
     singlePlayer={mode === 'independent'} />;
 }
 
+interface PendingRoom { activity: MemoryActivity; opener: HTMLElement | null }
+
 export function MemoryHome() {
   const navigate = useNavigate();
   const { locale } = useLocale();
-  const [pending, setPending] = useState<MemoryActivity | null>(null);
+  const [pending, setPending] = useState<PendingRoom | null>(null);
+  const returnFocusTo = useRef<HTMLElement | null>(null);
 
   // Opening the dialog is not the room creation. Resolving at once keeps the Create Room button from showing "creating" behind the dialog.
+  // The opener is read here, inside the click that started it, before the button is disabled.
   function openRoom(activity: MemoryActivity): Promise<void> {
-    if (!validateMemory(activity).issues.length && activity.content.pairs.length >= 2) setPending(activity);
+    if (!validateMemory(activity).issues.length && activity.content.pairs.length >= 2) {
+      const active = document.activeElement;
+      setPending({ activity, opener: active instanceof HTMLElement ? active : null });
+    }
     return Promise.resolve();
   }
   function cancelRoom() {
+    returnFocusTo.current = pending?.opener ?? null;
     setPending(null);
   }
+  // Runs after the editor's inert state is removed, so focus can land on the Create Room button. Only cancel sets this;
+  // a confirmed room navigates away and must not focus an element on the page it leaves.
+  useEffect(() => {
+    if (pending === null && returnFocusTo.current) {
+      returnFocusTo.current.focus();
+      returnFocusTo.current = null;
+    }
+  }, [pending]);
   async function confirmRoom(allowStudentLanguageChoice: boolean) {
     if (!pending) return;
     // Only this explicit teacher confirmation calls the room RPC. No room code or token is serialized into the activity.
-    const data = await createMemoryRoom(toMemoryPairs(pending), locale, allowStudentLanguageChoice, pending.title);
+    const data = await createMemoryRoom(toMemoryPairs(pending.activity), locale, allowStudentLanguageChoice, pending.activity.title);
     saveRoomIdentity({ roomCode: data.roomCode, token: data.hostToken, role: 'host' });
     setPending(null);
     navigate('/games/memory/room/' + data.roomCode);

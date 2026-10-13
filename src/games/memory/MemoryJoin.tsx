@@ -9,7 +9,7 @@ import { useLocale } from '../../shared/locale/LocaleProvider';
 import { memoryText } from './roomCopy';
 
 export function MemoryJoin() {
-  const { locale } = useLocale();
+  const { locale, chosenLocale } = useLocale();
   const [params] = useSearchParams();
   const [code, setCode] = useState(params.get('room') || '');
   const [name, setName] = useState('');
@@ -30,7 +30,8 @@ export function MemoryJoin() {
     try {
       const data = await joinMemoryRoom(room, name.trim());
       saveRoomIdentity({ roomCode: data.roomCode, token: data.playerToken, role: 'student' });
-      navigate('/games/memory/room/' + data.roomCode);
+      // Only an explicit flag choice is carried into the room. Router state is not stored or sent anywhere.
+      navigate('/games/memory/room/' + data.roomCode, chosenLocale ? { state: { studentLocale: chosenLocale } } : undefined);
     } catch (e) {
       setError(roomText(locale, roomErrorKey(e, 'joinFailed')));
     } finally {
