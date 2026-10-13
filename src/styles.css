@@ -408,7 +408,8 @@ a:hover {
 @media(max-width:700px){.sort-bank h3{font-size:1rem;overflow-wrap:anywhere}.sort-bank header{gap:6px}.hint-trigger{width:36px;height:36px}}
 .sort-chip{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .sort-chip.dragging{opacity:.35;border-style:dashed}
-.sort-chip.drag-ghost{cursor:grabbing;transform:rotate(2deg);border:2px solid var(--green);background:#fff;box-shadow:0 14px 30px #24443855;pointer-events:none}
+/* dnd-kit sizes the overlay wrapper to the source card, so the ghost sizes itself to its text: a word wraps only when it cannot fit the viewport. */
+.sort-chip.drag-ghost{cursor:grabbing;transform:rotate(2deg);border:2px solid var(--green);background:#fff;box-shadow:0 14px 30px #24443855;pointer-events:none;width:max-content;max-width:min(22rem,calc(100vw - 2rem));overflow-wrap:anywhere}
 .sort-bin.over{background:#c9e3cf;box-shadow:0 0 0 4px #315b4a44}
 .sort-bank.over{border-color:var(--green);box-shadow:0 0 0 4px #315b4a44}
 @media(prefers-reduced-motion:reduce){.sort-chip.drag-ghost{transform:none}}

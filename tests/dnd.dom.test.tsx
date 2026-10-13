@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
@@ -67,5 +69,20 @@ describe('drag-and-drop is a pointer enhancement, not a requirement', () => {
     await importActivity(sort.user, sortFixture());
     expect(document.querySelectorAll('.card-edit .seq-grip')).toHaveLength(4);
     expect(within(document.querySelector('.sort-author')!).queryAllByRole('button', { name: /ziehen|drag/i })).toHaveLength(0);
+  });
+});
+
+describe('the drag ghost keeps the word on one line', () => {
+  // jsdom does not lay out text, so this pins the rule that does: the ghost sizes to its text (dnd-kit gives the overlay
+  // the source card's width), wraps only at a viewport-bounded maximum, and breaks inside a word only when it must.
+  it('uses max-content width, a viewport cap and anywhere wrapping for .sort-chip.drag-ghost', () => {
+    const css = readFileSync(resolve(__dirname, '../src/styles.css'), 'utf8');
+    const rule = css.match(/\.sort-chip\.drag-ghost\{([^}]*)\}/);
+    expect(rule).not.toBeNull();
+    const decl = rule![1];
+    expect(decl).toMatch(/width:max-content/);
+    expect(decl).toMatch(/max-width:min\(22rem,calc\(100vw - 2rem\)\)/);
+    expect(decl).toMatch(/overflow-wrap:anywhere/);
+    expect(decl).not.toMatch(/overflow-wrap:break-word/);
   });
 });
