@@ -17,3 +17,8 @@
 
 ## Constraints (unchanged)
 No Supabase, SPP, hosted RPC or multiplayer backend change. No service-role keys in browser code. Keep game engines independent. Keep the Canva reference intact.
+
+
+## Next architecture planning track — approved scope, NOT implementation authorization (2026-10-13)
+
+The owner approved a future **four-game multiplayer V1** with 11 supported game-mode combinations, and SPP Homework reuse as the preferred assignment direction. Read [MULTIPLAYER_V1_CONTRACT](architecture/MULTIPLAYER_V1_CONTRACT.md), [SPP_HOMEWORK_INTEGRATION_DISCOVERY](architecture/SPP_HOMEWORK_INTEGRATION_DISCOVERY.md), and [review briefs](audits/2026-10-13-multiplayer-v1-review-briefs.md). The next action for this track is **two independent READ-ONLY architecture reviews**, followed by a control-room synthesis and owner sign-off. Do not conflate this new planning track with the still-gated UX-2/M3a frontend integration; no coding, PR merges, deployment, hosted RPC or production schema changes are authorized.
