@@ -57,3 +57,10 @@ Owner approved implementation of LG-A1 Sort, LG-A2 Sequence and LG-A3 Language D
 
 ## Wave F UX-1 guided editor (2026-10-12; feature-branch review)
 After Sonnet's reviewed `5cf3276` was pushed to draft PR #12, the owner approved a guided authoring redesign. The redesign is developed separately on `feat/wave-f-ux1-guided-authoring-20261012`, based directly on that reviewed commit. See [UX-1 implementation notes](audits/2026-10-12-wave-f-ux1-implementation.md). New chooser, file-first import, step-by-step authoring and detached local play are in review. TypeScript and a limited jsdom smoke passed during preparation; full Vitest/build/browser acceptance remains open. No production merge/deploy or backend/SPP/Memory changes are authorized.
+
+
+## Multiplayer V1 product contract — owner approved 2026-10-13 (documentation only)
+
+Four participation modes: turns, collaborative, individual, teacher-paced. Game-mode compatibility is explicitly restricted to **11 combinations**: Memory (turns, individual); Sort (collaborative, individual, teacher-paced); Sequence (collaborative, individual, teacher-paced); Language Detective (collaborative, individual, teacher-paced). Unsupported modes are hidden and must be rejected by backend room creation. Local UX-2 modes are preserved. Asynchronous assignments are a separate proposed SPP Homework delivery integration, not a fifth live room mode.
+
+**Authority:** [Multiplayer V1 product contract](architecture/MULTIPLAYER_V1_CONTRACT.md); [SPP assignment integration discovery](architecture/SPP_HOMEWORK_INTEGRATION_DISCOVERY.md); [two read-only architecture review briefs](audits/2026-10-13-multiplayer-v1-review-briefs.md). No new multiplayer service, SPP adapter, SQL or deployment implemented or authorized. This product decision supersedes older Memory-only *future-scope* statements but does not change the existing release gates for UX-2 and M3a.
