@@ -9,7 +9,7 @@ export function makeBlankSort(): SortActivity {
     format: 'learning-games.activity', schemaVersion: 1, activityType: 'sort',
     id: 'new-sort-activity', title: 'Sort', targetLanguage: 'de', instructions: 'Ordne die Karten den passenden Kategorien zu.',
     content: { categories: [{ id: 'category-1', label: '' }, { id: 'category-2', label: '' }],
-      items: Array.from({ length: 4 }, (_, i) => ({ id: 'card-' + (i + 1), text: '', categoryId: 'category-1' })) }
+      items: Array.from({ length: 4 }, (_, i) => ({ id: 'card-' + (i + 1), text: '', categoryId: i < 2 ? 'category-1' : 'category-2' })) }
   };
 }
 export function validateSort(raw: unknown): Result<SortActivity> {

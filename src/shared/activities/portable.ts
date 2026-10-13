@@ -15,10 +15,11 @@ export function validateImported(text: string, type: ActivityType): Result<unkno
   };
   return validators[type](parsed.value);
 }
-export function serializeActivity<T>(activity: T, validate: Validator<T>): Result<string> {
+/** `toFile` lets a game keep a richer editing model and still write the lowest-version portable file (Language Detective). */
+export function serializeActivity<T>(activity: T, validate: Validator<T>, toFile: (value: T) => unknown = value => value): Result<string> {
   const checked = validate(activity);
   if (checked.issues.length || !checked.value) return { issues: checked.issues };
-  const json = JSON.stringify(checked.value, null, 2) + '\n';
+  const json = JSON.stringify(toFile(checked.value), null, 2) + '\n';
   if (new TextEncoder().encode(json).length > MAX_BYTES) return { issues: [{ path: 'file', code: 'size' }] };
   return { value: json, issues: [] };
 }

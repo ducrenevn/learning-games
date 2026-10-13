@@ -16,9 +16,8 @@ export const messages = {
     remove: 'Entfernen', up: 'Nach oben', down: 'Nach unten', select: 'Auswählen',
     prompt: 'Aufgabe', item: 'Schritt', passage: 'Textteile', segment: 'Textteil',
     addSegment: 'Textteil hinzufügen', issue: 'Fehler', addIssue: 'Fehler markieren',
-    correction: 'Musterkorrektur', summary: 'Zusammenfassung (optional)', noErrors: 'Keine Fehler',
+    correction: 'Musterkorrektur', summary: 'Zusammenfassung (optional)', noErrors: 'Kein Fehler',
     suggestion: 'Eigener Korrekturvorschlag (nicht automatisch bewertet)',
-    review: 'Korrekturen zum Vergleichen – Texteingaben werden NICHT automatisch bewertet.',
     selected: 'Markiert', noSelection: 'Keine Fehler markieren', flagged: 'Markiert als Fehler',
     missed: 'Übersehen', extra: 'Fälschlich markiert', categoryCorrect: 'Richtige Kategorie',
     exact: 'Richtige Position', untouched: 'Noch keine Datei gespeichert oder geteilt.',
@@ -28,7 +27,7 @@ export const messages = {
     activityId: 'Aktivitäts-ID', targetLanguage: 'Zielsprache', loadError: 'Import fehlgeschlagen',
     validated: 'Validiert', confirmNew: 'Neues Formular öffnen und Änderungen verwerfen?',
     deleteIssue: 'Fehler entfernen', noAnswer: 'Die Auflösung bleibt bis zur Prüfung verborgen.',
-    nothingSelected: 'Textteile antippen oder „Keine Fehler“ wählen.',
+    nothingSelected: 'Textteile antippen oder „Kein Fehler“ wählen.',
     all: 'Alle', answerKey: 'Lösungsschlüssel', mode: 'Modus',
     exportError: 'Export fehlgeschlagen', importKept: 'Das bisherige Formular wurde nicht verändert.',
     moreIssues: '… und {n} weitere', showProblems: 'Probleme anzeigen ({n})',
@@ -40,7 +39,7 @@ export const messages = {
     problems: {
       object: 'muss ein Objekt sein', unknown: 'unbekanntes Feld', required: 'fehlt',
       text: 'muss Text sein', length: 'Länge / Pflichtfeld ungültig', slug: 'nur Kleinbuchstaben, Zahlen und Bindestriche',
-      language: 'ungültiger Sprachcode', count: 'ungültige Anzahl', duplicate: 'doppelter Wert',
+      language: 'ungültiger Sprachcode', count: 'ungültige Anzahl', duplicate: 'doppelter Wert', review: 'eine Markierung braucht noch eine Zuordnung oder muss verworfen werden',
       reference: 'unbekannte Referenz', version: 'nicht unterstützte Version', format: 'unbekanntes Dateiformat',
       kind: 'falscher Spieltyp', markup: 'HTML/Skripte sind nicht erlaubt', control: 'unzulässige Steuerzeichen', json: 'ungültige JSON-Datei',
       size: 'Datei zu groß (max. 128 KiB)'
@@ -63,7 +62,6 @@ export const messages = {
     addSegment: 'Add segment', issue: 'Issue', addIssue: 'Mark an issue',
     correction: 'Model correction', summary: 'Summary (optional)', noErrors: 'No errors',
     suggestion: 'Suggested correction (not automatically graded)',
-    review: 'Compare corrections with the answer key. Free text is NOT automatically graded.',
     selected: 'Selected', noSelection: 'Mark no errors', flagged: 'Marked as issue',
     missed: 'Missed', extra: 'Incorrectly flagged', categoryCorrect: 'Correct category',
     exact: 'Correct position', untouched: 'Not yet saved or shared.',
@@ -85,7 +83,7 @@ export const messages = {
     problems: {
       object: 'must be an object', unknown: 'unknown property', required: 'is missing',
       text: 'must be text', length: 'invalid length or blank', slug: 'use lowercase letters, digits, hyphens',
-      language: 'invalid language tag', count: 'invalid number of entries', duplicate: 'duplicate value',
+      language: 'invalid language tag', count: 'invalid number of entries', duplicate: 'duplicate value', review: 'a mark needs to be attached to a word or discarded',
       reference: 'unknown reference', version: 'unsupported version', format: 'invalid file format',
       kind: 'wrong game type', markup: 'HTML/scripts are not allowed', control: 'contains invalid control characters', json: 'invalid JSON',
       size: 'file exceeds 128 KiB'
@@ -108,7 +106,6 @@ export const messages = {
     addSegment: 'Thêm đoạn', issue: 'Lỗi', addIssue: 'Đánh dấu lỗi',
     correction: 'Cách sửa mẫu', summary: 'Tóm tắt (không bắt buộc)', noErrors: 'Không có lỗi',
     suggestion: 'Đề xuất sửa (không được chấm tự động)',
-    review: 'Đối chiếu đáp án. Phần sửa bằng chữ KHÔNG được chấm tự động.',
     selected: 'Đã chọn', noSelection: 'Đánh dấu không có lỗi', flagged: 'Đã đánh dấu lỗi',
     missed: 'Bỏ sót', extra: 'Đánh dấu nhầm', categoryCorrect: 'Nhóm đúng',
     exact: 'Đúng vị trí', untouched: 'Chưa được lưu hoặc chia sẻ.',
@@ -130,7 +127,7 @@ export const messages = {
     problems: {
       object: 'phải là đối tượng', unknown: 'trường không được hỗ trợ', required: 'bị thiếu',
       text: 'phải là văn bản', length: 'độ dài không hợp lệ hoặc để trống', slug: 'chỉ chữ thường, số, dấu gạch nối',
-      language: 'mã ngôn ngữ không hợp lệ', count: 'số lượng không hợp lệ', duplicate: 'giá trị trùng lặp',
+      language: 'mã ngôn ngữ không hợp lệ', count: 'số lượng không hợp lệ', duplicate: 'giá trị trùng lặp', review: 'dấu lỗi cần được gắn lại vào một từ hoặc bỏ đi',
       reference: 'tham chiếu không tồn tại', version: 'phiên bản không hỗ trợ', format: 'định dạng không hợp lệ',
       kind: 'không đúng loại trò chơi', markup: 'không cho phép HTML/script', control: 'chứa ký tự điều khiển không hợp lệ', json: 'JSON không hợp lệ',
       size: 'tệp vượt quá 128 KiB'

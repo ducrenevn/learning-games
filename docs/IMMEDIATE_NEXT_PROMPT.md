@@ -1,26 +1,19 @@
-# Handoff — Wave F owner acceptance and release decision
-**Date: 2026-10-12.** Supersedes the earlier "BUILD LG-A1, LG-A2, LG-A3" handoff: the three games are built, and the independent Sonnet review and fixes are done. **Do not rebuild them.**
+# Handoff — UX-2 owner smoke test (2026-10-13)
+**Supersedes the 2026-10-12 Wave F acceptance handoff for the Learning Games UI.** The Wave F branch is historical; its review gates still apply to that branch only.
 
 ## State
-- Branch `feat/wave-f-local-games-a1-a3-20261012`, draft [PR #12](https://github.com/ducrenevn/learning-games/pull/12), based on docs PR #11 `6e7e27e`. Authoring commits end at `7bdda96`; the review added local commits on top (list in the [review report](audits/2026-10-12-wave-f-independent-review.md), section 8). **The review commits are not pushed** — check `git log origin/feat/wave-f-local-games-a1-a3-20261012..HEAD` before assuming the remote has them.
-- Verified: `npm ci`, typecheck, 172 tests, production build; real-Chrome layout/keyboard/files/touch evidence. **Not verified:** screen readers, Safari/Firefox, real phone/projector, Vercel hosting, Memory online play, anything with Supabase/SPP.
-- `main` was `f8ac534026b4fcdcfa0ffa15e61890a4e5389c62` at review time; M3a [PR #10](https://github.com/ducrenevn/learning-games/pull/10) was draft/unmerged. Re-verify both live before acting.
+- Working checkout: `D:Local FilesApps_Websiteslearning-games`, branch `feat/ux2-single-canvas-20261012`, pushed to origin. Read [CURRENT_STATE](CURRENT_STATE.md#ux-2-single-canvas-implementation--authoritative-2026-10-13) for what is implemented and verified.
+- Verified locally: typecheck, 332/332 Vitest tests, production build, `git diff --check`, and a 74-check Playwright smoke at six viewports (1440, 1024, 768, 390, 360 and 1280×560). Evidence lives in `docs/audits/ux2-design/evidence/`.
+- Not verified: real phones, Safari/Firefox, screen readers, hosted Vercel, Memory online rooms, any Supabase/SPP path (not touched).
 
-## Next gates, in order — each needs the owner
-1. **Owner hands-on acceptance** with the checklist in section 7 of the review report and the fixtures in `tests/fixtures/wave-f/`. Record what was actually done; do not mark a gate passed without evidence.
-2. Fix anything the owner finds (same branch, separate commits, tests with each fix).
-3. **Separate release decision:** push, un-draft, merge PR #12 and any deployment are each explicitly owner-approved. A push can start Vercel builds. No Supabase/SPP/SQL change is part of this wave.
-4. After an authorised M3a (PR #10) merge, reconcile `src/shared/activities/i18n.ts` with the M3a localisation and update the German-string assertions in `tests/*.dom.test.tsx`.
+## Owner decisions already taken
+- Detective v2 limits: 1–10 sentences, 2–40 words per sentence, 200 words per activity, 12 errors per sentence, 30 errors per activity. v1 files (including the 80-segment, 12-error boundary) keep importing, playing and exporting unchanged.
+
+## Next steps (owner)
+1. **Hands-on smoke test** of the single-canvas flows in DE, EN and VI: Sort (mobile categories left, bank right, info popover, tap and drag), Sequence (reorder, Enter, paste), Detective (stacked sentences, separate marks, reveal), Memory local (ownership marks). Do not create live Memory rooms.
+2. **Known cosmetic issue to judge:** on the Detective player at 390 px, the "Zum Editor" link and the title wrap onto two lines.
+3. **Open a draft PR** for `feat/ux2-single-canvas-20261012` (no `gh` on this machine; compare link: https://github.com/ducrenevn/learning-games/pull/new/feat/ux2-single-canvas-20261012). Do not merge or deploy without a separate owner decision. A push can start a Vercel build.
+4. Memory M3a PR #10 remains a separate release gate; do not fold it into this branch.
 
 ## Constraints (unchanged)
-No new Supabase tables, functions, policies, migrations or hosting edits; no networked multiplayer, student accounts, stored submissions, analytics, optional media hosting or in-app AI; do not refactor Memory; do not touch SPP Auth/Homework/speaking. Wave F stays frontend-only, text-first, local to the browser. Read [AGENTS.md](../AGENTS.md) first; preserve unrelated and uncommitted work.
-
-## Open product questions for the owner
-- Should Presentation differ more from Independent for Sort/Sequence (e.g. no Retry button, teacher-only Reveal)? Today they differ in layout only (Language Detective's Presentation also has no typing boxes).
-- Should the interface language be remembered between pages/reloads (it defaults to German each time)?
-- Do you want teachers to be able to rename category/card ids, or keep them generated?
-- Stage 2 (networked rooms) remains separately gated; nothing here prepares or authorises it.
-
-
-## After Memory unification — Antigravity handoff (2026-10-12)
-Verify the stacked isolated branch `feat/wave-f-memory-unified-20261012` against its corpus parent. Read docs/architecture/UNIFIED_GAME_EXPERIENCE_PROPOSAL.md and docs/audits/2026-10-12-wave-f-antigravity-intake.md. Run full npm ci/typecheck/test/build, correct old step-editor DOM tests and run browser automation for four game types with 48 fixtures, DE/EN/VI, keyboard/touch, mobile, presentation and independent gameplay, and local Memory multiplayer scores. Do NOT execute hosted Memory online room RPCs, run migrations, merge, deploy or modify SPP. Owner subsequently performs visual and pedagogical review; report exact evidence and failures.
+No Supabase, SPP, hosted RPC or multiplayer backend change. No service-role keys in browser code. Keep game engines independent. Keep the Canva reference intact.

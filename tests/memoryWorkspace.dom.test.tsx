@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, screen, within } from '@testing-library/react';
-import { renderPage, jsonFile, captureDownload } from './helpers/dom';
+import { cleanup, screen } from '@testing-library/react';
+import { renderPage, jsonFile, captureDownload, chooseLocale } from './helpers/dom';
 import { MemoryHome } from '../src/games/memory/MemoryHome';
 import { fromMemoryPairs } from '../src/games/memory/activity';
 
@@ -13,12 +13,14 @@ describe('Memory unified entry without hosted writes', () => {
     const {user} = renderPage(<MemoryHome/>);
     expect(screen.getByRole('button',{name:/Selbst erstellen/})).toBeTruthy();
     expect(screen.getByRole('button',{name:/Aktivität importieren/})).toBeTruthy();
-    expect(screen.getByRole('link',{name:/Raum beitreten/}).getAttribute('href')).toBe('/games/memory/join');
-    await user.selectOptions(screen.getByRole('combobox',{name:'Sprache'}),'en');
+    const join = screen.getByRole('link',{name:/Raum beitreten/});
+    expect(join.getAttribute('href')).toBe('/games/memory/join');
+    expect(join.classList.contains('card-link')).toBe(true);
+    await chooseLocale(user, 'en');
     expect(screen.getByRole('button',{name:/Create activity/})).toBeTruthy();
     expect(screen.getByRole('link',{name:/Join game/})).toBeTruthy();
   });
-  it('imports teacher content, reviews, offers local play and exports Memory JSON', async () => {
+  it('imports teacher content, offers local play and online room, and exports Memory JSON', async () => {
     const dl=captureDownload();
     const {user}=renderPage(<MemoryHome/>);
     await user.click(screen.getByRole('button',{name:/Aktivität importieren/}));
@@ -27,17 +29,15 @@ describe('Memory unified entry without hosted writes', () => {
     expect(await screen.findByText('Datei gültig')).toBeTruthy();
     await user.click(screen.getByRole('button',{name:/Im Editor öffnen/}));
     expect(screen.getByDisplayValue('Wortschatz')).toBeTruthy();
-    await user.click(within(screen.getByRole('navigation',{name:'Neue Aktivität'})).getByRole('button',{name:/Paare/}));
     expect(screen.getByDisplayValue('Haus')).toBeTruthy();
-    await user.click(within(screen.getByRole('navigation',{name:'Neue Aktivität'})).getByRole('button',{name:/Prüfen/}));
-    const review=screen.getByText(/Gemeinsam online spielen/).closest('.activity-memory-online') as HTMLElement;
-    expect(within(review).getByRole('button',{name:/Online-Raum erstellen/})).toBeTruthy();
-    await user.click(screen.getByRole('button',{name:'Aktivität herunterladen'}));
+    // Creating an online room is a separate, explicit action next to the two play buttons.
+    expect(screen.getByRole('button',{name:/Online-Raum erstellen/})).toBeTruthy();
+    await user.click(screen.getByRole('button',{name:'Herunterladen'}));
     expect(dl.names[0]).toMatch(/^memory_.*\.json$/);
     const exported=JSON.parse(await dl.text());
     expect(exported.content.pairs).toHaveLength(2);
     expect(exported.roomCode).toBeUndefined();
-    await user.click(screen.getByRole('button',{name:'Allein üben'}));
+    await user.click(screen.getByRole('button',{name:'Ausprobieren'}));
     expect(screen.getByRole('button',{name:'Spiel starten'})).toBeTruthy();
   });
 });

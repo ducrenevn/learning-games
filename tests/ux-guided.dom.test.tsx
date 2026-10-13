@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
-import { renderPage, captureDownload, jsonFile } from './helpers/dom';
+import { renderPage, captureDownload, chooseLocale, jsonFile } from './helpers/dom';
 import { SortPage } from '../src/games/sort/SortPage';
 import { SequencePage } from '../src/games/sequence/SequencePage';
 import { DetectivePage } from '../src/games/language-detective/DetectivePage';
@@ -12,7 +12,7 @@ afterEach(()=>vi.restoreAllMocks());
 const button=(name:string|RegExp)=>screen.getByRole('button',{name});
 const file=()=>document.querySelector('input[type="file"]') as HTMLInputElement;
 
-describe('guided Wave F entry and local authoring',()=>{
+describe('single-canvas entry and local authoring',()=>{
   for(const [name,Page] of [['Sort',SortPage],['Sequence',SequencePage],['Language Detective',DetectivePage]] as const){
     it(name+' opens as a calm chooser, not a technical invalid form',async()=>{
       const {user}=renderPage(<Page/>);
@@ -20,37 +20,44 @@ describe('guided Wave F entry and local authoring',()=>{
       expect(button(/Aktivität importieren/)).toBeTruthy();
       expect(screen.queryByText(/content\.items|content\.segments|Aktivitäts-ID/)).toBeNull();
       expect(screen.queryByRole('alert')).toBeNull();
-      await user.selectOptions(screen.getByRole('combobox',{name:'Sprache'}),'vi');
+      await chooseLocale(user,'vi');
       expect(button(/Nhập hoạt động/)).toBeTruthy();
     });
   }
-  it('separates new, step validation, review and downloadable activity',async()=>{
+  it('shows the whole canvas at once, explains the first problem when played too early, then downloads once complete',async()=>{
     const dl=captureDownload();
     const {user}=renderPage(<SortPage/>);
     await user.click(button(/Selbst erstellen/));
-    expect(screen.getByRole('heading',{name:'Aufgabe',level:2})).toBeTruthy();
+    // No wizard: title, categories, cards and play actions are all on one page from the start.
+    expect(document.querySelector('.activity-ux-navigation')).toBeNull();
+    expect(screen.queryByRole('button',{name:'Weiter'})).toBeNull();
+    expect(screen.getByLabelText('Beschriftung 1')).toBeTruthy();
+    expect(screen.getByLabelText('Karte 1')).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByLabelText('Titel'));
     expect(screen.queryByRole('alert')).toBeNull();
-    await user.click(button('Weiter'));
-    expect(screen.getByRole('heading',{name:'Kategorien',level:2})).toBeTruthy();
-    expect(screen.queryByRole('alert')).toBeNull();
-    await user.click(button('Weiter'));
-    expect(screen.getByRole('alert')).toBeTruthy();
+    // Invalid activities never start; the first missing field is focused and named.
+    await user.click(button('Ausprobieren'));
+    expect(document.querySelector('.activity-ux-play')).toBeNull();
+    const alert=screen.getByRole('alert');
+    expect(alert.textContent).toContain('Noch nicht spielbereit');
+    expect(alert.textContent).toContain('Kategorie 1');
+    expect(document.activeElement).toBe(screen.getByLabelText('Beschriftung 1'));
+    await user.click(button('Präsentieren'));
+    expect(document.querySelector('.activity-ux-play')).toBeNull();
     for(const [index,label] of ['Obst','Gemüse'].entries()){
       await user.type(screen.getByLabelText('Beschriftung '+(index+1)),label);
     }
-    await user.click(button('Weiter'));
-    expect(screen.getByRole('heading',{name:'Karten',level:2})).toBeTruthy();
     for(const [index,word] of ['Apfel','Birne','Karotte','Gurke'].entries()){
       await user.type(screen.getByLabelText('Karte '+(index+1)),word);
-      if(index>1)await user.selectOptions(screen.getByLabelText(new RegExp('Lösung.*Karte '+(index+1))),'category-2');
     }
-    await user.click(button('Weiter'));
-    expect(screen.getByRole('heading',{name:'Prüfen',level:2})).toBeTruthy();
-    expect(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button',{name:'Präsentieren'})).toBeTruthy();
-    await user.click(button('Aktivität herunterladen'));
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByText(/spielbereit/)).toBeTruthy();
+    await user.click(button('Herunterladen'));
     expect(dl.names[0]).toMatch(/^sort_.*\.json$/);
     const data=JSON.parse(await dl.text());
     expect(data.content.items.map((x:{text:string})=>x.text)).toEqual(['Apfel','Birne','Karotte','Gurke']);
+    await user.click(button('Ausprobieren'));
+    expect(document.querySelector('.activity-ux-play')).toBeTruthy();
   });
   it('validates imported activities without replacing a draft until explicitly accepted',async()=>{
     const {user}=renderPage(<SequencePage/>);
@@ -60,30 +67,28 @@ describe('guided Wave F entry and local authoring',()=>{
     await user.upload(file(),jsonFile('sequence.json',sequenceFixture()));
     expect(await screen.findByText('Datei gültig')).toBeTruthy();
     expect(button('Im Editor öffnen')).toBeTruthy();
-    expect(screen.queryByRole('heading',{name:'Schritte',level:2})).toBeNull();
+    expect(screen.queryByLabelText('Titel')).toBeNull();
     await user.click(button('Im Editor öffnen'));
     expect(screen.getByDisplayValue('Gespräch ordnen')).toBeTruthy();
-    await user.click(within(document.querySelector('.activity-ux-navigation')!).getByRole('button',{name:/Prüfen/}));
-    await user.click(button('Allein üben'));
+    await user.click(button('Ausprobieren'));
     expect(document.querySelector('.activity-ux-play')).toBeTruthy();
-    await user.selectOptions(screen.getByRole('combobox',{name:'Sprache'}),'en');
+    await chooseLocale(user,'en');
     expect(screen.getByText('Gespräch ordnen')).toBeTruthy();
     expect(document.querySelector('.activity-ux-back')?.textContent).toContain('Back to editor');
   });
   it('prepares a detective sentence as selectable words with separately authored corrections',async()=>{
     const {user}=renderPage(<DetectivePage/>);
     await user.click(button(/Selbst erstellen/));
-    await user.click(button('Weiter'));
     await user.type(screen.getByLabelText('Aufgabe'),'Finde die falschen Wörter.');
-    const passage=screen.getByLabelText('Text') as HTMLTextAreaElement;
+    const passage=screen.getByLabelText('Satz 1') as HTMLTextAreaElement;
     await user.type(passage,'Ich haben heute Zeit.');
     expect(splitPassage(passage.value)).toEqual(['Ich','haben','heute','Zeit.']);
-    await user.click(button('Weiter'));
-    const text=within(screen.getByRole('group',{name:'Fehler markieren'}));
+    const text=within(screen.getByRole('group',{name:'Fehler markieren · Satz 1'}));
     await user.click(text.getByRole('button',{name:'haben'}));
     await user.type(screen.getByLabelText(/Musterkorrektur/),'habe');
-    await user.type(screen.getByLabelText(/Erklärung/),'Kongruenz.');
-    await user.click(button('Weiter'));
-    await waitFor(()=>expect(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button',{name:'Präsentieren'})).not.toHaveProperty('disabled',true));
+    await user.type(screen.getByLabelText(/^Erklärung · Satz 1/),'Kongruenz.');
+    await waitFor(()=>expect(screen.getByText(/spielbereit/)).toBeTruthy());
+    await user.click(button('Ausprobieren'));
+    expect(document.querySelector('.activity-ux-play')).toBeTruthy();
   });
 });

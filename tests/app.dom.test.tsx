@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { createMemoryRouter } from 'react-router-dom';
 import { afterEach } from 'vitest';
-import { App } from '../src/app/App';
+import { App, appRoutes } from '../src/app/App';
 import { gameRegistry } from '../src/games/registry';
 
 afterEach(() => cleanup());
-const renderAt = (path: string) => render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>);
+const renderAt = (path: string) => render(<App router={createMemoryRouter(appRoutes, { initialEntries: [path] })} />);
 
 describe('catalog and routing', () => {
   it('lists Memory and the three Wave F games, each tile link with a unique accessible name', () => {

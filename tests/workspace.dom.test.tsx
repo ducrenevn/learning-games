@@ -4,7 +4,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { SortPage } from '../src/games/sort/SortPage';
 import { SequencePage } from '../src/games/sequence/SequencePage';
 import { sortFixture, sequenceFixture } from './helpers/fixtures';
-import { captureDownload, chooseLocale, fileInput, jsonFile, openReview, renderPage } from './helpers/dom';
+import { captureDownload, chooseLocale, fileInput, jsonFile,  renderPage } from './helpers/dom';
 
 afterEach(() => vi.restoreAllMocks());
 const button = (name: string | RegExp) => screen.getByRole('button', { name });
@@ -97,23 +97,44 @@ describe('Guided local activity import safety', () => {
   });
 });
 
-describe('Guided editor, review and local file ownership', () => {
-  it('opens an imported draft in Details with unchanged title and target language', async () => {
+describe('Canvas editor, status and local file ownership', () => {
+  it('opens an imported draft with unchanged title and target language', async () => {
     const { user } = renderPage(<SortPage />);
     await readyImport(user, sortFixture());
     expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe('Artikel sortieren');
-    expect((screen.getByLabelText('Zielsprache') as HTMLInputElement).value).toBe('de');
+    expect((screen.getByLabelText('Zielsprache') as HTMLSelectElement).value).toBe('de');
     expect(screen.queryByRole('alert')).toBeNull();
   });
-  it('exposes canonical export only at Review and preserves the original imported answer key', async () => {
+  it('downloads the canonical file from the activity bar and preserves the original imported answer key', async () => {
     const dl = captureDownload();
     const { user } = renderPage(<SortPage />);
     await readyImport(user, sortFixture());
-    expect(screen.queryByRole('button', { name: 'Aktivität herunterladen' })).toBeNull();
-    await openReview(user);
-    await user.click(button('Aktivität herunterladen'));
+    expect(document.querySelector('.save-chip')?.textContent).toContain('Aus Datei geladen · unverändert');
+    await user.click(button('Herunterladen'));
     expect(dl.names).toEqual(['sort_artikel-sortieren.json']);
     expect(JSON.parse(await dl.text())).toEqual(sortFixture());
+    expect(document.querySelector('.save-chip')?.textContent).toMatch(/Heruntergeladen \d{1,2}[:.]\d{2}/);
+  });
+  it('reports the real save state: new, unsaved after an edit, downloaded after saving', async () => {
+    const dl = captureDownload();
+    const { user } = renderPage(<SortPage />);
+    await readyImport(user, sortFixture());
+    const chip = () => document.querySelector('.save-chip')!.textContent;
+    expect(chip()).toContain('Aus Datei geladen');
+    await user.type(screen.getByLabelText('Titel'), '!');
+    expect(chip()).toContain('Nicht gespeichert');
+    await user.click(button('Herunterladen'));
+    expect(chip()).toContain('Heruntergeladen');
+    await user.type(screen.getByLabelText('Titel'), '?');
+    expect(chip()).toContain('Nicht gespeichert');
+    expect(dl.names).toHaveLength(1);
+  });
+  it('starts a new activity as "Neue Aktivität" until something is edited', async () => {
+    const { user } = renderPage(<SortPage />);
+    await user.click(button(/Selbst erstellen/));
+    expect(document.querySelector('.save-chip')?.textContent).toContain('Neue Aktivität');
+    await user.type(screen.getByLabelText('Titel'), 'x');
+    expect(document.querySelector('.save-chip')?.textContent).toContain('Nicht gespeichert');
   });
   it('warns before discarding edited content on return to the chooser', async () => {
     const { user } = renderPage(<SortPage />);
@@ -138,15 +159,22 @@ describe('Guided editor, review and local file ownership', () => {
       expect(before.defaultPrevented).toBe(true);
     });
   });
-  it('shows validation only after attempting Continue and allows navigation to incomplete steps', async () => {
+  it('keeps play and download enabled on an incomplete draft, but only explains and focuses the first problem', async () => {
+    const dl = captureDownload();
     const { user } = renderPage(<SequencePage />);
     await user.click(button(/Selbst erstellen/));
     expect(screen.queryByRole('alert')).toBeNull();
-    await user.click(button('Weiter'));
-    await user.click(button('Weiter'));
-    expect(screen.getByRole('alert').textContent).toContain('Bitte ergänzen');
-    await openReview(user);
-    expect(document.querySelector('.activity-ux-review-status')?.textContent).toMatch(/Noch zu ergänzen/);
+    expect(screen.getByText(/Noch \d+ Angaben fehlen/)).toBeTruthy();
+    expect((button('Ausprobieren') as HTMLButtonElement).disabled).toBe(false);
+    await user.click(button('Herunterladen'));
+    expect(dl.names).toHaveLength(0);
+    const alert = screen.getByRole('alert');
+    expect(alert.textContent).toContain('Noch nicht spielbereit');
+    expect(alert.textContent).toContain('Aufgabe');
+    expect(document.activeElement).toBe(screen.getByLabelText('Aufgabe'));
+    expect(screen.getByLabelText('Aufgabe').getAttribute('aria-invalid')).toBe('true');
+    await user.type(screen.getByLabelText('Aufgabe'), 'Ordne.');
+    expect(screen.getByLabelText('Aufgabe').getAttribute('aria-invalid')).toBeNull();
   });
   it('keeps authored text unchanged when DE → EN → VI is switched', async () => {
     const { user } = renderPage(<SortPage />);
@@ -158,13 +186,30 @@ describe('Guided editor, review and local file ownership', () => {
       expect(document.documentElement.lang).toBe(locale);
     }
   });
-  it('separates the activity Review from the play screen and has no authoring controls in play', async () => {
+  it('offers a native-name language list with an advanced code field for anything else', async () => {
     const { user } = renderPage(<SortPage />);
     await readyImport(user, sortFixture());
-    await openReview(user);
-    await user.click(button('Allein üben'));
+    const select = screen.getByLabelText('Zielsprache') as HTMLSelectElement;
+    expect(screen.queryByLabelText(/Sprachcode/)).toBeNull();
+    await user.selectOptions(select, 'fr');
+    expect(select.value).toBe('fr');
+    await user.selectOptions(select, 'other');
+    const code = screen.getByLabelText(/Sprachcode/) as HTMLInputElement;
+    await user.clear(code);
+    await user.type(code, 'pt-BR');
+    expect(select.value).toBe('other');
+    expect(code.value).toBe('pt-BR');
+  });
+  it('plays on a detached screen without authoring controls, and has a single way back', async () => {
+    const { user } = renderPage(<SortPage />);
+    await readyImport(user, sortFixture());
+    await user.click(button('Ausprobieren'));
     expect(document.querySelector('.activity-ux-play')).not.toBeNull();
     expect(screen.queryByLabelText('Interne Aktivitäts-ID')).toBeNull();
+    expect(screen.queryByLabelText('Titel')).toBeNull();
     expect(document.querySelector('.activity-ux-back')?.textContent).toContain('Zum Editor');
+    expect(screen.queryByRole('button', { name: 'Neu starten' })).toBeNull();
+    expect(within(document.querySelector('.activity-ux-play')!).getByRole('heading', { level: 2 }).textContent).toBe('Artikel sortieren');
+    expect(document.querySelectorAll('.activity-ux-play .play-instructions')).toHaveLength(1);
   });
 });

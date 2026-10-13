@@ -1,6 +1,6 @@
 {
   "corpusVersion": 1,
-  "contract": "learning-games.activity / schemaVersion=1",
+  "contract": "learning-games.activity / schemaVersion=1 (Language Detective: 1 and 2)",
   "notes": "Schema fixtures only, not classroom-certified. Four JSON activity types; legacy Memory pipe-delimited text remains supported as advanced input.",
   "files": [
     {
@@ -270,6 +270,86 @@
       "file": "valid/sort/05-five-categories-thirty-cards.json",
       "kind": "sort",
       "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/06-drei-kurze-saetze.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/07-ein-kurzer-satz.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/08-zehn-saetze.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/09-vietnamese-sentences.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "invalid/language-detective/08-v2-cross-task-reference.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "reference"
+    },
+    {
+      "file": "invalid/language-detective/09-v2-no-tasks.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/language-detective/10-v2-eleven-tasks.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/language-detective/11-v2-one-word-sentence.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/language-detective/12-v2-unknown-task-key.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/language-detective/13-v2-v1-keys-mixed-in.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/language-detective/14-v1-with-tasks-key.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/language-detective/15-unsupported-version-3.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "version"
+    },
+    {
+      "file": "invalid/language-detective/16-v2-duplicate-task-id.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/language-detective/17-v2-too-many-errors-in-total.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "count"
     }
   ]
 }

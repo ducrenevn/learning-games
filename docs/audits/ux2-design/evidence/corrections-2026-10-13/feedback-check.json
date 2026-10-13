@@ -1,0 +1,253 @@
+{
+  "multi1440-before": {
+    "heights": [
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48
+    ],
+    "fields": [
+      {
+        "value": "Gast",
+        "cls": "open",
+        "describedBy": null
+      },
+      {
+        "value": "zzz",
+        "cls": "open",
+        "describedBy": null
+      }
+    ]
+  },
+  "multi1440-checked": {
+    "heights": [
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48
+    ],
+    "fields": [
+      {
+        "value": "Gast",
+        "cls": "fix-match",
+        "describedBy": "entspricht der Musterkorrektur"
+      },
+      {
+        "value": "zzz",
+        "cls": "open",
+        "describedBy": null
+      }
+    ],
+    "legend": "✗ Kein Fehler hier",
+    "caption": "Deine Korrektur · Vergleich mit der Musterkorrektur, keine Bewertung",
+    "hscroll": false
+  },
+  "multi1440-revealed": {
+    "revealButton": 0,
+    "keyModels": [
+      "Gast",
+      "bin"
+    ],
+    "compact": 1,
+    "legend": "✗ Kein Fehler hier! Übersehen",
+    "caption": "Deine Korrektur · Vergleich mit der Musterkorrektur, keine Bewertung"
+  },
+  "multi1440-scroll": {
+    "hscroll": false,
+    "errors": []
+  },
+  "multi390-before": {
+    "heights": [
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48
+    ],
+    "fields": [
+      {
+        "value": "Gast",
+        "cls": "open",
+        "describedBy": null
+      },
+      {
+        "value": "zzz",
+        "cls": "open",
+        "describedBy": null
+      }
+    ]
+  },
+  "multi390-checked": {
+    "heights": [
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48
+    ],
+    "fields": [
+      {
+        "value": "Gast",
+        "cls": "fix-match",
+        "describedBy": "entspricht der Musterkorrektur"
+      },
+      {
+        "value": "zzz",
+        "cls": "open",
+        "describedBy": null
+      }
+    ],
+    "legend": "✗ Kein Fehler hier",
+    "caption": "Deine Korrektur · Vergleich mit der Musterkorrektur, keine Bewertung",
+    "hscroll": false
+  },
+  "multi390-revealed": {
+    "revealButton": 0,
+    "keyModels": [
+      "Gast",
+      "bin"
+    ],
+    "compact": 1,
+    "legend": "✗ Kein Fehler hier! Übersehen",
+    "caption": "Deine Korrektur · Vergleich mit der Musterkorrektur, keine Bewertung"
+  },
+  "multi390-scroll": {
+    "hscroll": false,
+    "errors": []
+  },
+  "multi360-before": {
+    "heights": [
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48
+    ],
+    "fields": [
+      {
+        "value": "Gast",
+        "cls": "open",
+        "describedBy": null
+      },
+      {
+        "value": "zzz",
+        "cls": "open",
+        "describedBy": null
+      }
+    ]
+  },
+  "multi360-checked": {
+    "heights": [
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48
+    ],
+    "fields": [
+      {
+        "value": "Gast",
+        "cls": "fix-match",
+        "describedBy": "entspricht der Musterkorrektur"
+      },
+      {
+        "value": "zzz",
+        "cls": "open",
+        "describedBy": null
+      }
+    ],
+    "legend": "✗ Kein Fehler hier",
+    "caption": "Deine Korrektur · Vergleich mit der Musterkorrektur, keine Bewertung",
+    "hscroll": false
+  },
+  "multi360-revealed": {
+    "revealButton": 0,
+    "keyModels": [
+      "Gast",
+      "bin"
+    ],
+    "compact": 1,
+    "legend": "✗ Kein Fehler hier! Übersehen",
+    "caption": "Deine Korrektur · Vergleich mit der Musterkorrektur, keine Bewertung"
+  },
+  "multi360-scroll": {
+    "hscroll": false,
+    "errors": []
+  },
+  "wrongNone": {
+    "pillBeforeCheck": "detective-none on",
+    "pillAfterCheck": "detective-none on locked bad",
+    "glyph": "✗",
+    "errors": []
+  },
+  "caption-en": "Your correction · compared with the model, not graded",
+  "caption-vi": "Sửa của bạn · so với cách sửa mẫu, không chấm điểm"
+}

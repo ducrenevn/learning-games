@@ -3,16 +3,15 @@ import { describe, expect, it } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { SequencePage } from '../src/games/sequence/SequencePage';
-import { chooseLocale, importActivity, openAuthorStep, openReview, playText, renderPage } from './helpers/dom';
+import { chooseLocale, importActivity,   playText  , renderPage } from './helpers/dom';
 import { sequenceFixture } from './helpers/fixtures';
 
 const authored = sequenceFixture().content.items.map(i => i.text);
-async function play(user: UserEvent, mode: 'Allein üben' | 'Präsentieren' | 'Vorschau' = 'Allein üben', mutate?: (a: ReturnType<typeof sequenceFixture>) => void) {
+async function play(user: UserEvent, mode: 'Ausprobieren' | 'Präsentieren' | 'Ausprobieren' = 'Ausprobieren', mutate?: (a: ReturnType<typeof sequenceFixture>) => void) {
   const a = sequenceFixture(); mutate?.(a);
   await importActivity(user, a);
   await waitFor(() => expect((screen.getByLabelText('Titel') as HTMLInputElement).value).toBe('Gespräch ordnen'));
-  await openReview(user);
-  await user.click(within(document.querySelector('.activity-ux-review-actions')!).getByRole('button', { name: mode }));
+  await user.click(screen.getByRole('button', { name: mode }));
 }
 const rows = () => Array.from(document.querySelectorAll('.sequence-card')) as HTMLElement[];
 const order = () => rows().map(r => r.querySelector('.sequence-card-copy span')!.textContent!);
@@ -41,13 +40,14 @@ describe('Sequence play: secrecy and shuffle', () => {
     const key = Array.from(document.querySelectorAll('.activity-key li')).map(li => li.textContent);
     expect(key).toEqual(authored);
   });
-  it('never starts in the solved order, however often the game is restarted', async () => {
+  it('never starts in the solved order, however often the game is retried', async () => {
     const { user } = renderPage(<SequencePage />);
     await play(user);
     for (let i = 0; i < 25; i++) {
       expect(order(), 'restart ' + i).not.toEqual(authored);
       expect([...order()].sort()).toEqual([...authored].sort());
-      await user.click(screen.getByRole('button', { name: 'Neu starten' }));
+      await user.click(screen.getByRole('button', { name: 'Prüfen' }));
+      await user.click(screen.getByRole('button', { name: 'Erneut versuchen' }));
     }
   }, 30000);
 });
@@ -137,7 +137,6 @@ describe('Sequence play: check, retry and reveal', () => {
     await play(user);
     await arrange(user, [...authored].reverse());
     await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
-    await openAuthorStep(user, 1);
     expect([1, 2, 3, 4].map(n => (screen.getByLabelText('Schritt ' + n) as HTMLInputElement).value)).toEqual(authored);
   });
 });
@@ -151,7 +150,7 @@ describe('Sequence play: modes, locales and text', () => {
     await user.click(screen.getByRole('button', { name: 'Prüfen' }));
     expect(playText()).toContain('4 von 4 richtig');
     await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
-    await user.click(screen.getByRole('button', { name: 'Allein üben' }));
+    await user.click(screen.getByRole('button', { name: 'Ausprobieren' }));
     expect(document.querySelector('main')!.classList.contains('activity-projected')).toBe(false);
   });
   it('translates only the interface; prompt, cards and explanation stay as authored', async () => {
@@ -171,7 +170,7 @@ describe('Sequence play: modes, locales and text', () => {
   });
   it('renders markup-like text literally, marks authored text with the target language and labels buttons with the card text', async () => {
     const { user } = renderPage(<SequencePage />);
-    await play(user, 'Allein üben', a => { a.targetLanguage = 'vi'; a.content.items[0].text = 'x < y & "z" 🍎'; });
+    await play(user, 'Ausprobieren', a => { a.targetLanguage = 'vi'; a.content.items[0].text = 'x < y & "z" 🍎'; });
     expect(order()).toContain('x < y & "z" 🍎');
     expect(document.querySelector('.activity-play .lead[lang="vi"]')).toBeTruthy();
     expect(rows().every(r => r.querySelector('.sequence-card-copy span')!.getAttribute('lang') === 'vi')).toBe(true);
@@ -180,15 +179,44 @@ describe('Sequence play: modes, locales and text', () => {
   });
   it('supports the minimum (3) and maximum (20) card counts', async () => {
     const { user } = renderPage(<SequencePage />);
-    await play(user, 'Allein üben', a => { a.content.items.pop(); });
+    await play(user, 'Ausprobieren', a => { a.content.items.pop(); });
     expect(rows().length).toBe(3);
     await user.click(within(document.querySelector('.activity-ux-play-top')!).getByRole('button', { name: 'Zum Editor' }));
     await importActivity(user, (() => { const a = sequenceFixture(); a.content.items = Array.from({ length: 20 }, (_, i) => ({ id: 's' + i, text: 'Schritt Nummer ' + (i + 1) })); return a; })());
-    await openAuthorStep(user, 1);
     await waitFor(() => expect((screen.getByLabelText('Schritt 20') as HTMLInputElement).value).toBe('Schritt Nummer 20'));
-    await openReview(user);
-    await user.click(screen.getByRole('button', { name: 'Allein üben' }));
+    await user.click(screen.getByRole('button', { name: 'Ausprobieren' }));
     expect(rows().length).toBe(20);
     expect(within(document.querySelector('.activity-play')!).getAllByRole('listitem').length).toBe(20);
   }, 30000);
+});
+
+describe('Sequence play: slim rows and the answer key beside the learner order', () => {
+  it('does not repeat the prompt when it equals the instruction', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await play(user, 'Ausprobieren', a => { a.instructions = a.content.prompt; });
+    expect(document.querySelectorAll('.activity-play .play-prompt')).toHaveLength(0);
+    expect(playText().split(sequenceFixture().content.prompt).length - 1).toBe(1);
+  });
+  it('shows the prompt as a quiet second line when it differs', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await play(user);
+    expect(document.querySelectorAll('.activity-play .play-prompt')).toHaveLength(1);
+  });
+  it('after Reveal shows the learner order and the key side by side, with one key list', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await play(user);
+    expect(document.querySelector('.sequence-compare')!.classList.contains('two')).toBe(false);
+    await user.click(screen.getByRole('button', { name: 'Prüfen' }));
+    await user.click(screen.getByRole('button', { name: /Lösung & Erklärung/ }));
+    expect(document.querySelector('.sequence-compare')!.classList.contains('two')).toBe(true);
+    expect(screen.getByRole('heading', { name: 'Deine Reihenfolge' })).toBeTruthy();
+    expect(document.querySelectorAll('.activity-key')).toHaveLength(1);
+    expect(rows()).toHaveLength(4);
+  });
+  it('numbers every row visibly and keeps list semantics', async () => {
+    const { user } = renderPage(<SequencePage />);
+    await play(user);
+    expect([...document.querySelectorAll('.sequence-card .seq-num')].map(n => n.textContent)).toEqual(['1', '2', '3', '4']);
+    expect(document.querySelector('ol.seq-rows')!.getAttribute('role')).toBe('list');
+  });
 });

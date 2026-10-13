@@ -1,0 +1,13 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 2,
+  "activityType": "language-detective",
+  "id": "ungueltig",
+  "title": "Ungültig",
+  "targetLanguage": "de",
+  "instructions": "Nur zum Testen.",
+  "content": {
+    "prompt": "Test.",
+    "tasks": []
+  }
+}

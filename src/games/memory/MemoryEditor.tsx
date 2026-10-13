@@ -1,72 +1,111 @@
-import { useState } from 'react';
+import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
 import type { EditorProps } from '../../shared/activities/Workspace';
-import { t } from '../../shared/activities/i18n';
-import { u } from '../../shared/activities/uxCopy';
-import { fromMemoryPairs, type MemoryActivity } from './activity';
-import { parsePairs, examplePairs } from './engine/pairs';
+import { tf } from '../../shared/activities/i18n';
+import { useListFocus } from '../../shared/activities/focus';
+import { type MemoryActivity } from './activity';
 
+type Pair = MemoryActivity['content']['pairs'][number];
+const MAX_PAIRS = 16;
 function nextPairId(ids: string[]) {
   let n = 1;
   while (ids.includes(`pair-${n}`)) n++;
   return `pair-${n}`;
 }
 const text = {
-  de: { pairs: 'Paare', left: 'Karte A', right: 'Karte B', category: 'Kategorie (optional)', add: 'Paar hinzufügen',
-    bulk: 'Paare aus einer Textliste übernehmen (optional)', bulkHelp: 'Eine Zeile je Paar: LINKS | RECHTS | KATEGORIE (optional)',
-    replace: 'Textliste übernehmen', replaceWarning: 'Alle bisherigen Paare ersetzen?', bad: 'Bitte Textliste korrigieren:', sample: 'Beispiel einfügen' },
-  en: { pairs: 'Pairs', left: 'Card A', right: 'Card B', category: 'Category (optional)', add: 'Add pair',
-    bulk: 'Paste a pair list (optional)', bulkHelp: 'One pair per line: LEFT | RIGHT | CATEGORY (optional)',
-    replace: 'Use text list', replaceWarning: 'Replace all current pairs?', bad: 'Please correct the pair list:', sample: 'Insert example' },
-  vi: { pairs: 'Các cặp', left: 'Thẻ A', right: 'Thẻ B', category: 'Nhóm (tùy chọn)', add: 'Thêm cặp',
-    bulk: 'Dán danh sách cặp thẻ (tùy chọn)', bulkHelp: 'Mỗi dòng: TRÁI | PHẢI | NHÓM (tùy chọn)',
-    replace: 'Dùng danh sách', replaceWarning: 'Thay thế toàn bộ cặp hiện tại?', bad: 'Hãy sửa danh sách:', sample: 'Chèn ví dụ' },
+  de: { pairs: 'Paare', left: 'Karte A', right: 'Karte B', group: 'Gruppe', addGroup: '+ Gruppe', add: 'Paar hinzufügen', limit: 'Höchstens 16 Paare.',
+    paste: 'Tipp: Mehrere Zeilen aus Excel, Word oder einer Liste („links | rechts“) direkt in eine Zelle einfügen.', pasted: 'Eingefügt: {n} Paare.', pastedCut: 'Eingefügt: {n} Paare – weitere passen nicht (höchstens 16).' },
+  en: { pairs: 'Pairs', left: 'Card A', right: 'Card B', group: 'Group', addGroup: '+ Group', add: 'Add pair', limit: 'At most 16 pairs.',
+    paste: 'Tip: paste several lines from Excel, Word or a list ("left | right") straight into a cell.', pasted: 'Pasted {n} pairs.', pastedCut: 'Pasted {n} pairs – the rest do not fit (at most 16).' },
+  vi: { pairs: 'Các cặp', left: 'Thẻ A', right: 'Thẻ B', group: 'Nhóm', addGroup: '+ Nhóm', add: 'Thêm cặp', limit: 'Tối đa 16 cặp.',
+    paste: 'Mẹo: dán nhiều dòng từ Excel, Word hoặc danh sách ("trái | phải") thẳng vào một ô.', pasted: 'Đã dán {n} cặp.', pastedCut: 'Đã dán {n} cặp – phần còn lại không vừa (tối đa 16).' },
 } as const;
 
-export function MemoryEditor({ activity, onChange, locale, section }: EditorProps<MemoryActivity>) {
-  const [legacy, setLegacy] = useState('');
-  const [legacyErrors, setLegacyErrors] = useState<string[]>([]);
-  if (section !== 'pairs') return null;
+/** Spreadsheet and plain-text lists: tab- or pipe-separated, one pair per line, optional third column = group. */
+export function parsePastedRows(raw: string): { left: string; right: string; category?: string }[] | null {
+  if (!/[\n\t|]/.test(raw.trim())) return null;
+  const rows = raw.split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(line => {
+    const cells = (line.includes('\t') ? line.split('\t') : line.split('|')).map(cell => cell.trim());
+    return { left: cells[0] ?? '', right: cells[1] ?? '', ...(cells[2] ? { category: cells[2] } : {}) };
+  });
+  return rows.length ? rows : null;
+}
+
+/** Memory is edited as a table, because the relationship between the two sides is the data (a grid would hide it). */
+export function MemoryEditor({ activity, onChange, locale, field }: EditorProps<MemoryActivity>) {
   const words = text[locale];
   const pairs = activity.content.pairs;
-  const update = (next: MemoryActivity['content']['pairs']) => onChange({ ...activity, content: { pairs: next } });
-  const useLegacy = () => {
-    const parsed = parsePairs(legacy);
-    if (parsed.errors.length || parsed.pairs.length < 1 || parsed.pairs.length > 16 || parsed.pairs.some(p => (p.category?.length ?? 0) > 80)) {
-      setLegacyErrors(parsed.errors.length ? parsed.errors : [t(locale, 'invalid')]); return;
-    }
-    if (!window.confirm(words.replaceWarning)) return;
-    // validate step prevents publishing an invalid or duplicated converted activity.
-    update(fromMemoryPairs(parsed.pairs, activity.title).content.pairs);
-    setLegacyErrors([]);
-  };
-  return <div className="activity-editor activity-ux-editor-section">
-    <p className="muted">{words.pairs}: {pairs.length} / 16</p>
-    {pairs.map((pair, index) => <div className="activity-edit-row activity-memory-pair" key={pair.id}>
-      <label className="activity-field">{words.left} · {index + 1}
-        <input className="field" value={pair.left} maxLength={80} onChange={e => update(pairs.map(p => p.id === pair.id ? { ...p, left: e.target.value } : p))}/>
-      </label>
-      <label className="activity-field">{words.right} · {index + 1}
-        <input className="field" value={pair.right} maxLength={80} onChange={e => update(pairs.map(p => p.id === pair.id ? { ...p, right: e.target.value } : p))}/>
-      </label>
-      <label className="activity-field">{words.category}
-        <input className="field" value={pair.category ?? ''} maxLength={80} onChange={e => update(pairs.map(p => {
-          if (p.id !== pair.id) return p;
-          const copy = { ...p }; if (e.target.value) copy.category = e.target.value; else delete copy.category;
-          return copy;
-        }))}/>
-      </label>
-      <button type="button" className="button secondary" disabled={pairs.length <= 1}
-        aria-label={`${t(locale, 'remove')} ${index + 1}`} onClick={() => update(pairs.filter(p => p.id !== pair.id))}>{t(locale, 'remove')}</button>
-    </div>)}
-    <button type="button" className="button secondary" disabled={pairs.length >= 16}
-      onClick={() => update([...pairs, { id: nextPairId(pairs.map(p => p.id)), left: '', right: '' }])}>{words.add}</button>
-    <details className="activity-ux-disclosure"><summary>{words.bulk}</summary>
-      <p className="muted small">{words.bulkHelp}</p>
-      <textarea className="field" rows={7} value={legacy} onChange={e => {setLegacy(e.target.value);setLegacyErrors([]);}}/>
-      <div className="row"><button className="button secondary" type="button" onClick={() => setLegacy(examplePairs)}>{words.sample}</button>
-      <button className="button primary" type="button" disabled={!legacy.trim()} onClick={useLegacy}>{words.replace}</button></div>
-      {legacyErrors.length > 0 && <div className="error" role="alert">{words.bad}<ul>{legacyErrors.map((e,i) => <li key={i}>{e}</li>)}</ul></div>}
-    </details>
-    <p className="muted small">{u(locale, 'localOnly')}</p>
+  const list = useListFocus<HTMLDivElement>();
+  const [groupOpen, setGroupOpen] = useState<ReadonlySet<string>>(() => new Set());
+  const [notice, setNotice] = useState('');
+  const inputs = useRef(new Map<string, HTMLInputElement>());
+  const update = (next: Pair[]) => onChange({ ...activity, content: { pairs: next } });
+  const patch = (id: string, change: Partial<Pair>) => update(pairs.map(p => p.id === id ? { ...p, ...change } : p));
+  const setCategory = (id: string, value: string) => update(pairs.map(p => {
+    if (p.id !== id) return p;
+    const copy = { ...p };
+    if (value) copy.category = value; else delete copy.category;
+    return copy;
+  }));
+  const add = () => { if (pairs.length >= MAX_PAIRS) return; update([...pairs, { id: nextPairId(pairs.map(p => p.id)), left: '', right: '' }]); list.rowAdded(); };
+  const remove = (id: string) => { update(pairs.filter(p => p.id !== id)); list.rowRemoved(); };
+  function paste(event: ClipboardEvent<HTMLInputElement>, index: number, side: 'left' | 'right') {
+    const rows = parsePastedRows(event.clipboardData.getData('text'));
+    if (!rows) return; // a single value pastes into the cell as usual
+    event.preventDefault();
+    const next = [...pairs];
+    const used = next.map(p => p.id);
+    let written = 0;
+    const singleColumn = rows.every(row => !row.right);
+    rows.forEach((row, offset) => {
+      const at = index + offset;
+      if (at >= MAX_PAIRS) return;
+      // A single pasted column fills only the column it was pasted into; two or three columns fill A, B and the group.
+      const incoming = singleColumn ? (side === 'left' ? { left: row.left } : { right: row.left }) : { left: row.left, right: row.right };
+      const group = row.category ? { category: row.category } : {};
+      if (next[at]) next[at] = { ...next[at], ...incoming, ...group };
+      else { const id = nextPairId(used); used.push(id); next[at] = { id, left: '', right: '', ...incoming, ...group }; }
+      written++;
+    });
+    update(next);
+    setNotice(tf0(rows.length > written ? words.pastedCut : words.pasted, written));
+  }
+  function enter(event: KeyboardEvent<HTMLInputElement>, index: number) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    const nextPair = pairs[index + 1];
+    if (nextPair) inputs.current.get(nextPair.id + ':left')?.focus();
+    else add();
+  }
+  const rowOf = (n: number) => <span className="sr-only"> ({words.pairs} {n + 1})</span>;
+  return <div className="activity-editor pairs-editor">
+    <div className="pairs-head"><strong>{words.pairs}</strong><span className="muted small" aria-live="polite">{pairs.length} / {MAX_PAIRS}</span></div>
+    <p className="sr-only" role="status" aria-live="polite">{notice}</p>
+    <div className="pairs-table" ref={list.rootRef} role="group" aria-label={words.pairs}>
+      <div className="pairs-row pairs-labels" aria-hidden="true"><span/><b>{words.left}</b><span/><b>{words.right}</b><b>{words.group}</b><span/></div>
+      {pairs.map((pair, index) => <div className="pairs-row" data-row key={pair.id}>
+        <span className="pairs-num" aria-hidden="true">{index + 1}</span>
+        <label className="pairs-cell pairs-a"><span className="sr-only">{words.left} · {index + 1}</span>
+          <input className="field" value={pair.left} maxLength={80} placeholder={words.left} {...field('content.pairs[' + index + '].left')}
+            ref={el => { if (el) inputs.current.set(pair.id + ':left', el); else inputs.current.delete(pair.id + ':left'); }}
+            onPaste={e => paste(e, index, 'left')} onChange={e => patch(pair.id, { left: e.target.value })}/>
+        </label>
+        <i className="pairs-link" aria-hidden="true">↔</i>
+        <label className="pairs-cell pairs-b"><span className="sr-only">{words.right} · {index + 1}</span>
+          <input className="field" value={pair.right} maxLength={80} placeholder={words.right} {...field('content.pairs[' + index + '].right')}
+            onKeyDown={e => enter(e, index)} onPaste={e => paste(e, index, 'right')} onChange={e => patch(pair.id, { right: e.target.value })}/>
+        </label>
+        <div className="pairs-group">{pair.category !== undefined || groupOpen.has(pair.id)
+          ? <label><span className="sr-only">{words.group}{rowOf(index)}</span><input className="field" value={pair.category ?? ''} maxLength={80} placeholder={words.group}
+              {...field('content.pairs[' + index + '].category')} onChange={e => setCategory(pair.id, e.target.value)}/></label>
+          : <button type="button" className="group-chip" aria-label={words.addGroup + ': ' + words.pairs + ' ' + (index + 1)}
+              onClick={() => setGroupOpen(prev => new Set(prev).add(pair.id))}>{words.addGroup}</button>}</div>
+        <button type="button" className="icon-button" disabled={pairs.length <= 1} aria-label={tf(locale, 'removeRow', { what: words.pairs + ' ' + (index + 1) })}
+          onClick={() => remove(pair.id)}>×</button>
+      </div>)}
+      <button type="button" className="pairs-add" data-add disabled={pairs.length >= MAX_PAIRS} onClick={add}>＋ {words.add}</button>
+      {pairs.length >= MAX_PAIRS && <p className="muted small">{words.limit}</p>}
+    </div>
+    <p className="muted small">{words.paste}</p>
   </div>;
 }
+function tf0(template: string, n: number) { return template.replace('{n}', String(n)); }
