@@ -97,6 +97,32 @@ describe('alignWords: repeated words never move onto another occurrence', () => 
   });
 });
 
+describe('alignWords: adjacent identical words are never told apart by position alone', () => {
+  it('holds a mark on the first of two adjacent identical words when one is deleted', () => {
+    // Deleting either "Ich" gives the same text, so the first mark cannot be placed on the remaining "Ich".
+    expect(alignWords(words('Ich Ich gehe.'), words('Ich gehe.'))).toEqual({ carried: [null, 2], unmatched: [0, 1] });
+  });
+  it('holds a mark on the second of two adjacent identical words when one is deleted', () => {
+    expect(alignWords(words('Ich Ich gehe.'), words('Ich gehe.')).unmatched).toEqual([0, 1]);
+  });
+  it('holds a mark on the existing word when an identical word is inserted next to it', () => {
+    expect(alignWords(words('Ich gehe.'), words('Ich Ich gehe.'))).toEqual({ carried: [null, null, 1], unmatched: [0] });
+  });
+  it('holds the run when an identical word is inserted between the first and second occurrence', () => {
+    expect(alignWords(words('Ich gehe Ich'), words('Ich Ich gehe Ich')).unmatched).toEqual([0]);
+  });
+  it('keeps marks on adjacent identical words when nothing changed', () => {
+    expect(alignWords(words('Ich Ich gehe.'), words('Ich Ich gehe.'))).toEqual({ carried: [0, 1, 2], unmatched: [] });
+  });
+  it('keeps the mark on a repeated word that is not adjacent to the edit', () => {
+    // The deleted "Ich" is a single occurrence, not part of a run, so the first "Ich" is still certain.
+    expect(alignWords(words('Ich gehe Ich'), words('Ich gehe')).carried).toEqual([0, 1]);
+  });
+  it('holds every member of a longer run that an edit touches', () => {
+    expect(alignWords(words('Ich Ich Ich gehe'), words('Ich Ich gehe')).unmatched).toEqual([0, 1, 2]);
+  });
+});
+
 describe('a held mark blocks export until it is decided', () => {
   it('reports each review item as a review problem on its sentence', () => {
     const draft = toDraft(detectiveFixture() as never);

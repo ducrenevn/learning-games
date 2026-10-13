@@ -85,8 +85,31 @@ export function alignWords(oldWords: readonly string[], newWords: readonly strin
     }
     fromOld = i + 1; fromNew = j + 1;
   }
+  // Adjacent identical words ("Ich Ich"): when an edit touches a run of two or more of them, the same resulting text can come
+  // from removing or adding any member of the run. No member of that run may keep a mark on this evidence alone.
+  const oldHeld = ambiguousRuns(oldKeys, new Set(all.map(([i]) => i)));
+  const newHeld = ambiguousRuns(newKeys, new Set(all.map(([, j]) => j)));
+  carried.forEach((oldIndex, j) => {
+    if (oldIndex !== null && (oldHeld.has(oldIndex) || newHeld.has(j))) carried[j] = null;
+  });
   const taken = new Set(carried);
   return { carried, unmatched: oldWords.map((_, i) => i).filter(i => !taken.has(i)) };
+}
+
+/**
+ * Indexes of every run of two or more identical keys that contains a token the anchors did not match. The whole run is
+ * returned, because the unmatched token cannot be told apart from its identical neighbours.
+ */
+function ambiguousRuns(keys: readonly string[], anchored: Set<number>): Set<number> {
+  const held = new Set<number>();
+  keys.forEach((key, k) => {
+    if (anchored.has(k)) return;
+    let start = k, end = k;
+    while (start > 0 && keys[start - 1] === key) start--;
+    while (end < keys.length - 1 && keys[end + 1] === key) end++;
+    if (end > start) for (let x = start; x <= end; x++) held.add(x);
+  });
+  return held;
 }
 
 function range(from: number, to: number): number[] {

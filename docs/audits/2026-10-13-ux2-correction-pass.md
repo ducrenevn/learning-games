@@ -73,6 +73,8 @@ The owner accepted the visual review. One technical point had to change before s
 
 **Tests:** `tests/detective-align.test.ts` covers the stem and case cases, punctuation-only changes, insertions and deletions, a modified ending, a split, repeated words (unchanged, deleted, inserted before an identical tail, moved, swapped), and the review gate. `tests/detective-editor.dom.test.tsx` now expects a typo to hold the mark for review, then attach it to the typed word on an explicit choice.
 
+**Adjacent identical words:** a deletion or insertion inside a run of two or more identical words cannot be placed by position, because the same text results from removing any member of the run. Every member of such a run is therefore held. Non-adjacent repeats keep the head and tail rule. `tests/detective-align.test.ts` covers marked first and second occurrences, deletion and insertion in both directions, an unchanged run, and a longer run.
+
 **Chrome check** (system Chrome, Vite dev server, fixture `03-zwei-fehler-im-service.json`): "Gäste" → "Gästen" holds the mark; restoring the word does not reattach it silently; "ein" → "eins" holds its mark; a punctuation-only edit on a fresh page keeps both marks with no review item. No page errors, no horizontal scroll.
 
 **Known trade-off:** a mark held for review does not come back when its word is restored. The teacher attaches it again. This is deliberate: a silent reattach is the failure the owner asked to rule out.
