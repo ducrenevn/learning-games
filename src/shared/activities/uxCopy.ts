@@ -51,7 +51,7 @@ const copy = {
     sentencePlaceholder:'Einen Satz tippen', sentencesPaste:'Mehrere Sätze einfügen', sentencesPasteHelp:'Einen Absatz oder eine Liste einfügen – jeder Satz wird eine eigene Karte.', sentencesFound:'{n} Sätze erkannt', sentencesApply:'Als Sätze übernehmen', sentencesTooMany:'Es passen höchstens {n} Sätze.',
     noMarkBadge:'Kein Fehler', markedGone:'{n} Markierung entfernt, weil sich das Wort geändert hat.', markedGoneMany:'{n} Markierungen entfernt, weil sich Wörter geändert haben.',
     wordCount:'{n} / {max} Wörter', maxSentences:'Höchstens {n} Sätze.', minWords:'Jeder Satz braucht mindestens 2 Wörter.', fixFor:'Korrektur für „{word}“', wordsAdvice:'Tippen Sie unten auf ein Wort, um es als Fehler zu markieren.',
-    extendedFormat:'Wird als erweitertes Format gespeichert – ältere App-Versionen können diese Datei nicht öffnen.', sentenceRight:'Richtig', sentenceWrong:'Nicht ganz', openSentences:'Offene Sätze: {n}.', resultSentences:'Ergebnis: {c} von {t} Sätzen richtig', foundErrors:'{f} von {e} Fehlern gefunden', yourSuggestion:'Dein Vorschlag',
+    extendedFormat:'Wird als erweitertes Format gespeichert – ältere App-Versionen können diese Datei nicht öffnen.', sentenceRight:'Richtig', sentenceWrong:'Nicht ganz', openSentences:'Offene Sätze: {n}.', notFoundYet:'Noch nicht gefunden: {n}', resultSentences:'Ergebnis: {c} von {t} Sätzen richtig', foundErrors:'{f} von {e} Fehlern gefunden', yourSuggestion:'Dein Vorschlag',
     localOnly:'Lokal · keine Anmeldung, keine automatische Weitergabe', importSummary:'Importierte Angaben', recheck:'Erneut prüfen',
   },
   en: {
@@ -104,7 +104,7 @@ const copy = {
     sentencePlaceholder:'Type a sentence', sentencesPaste:'Paste several sentences', sentencesPasteHelp:'Paste a paragraph or a list – each sentence becomes its own card.', sentencesFound:'{n} sentences found', sentencesApply:'Use as sentences', sentencesTooMany:'At most {n} sentences fit.',
     noMarkBadge:'No error', markedGone:'{n} mark removed because the word changed.', markedGoneMany:'{n} marks removed because words changed.',
     wordCount:'{n} / {max} words', maxSentences:'At most {n} sentences.', minWords:'Each sentence needs at least 2 words.', fixFor:'Correction for “{word}”', wordsAdvice:'Tap a word below to mark it as an error.',
-    extendedFormat:'Saved in the extended format – older app versions cannot open this file.', sentenceRight:'Correct', sentenceWrong:'Not quite', openSentences:'Open sentences: {n}.', resultSentences:'Result: {c} of {t} sentences correct', foundErrors:'{f} of {e} errors found', yourSuggestion:'Your suggestion',
+    extendedFormat:'Saved in the extended format – older app versions cannot open this file.', sentenceRight:'Correct', sentenceWrong:'Not quite', openSentences:'Open sentences: {n}.', notFoundYet:'Not found yet: {n}', resultSentences:'Result: {c} of {t} sentences correct', foundErrors:'{f} of {e} errors found', yourSuggestion:'Your suggestion',
     localOnly:'Local · no account or automatic sharing', importSummary:'Imported content', recheck:'Check again',
   },
   vi: {
@@ -157,7 +157,7 @@ const copy = {
     sentencePlaceholder:'Nhập một câu', sentencesPaste:'Dán nhiều câu', sentencesPasteHelp:'Dán một đoạn hoặc một danh sách – mỗi câu thành một thẻ riêng.', sentencesFound:'Tìm thấy {n} câu', sentencesApply:'Dùng làm các câu', sentencesTooMany:'Chỉ chứa được tối đa {n} câu.',
     noMarkBadge:'Không có lỗi', markedGone:'Đã bỏ {n} dấu vì từ đã thay đổi.', markedGoneMany:'Đã bỏ {n} dấu vì các từ đã thay đổi.',
     wordCount:'{n} / {max} từ', maxSentences:'Tối đa {n} câu.', minWords:'Mỗi câu cần ít nhất 2 từ.', fixFor:'Cách sửa cho “{word}”', wordsAdvice:'Nhấn vào một từ bên dưới để đánh dấu là lỗi.',
-    extendedFormat:'Lưu ở định dạng mở rộng – phiên bản ứng dụng cũ không mở được tệp này.', sentenceRight:'Đúng', sentenceWrong:'Chưa đúng', openSentences:'Câu chưa trả lời: {n}.', resultSentences:'Kết quả: đúng {c}/{t} câu', foundErrors:'Tìm được {f}/{e} lỗi', yourSuggestion:'Đề xuất của bạn',
+    extendedFormat:'Lưu ở định dạng mở rộng – phiên bản ứng dụng cũ không mở được tệp này.', sentenceRight:'Đúng', sentenceWrong:'Chưa đúng', openSentences:'Câu chưa trả lời: {n}.', notFoundYet:'Chưa tìm thấy: {n}', resultSentences:'Kết quả: đúng {c}/{t} câu', foundErrors:'Tìm được {f}/{e} lỗi', yourSuggestion:'Đề xuất của bạn',
     localOnly:'Chỉ trong trình duyệt · không đăng nhập hoặc chia sẻ tự động', importSummary:'Nội dung đã nhập', recheck:'Kiểm tra lại',
   },
 } as const;

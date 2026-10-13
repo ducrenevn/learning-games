@@ -21,7 +21,6 @@ const check = (user: UserEvent) => user.click(screen.getByRole('button', { name:
 const reveal = (user: UserEvent) => user.click(screen.getByRole('button', { name: /Lösung & Erklärung/ }));
 const suggestionBox = (text: string) => screen.getByLabelText(new RegExp('^' + text + ' — Eigener Korrekturvorschlag')) as HTMLTextAreaElement;
 const answerKey = () => document.querySelector('section.activity-key')!;
-const review = () => document.querySelector('div.activity-key')!;
 const SECRETS = /habe(?!n)|Verb mit ich|Akkusativ|Achte auf Verbendung|→/;
 
 describe('Language Detective play: answer secrecy', () => {
@@ -49,6 +48,25 @@ describe('Language Detective play: answer secrecy', () => {
     expect(html).not.toContain('GEHEIM-ERKLAERUNG');
     expect(html).not.toMatch(/data-(issue|answer|correct)/i);
   });
+  it('keeps missed locations hidden through Check and Retry, and only shows them after Reveal', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await play(user);
+    await pick(user, 'Film');                                      // a wrong pick: no correct location is chosen
+    await check(user);
+    expect(document.querySelectorAll('.detective-segment.missed')).toHaveLength(0);
+    expect(playText()).not.toMatch(/Übersehen|haben → habe|dem → den/);
+    await user.click(screen.getByRole('button', { name: 'Erneut versuchen' }));
+    expect(playText()).not.toMatch(/Übersehen|→/);
+    expect(document.querySelectorAll('.detective-segment.missed')).toHaveLength(0);
+    await pick(user, 'haben');
+    await check(user);
+    expect(playText()).toContain('Noch nicht gefunden: 1');        // one error still missing: a count, not its location
+    expect(playText()).not.toMatch(/Übersehen|dem → den/);
+    expect(segment('dem').classList.contains('missed')).toBe(false);
+    await reveal(user);
+    expect(playText()).toContain('dem → den');
+    expect(document.querySelectorAll('.detective-segment.missed')).toHaveLength(1);
+  });
   it('keeps Check disabled, with a hint, until a segment is selected or "No errors" is chosen', async () => {
     const { user } = renderPage(<DetectivePage />);
     await play(user);
@@ -72,12 +90,16 @@ describe('Language Detective play: identification scoring', () => {
     await pick(user, 'haben', 'Film');                               // one hit, one false flag, one miss ("dem")
     await check(user);
     expect(playText()).toContain('Ergebnis: Nicht richtig — 1 von 2 richtig');
-    expect(playText()).toMatch(/Übersehen: dem/);
+    expect(playText()).toContain('Noch nicht gefunden: 1');        // the missed "dem" is counted, not named, before Reveal
+    expect(playText()).not.toMatch(/Übersehen/);
     expect(playText()).toMatch(/Fälschlich markiert: Film/);
     expect(segment('haben').textContent).toContain('Richtig markiert');
-    expect(segment('dem').textContent).toContain('Übersehen');
+    expect(segment('dem').textContent).not.toMatch(/Übersehen/);
     expect(segment('Film').textContent).toContain('Fälschlich markiert');
     expect(segment('Ich').textContent).not.toMatch(/markiert|Übersehen/);
+    await reveal(user);
+    expect(playText()).toMatch(/Übersehen: dem/);
+    expect(segment('dem').textContent).toContain('Übersehen');
   });
   it('solves exactly when the flagged set equals the issue set', async () => {
     const { user } = renderPage(<DetectivePage />);
@@ -108,6 +130,9 @@ describe('Language Detective play: identification scoring', () => {
     await user.click(screen.getByLabelText('Keine Fehler'));
     await check(user);
     expect(playText()).toContain('Ergebnis: Nicht richtig — 0 von 2 richtig');
+    expect(playText()).toContain('Noch nicht gefunden: 2');          // a count only, never the locations
+    expect(playText()).not.toMatch(/Übersehen/);
+    await reveal(user);
     expect(playText()).toMatch(/Übersehen: haben, dem/);
   });
   it('selecting segments clears "No errors" and choosing "No errors" clears the selection', async () => {
@@ -159,6 +184,9 @@ describe('Language Detective play: free-text corrections are never graded', () =
     await user.type(suggestionBox('Ich'), 'habe');
     await check(user);
     expect(playText()).toContain('Nicht richtig');
+    expect(playText()).toContain('Noch nicht gefunden: 2');
+    expect(playText()).not.toMatch(/Übersehen/);
+    await reveal(user);
     expect(playText()).toMatch(/Übersehen: haben, dem/);
   });
   it('shows the learner text beside the teacher key only after Reveal, labelled as not graded, and never marks it right or wrong', async () => {
@@ -168,8 +196,7 @@ describe('Language Detective play: free-text corrections are never graded', () =
     await user.type(suggestionBox('haben'), 'zzhab');
     await user.type(suggestionBox('dem'), 'zzden');
     await check(user);
-    expect(review().textContent).not.toContain('zz');              // not echoed or judged in the review before Reveal
-    expect(review().textContent).toContain('NICHT automatisch bewertet');
+    expect(document.querySelector('div.activity-key')).toBeNull(); // both picks are right: nothing echoed or judged before Reveal
     await reveal(user);
     const entries = Array.from(document.querySelectorAll('.activity-key-entry')).map(e => e.textContent!);
     expect(entries[0]).toContain('haben → habe');
@@ -277,7 +304,7 @@ describe('Language Detective play: locales and text', () => {
     await chooseLocale(user, 'en');
     expect(playText()).toContain('Result: correct — 2 of 2 correct');
     expect(playText()).toContain('Achte auf Verbendung und Kasus.');
-    expect(playText()).toContain('Free text is NOT automatically graded');
+    expect(playText()).toContain('Suggested correction (not automatically graded)');
   });
   it('renders markup-like text literally and tags authored text with the target language', async () => {
     const { user } = renderPage(<DetectivePage />);
@@ -361,10 +388,27 @@ describe('Language Detective play: several sentences (v2)', () => {
     expect(card(2).querySelector('.sent-badge')!.textContent).toContain('Richtig');
     expect(card(3).querySelector('.sent-badge')!.textContent).toContain('Nicht ganz');
     const review=(n: number, label: string) => Array.from(card(n).querySelectorAll('p')).find(p => p.textContent!.includes(label))?.textContent ?? '';
-    expect(review(3, 'Übersehen')).toMatch(/habe/);
     expect(review(3, 'Fälschlich markiert')).toMatch(/ins/);
-    expect(card(1).textContent).not.toMatch(/Übersehen|Fälschlich/);
+    expect(review(3, 'Noch nicht gefunden: 1')).toBe('Noch nicht gefunden: 1');
+    expect(review(3, 'Übersehen')).toBe('');                       // the missed word "habe" is not named before Reveal
+    expect(chip(3, 'habe').classList.contains('missed')).toBe(false);
+    expect(card(1).textContent).not.toMatch(/Übersehen|Fälschlich|Noch nicht/);
     expect(document.activeElement?.textContent).toContain('Sätzen richtig');
+    await reveal(user);
+    expect(review(3, 'Übersehen')).toMatch(/habe/);
+    expect(chip(3, 'habe').classList.contains('missed')).toBe(true);
+  });
+  it('shows no review or disclaimer box for an error-free sentence after Check', async () => {
+    const { user } = renderPage(<DetectivePage />);
+    await playV2(user);
+    await user.click(none(2));                                     // correct for sentence 2: no errors there
+    await user.click(chip(1, 'Gäste'));
+    await user.click(chip(3, 'habe'));
+    await check(user);
+    expect(card(2).querySelector('div.activity-key')).toBeNull();
+    expect(card(2).querySelector('.sent-badge')!.textContent).toContain('Richtig');
+    expect(playText()).not.toContain('NICHT automatisch bewertet');
+    expect(document.querySelector('div.activity-key')).toBeNull(); // every sentence is right: no review at all
   });
   it('keeps every correction, explanation and the summary hidden until Reveal, then shows each inside its own card', async () => {
     const { user } = renderPage(<DetectivePage />);

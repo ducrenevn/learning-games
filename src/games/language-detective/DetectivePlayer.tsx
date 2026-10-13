@@ -25,10 +25,11 @@ function SentenceCard(p: CardProps) {
   const { task, lang, locale } = p;
   const score = scoreDetective(task, p.selected, p.noErrors);
   const issueMap = new Map(task.issues.map(issue => [issue.segmentId, issue]));
+  // Missed error locations are concealed until Reveal: after Check only the learner's own picks are marked.
   const markOf = (id: string): Mark | null => !p.checked ? null
-    : p.selected.has(id) ? (issueMap.has(id) ? 'hit' : 'extra') : issueMap.has(id) ? 'missed' : null;
+    : p.selected.has(id) ? (issueMap.has(id) ? 'hit' : 'extra') : issueMap.has(id) && p.revealed ? 'missed' : null;
   const textsOf = (mark: Mark) => task.segments.filter(s => markOf(s.id) === mark).map(s => s.text).join(', ');
-  const reviewHasContent = p.checked && (p.typing || score.extra.length > 0 || score.missed.length > 0);
+  const reviewHasContent = p.checked && (score.extra.length > 0 || score.missed.length > 0);
   const label = p.single ? '' : ' (' + u(locale, 'sentenceNo', { n: p.index + 1 }) + ')';
   return <article className={'sent-card' + (p.single ? ' single' : '') + (p.checked && !p.single ? (score.solved ? ' good' : ' bad') : '')}>
     {!p.single && <header><b>{u(locale, 'sentenceNo', { n: p.index + 1 })}</b>
@@ -49,9 +50,10 @@ function SentenceCard(p: CardProps) {
       <textarea className="field" rows={2} disabled={p.checked} value={p.suggestions.get(segment.id) ?? ''} onChange={e => p.onSuggest(segment.id, e.target.value)}/>
     </label>)}
     {reviewHasContent && <div className="activity-key">
-      {p.typing && <p>{t(locale, 'review')}</p>}
       {score.extra.length > 0 && <p>{t(locale, 'extra')}: <span lang={lang}>{textsOf('extra')}</span></p>}
-      {score.missed.length > 0 && <p>{t(locale, 'missed')}: <span lang={lang}>{textsOf('missed')}</span></p>}
+      {score.missed.length > 0 && (p.revealed
+        ? <p>{t(locale, 'missed')}: <span lang={lang}>{textsOf('missed')}</span></p>
+        : <p>{u(locale, 'notFoundYet', { n: score.missed.length })}</p>)}
     </div>}
     {p.revealed && <section className="activity-key" tabIndex={-1} ref={p.keyRef} aria-labelledby={uid + 'key'}><h3 id={uid + 'key'}>{t(locale, 'answerKey')}{label}</h3>
       {!task.issues.length && <p>{t(locale, 'noErrors')}</p>}
