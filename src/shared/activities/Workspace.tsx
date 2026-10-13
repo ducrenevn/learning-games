@@ -19,6 +19,8 @@ export interface EditorProps<T> {
 }
 export interface PlayerProps<T> { activity: T; mode: PlayMode; locale: Locale }
 export interface PreviewProps<T> { activity: T; locale: Locale }
+/** Given to the optional online flow: whether the editor holds unsaved work, and a way to let its own navigation proceed. */
+export interface OnlineSession { unsaved: boolean; acknowledgeLeave: () => void }
 interface Props<T extends ActivityBase<ActivityType, unknown, 1 | 2>> {
   kind: ActivityType;
   makeBlank: () => T;
@@ -31,7 +33,7 @@ interface Props<T extends ActivityBase<ActivityType, unknown, 1 | 2>> {
   fromFile?: (file: never) => T;
   toFile?: (activity: T) => unknown;
   /** Optional existing Memory-only room flow; never called by local preview or import. */
-  onOnline?: (activity: T) => Promise<void>;
+  onOnline?: (activity: T, session: OnlineSession) => Promise<void>;
   joinHref?: string;
 }
 type Screen = 'choose' | 'import' | 'edit' | 'play';
@@ -104,7 +106,10 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
   // Internal navigation (logo, homepage links, browser back/forward) is blocked like the browser close warning. Confirmed
   // discards reset the flag in the in-page flows, so the same unsaved work does not prompt twice.
   const unsaved = dirty || fileBusy || !!importCandidate;
-  const blocker = useBlocker(({ currentLocation, nextLocation }) => unsaved && currentLocation.pathname !== nextLocation.pathname);
+  // Set only by the online flow, immediately before its own successful navigation. Every other navigation stays guarded.
+  const leaveAcknowledged = useRef(false);
+  const blocker = useBlocker(({ currentLocation, nextLocation }) =>
+    unsaved && !leaveAcknowledged.current && currentLocation.pathname !== nextLocation.pathname);
   useEffect(() => {
     if (blocker.state !== 'blocked') return;
     if (window.confirm(dirty ? t(locale, 'unsavedWarn') : u(locale, 'discard'))) blocker.proceed();
@@ -196,7 +201,8 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
     const pairs=(value.content as {pairs?:unknown[]}).pairs;
     if(!pairs||pairs.length<2){setOnlineError(u(locale,'roomNeedsPairs'));return;}
     setOnlineBusy(true);setOnlineError('');
-    void onOnline(structuredClone(value)).catch(e => setOnlineError(e instanceof Error ? e.message : u(locale,'onlineError'))).finally(() => setOnlineBusy(false));
+    const session: OnlineSession = { unsaved, acknowledgeLeave: () => { leaveAcknowledged.current = true; } };
+    void onOnline(structuredClone(value), session).catch(e => setOnlineError(e instanceof Error ? e.message : u(locale,'onlineError'))).finally(() => setOnlineBusy(false));
   }
   const time=(date:Date)=>new Intl.DateTimeFormat(locale,{hour:'2-digit',minute:'2-digit'}).format(date);
   const status = dirty ? {tone:'dirty',text:u(locale,'statusUnsaved')}

@@ -7,8 +7,8 @@ import { memoryText } from './roomCopy';
 
 interface Props {
   locale: Locale;
-  /** Creates the room with the teacher's choice. Rejects on failure, and the dialog stays open to show it. */
-  onConfirm: (allowStudentLanguageChoice: boolean) => Promise<void>;
+  /** Creates the room with the teacher's choice. Resolves true when created; false when the teacher declined a prompt (no room). Rejects on failure. The dialog stays open unless created. */
+  onConfirm: (allowStudentLanguageChoice: boolean) => Promise<boolean>;
   onCancel: () => void;
 }
 
@@ -34,7 +34,8 @@ export function RoomSetupDialog({ locale, onConfirm, onCancel }: Props) {
     setBusy(true);
     setError(null);
     try {
-      await onConfirm(allowChoice);
+      const created = await onConfirm(allowChoice);
+      if (!created) setBusy(false);
     } catch (e) {
       setError(roomText(locale, roomErrorKey(e, 'createFailed')));
       setBusy(false);
