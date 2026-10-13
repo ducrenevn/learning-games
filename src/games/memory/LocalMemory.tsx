@@ -196,7 +196,7 @@ export function LocalMemory({ pairs, errors, onPlayingChange, locale = 'de', sin
       ? m.done
       : winners.length === 1
         ? `${winners[0]} ${m.won} ${bestScore} ${bestScore === 1 ? m.point : m.points}!`
-        : `${m.tie} (${bestScore} ${m.points}): ${winners.join(', ')}`;
+        : `${m.tie} (${bestScore} ${bestScore === 1 ? m.point : m.points}): ${winners.join(', ')}`;
 
     return (
       <div className="panel results">

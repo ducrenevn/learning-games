@@ -5,7 +5,7 @@ import type { ActivityBase, ActivityType, Locale, PlayMode, Validator, Issue } f
 import { MAX_BYTES } from './contract';
 import { downloadActivity, serializeActivity, validateImported } from './portable';
 import { t, issueText } from './i18n';
-import { u } from './uxCopy';
+import { count, u } from './uxCopy';
 import { friendlyIssue, makeFieldHelpers, type FieldAttrs, type RegionAttrs } from './issues';
 import { AutoTextarea, TargetLanguageField } from './canvasParts';
 import { useLocale } from '../locale/LocaleProvider';
@@ -50,12 +50,12 @@ function IssueList({ issues, locale }: { issues: readonly Issue[]; locale: Local
 function countsOf(kind: ActivityType, content: unknown, locale: Locale) {
   const c = content as Record<string, unknown[]>;
   switch (kind) {
-    case 'sort': return u(locale,'nCards',{n:c.items.length}) + ' · ' + u(locale,'nCategories',{n:c.categories.length});
-    case 'sequence': return u(locale,'nSteps',{n:c.items.length});
-    case 'memory': return u(locale,'nPairs',{n:c.pairs.length});
+    case 'sort': return count(locale,'nCard1','nCards',c.items.length) + ' · ' + count(locale,'nCategory1','nCategories',c.categories.length);
+    case 'sequence': return count(locale,'nStep1','nSteps',c.items.length);
+    case 'memory': return count(locale,'nPair1','nPairs',c.pairs.length);
     default: {
       const tasks = (c.tasks ?? [{ issues: c.issues }]) as { issues: unknown[] }[];
-      return u(locale,'nSentences',{n:tasks.length}) + ' · ' + u(locale,'nErrors',{n:tasks.reduce((sum,task)=>sum+task.issues.length,0)});
+      return count(locale,'nSentence1','nSentences',tasks.length) + ' · ' + u(locale,'nErrors',{n:tasks.reduce((sum,task)=>sum+task.issues.length,0)});
     }
   }
 }
@@ -284,7 +284,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
         <div className="canvas-foot">
           <p className={'canvas-status '+(issues.length?'incomplete':'ready')}>
             {issues.length===0 ? <><Check size={17} aria-hidden="true"/>{countsOf(kind,draft.content,locale)} · {u(locale,'readyChip')}</>
-              : <><span>{u(locale,'needsChip',{n:issues.length})}</span> <button type="button" className="text-button" onClick={()=>{setAttempted(true);setAttemptToken(n=>n+1);}}>{u(locale,'gotoProblem')} →</button></>}
+              : <><span>{count(locale,'needsChip1','needsChip',issues.length)}</span> <button type="button" className="text-button" onClick={()=>{setAttempted(true);setAttemptToken(n=>n+1);}}>{u(locale,'gotoProblem')} →</button></>}
           </p>
           <details className="activity-ux-disclosure" open={advancedOpen} onToggle={event=>setAdvancedOpen(event.currentTarget.open)}><summary>{u(locale,'advanced')}</summary>
             <p className="muted small">{u(locale,'advancedHelp')}</p>

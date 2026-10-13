@@ -35,7 +35,7 @@ const copy = {
     readyChip:'spielbereit', needsChip:'Noch {n} Angaben fehlen', gotoProblem:'Zum Problem', notReady:'Noch nicht spielbereit', fixFirst:'Bitte zuerst ergänzen:',
     langOther:'Andere …', langCode:'Sprachcode (z. B. fr oder pt-BR)', titlePlaceholder:'Titel der Aktivität', instructionPlaceholder:'Anweisung für die Lernenden',
     previewCaption:'So sieht die Aktivität aus', moreItems:'+ {n} weitere', dropStrip:'Aktivitätsdatei hierher ziehen oder auswählen',
-    nCards:'{n} Karten', nCategories:'{n} Kategorien', nSteps:'{n} Schritte', nSentences:'{n} Sätze', nPairs:'{n} Paare', nErrors:'{n} Fehler',
+    nCards:'{n} Karten', nCategories:'{n} Kategorien', nSteps:'{n} Schritte', nSentences:'{n} Sätze', nPairs:'{n} Paare', nErrors:'{n} Fehler', nCard1:'{n} Karte', nCategory1:'{n} Kategorie', nStep1:'{n} Schritt', nSentence1:'{n} Satz', nPair1:'{n} Paar', needsChip1:'Noch {n} Angabe fehlt',
     pairOne:'Paar', nameLabel:'Name', textLabel:'Text', correctOrder:'Richtige Reihenfolge', stepExplanation:'Erklärung zur Reihenfolge',
     noExplanation:'Keine Erklärung', ruleSort:'Jede Karte gehört in die Kategorie, in der sie liegt – das ist die Lösung.',
     ruleSequence:'Die Reihenfolge hier ist die Lösung. Lernende sehen die Schritte gemischt.', ruleMemory:'Jede Zeile ist ein Kartenpaar: links und rechts gehören zusammen.',
@@ -88,7 +88,7 @@ const copy = {
     readyChip:'ready to play', needsChip:'{n} items still missing', gotoProblem:'Go to problem', notReady:'Not ready to play yet', fixFirst:'Please complete first:',
     langOther:'Other …', langCode:'Language code (e.g. fr or pt-BR)', titlePlaceholder:'Activity title', instructionPlaceholder:'Instructions for learners',
     previewCaption:'How the activity looks', moreItems:'+ {n} more', dropStrip:'Drop an activity file here or choose one',
-    nCards:'{n} cards', nCategories:'{n} categories', nSteps:'{n} steps', nSentences:'{n} sentences', nPairs:'{n} pairs', nErrors:'{n} errors',
+    nCards:'{n} cards', nCategories:'{n} categories', nSteps:'{n} steps', nSentences:'{n} sentences', nPairs:'{n} pairs', nErrors:'{n} errors', nCard1:'{n} card', nCategory1:'{n} category', nStep1:'{n} step', nSentence1:'{n} sentence', nPair1:'{n} pair', needsChip1:'{n} item still missing',
     pairOne:'Pair', nameLabel:'Name', textLabel:'Text', correctOrder:'Correct order', stepExplanation:'Explanation of the order',
     noExplanation:'No explanation', ruleSort:'Each card belongs to the category it sits in – that is the answer.',
     ruleSequence:'The order here is the answer. Learners see the steps shuffled.', ruleMemory:'Each row is a card pair: left and right belong together.',
@@ -141,7 +141,7 @@ const copy = {
     readyChip:'sẵn sàng chơi', needsChip:'Còn thiếu {n} mục', gotoProblem:'Đến chỗ cần sửa', notReady:'Chưa sẵn sàng để chơi', fixFirst:'Hãy hoàn thành trước:',
     langOther:'Khác …', langCode:'Mã ngôn ngữ (ví dụ fr hoặc pt-BR)', titlePlaceholder:'Tiêu đề hoạt động', instructionPlaceholder:'Hướng dẫn cho người học',
     previewCaption:'Hoạt động trông như thế này', moreItems:'+ {n} mục nữa', dropStrip:'Kéo tệp hoạt động vào đây hoặc chọn tệp',
-    nCards:'{n} thẻ', nCategories:'{n} nhóm', nSteps:'{n} bước', nSentences:'{n} câu', nPairs:'{n} cặp', nErrors:'{n} lỗi',
+    nCards:'{n} thẻ', nCategories:'{n} nhóm', nSteps:'{n} bước', nSentences:'{n} câu', nPairs:'{n} cặp', nErrors:'{n} lỗi', nCard1:'{n} thẻ', nCategory1:'{n} nhóm', nStep1:'{n} bước', nSentence1:'{n} câu', nPair1:'{n} cặp', needsChip1:'Còn thiếu {n} mục',
     pairOne:'Cặp', nameLabel:'Tên', textLabel:'Nội dung', correctOrder:'Thứ tự đúng', stepExplanation:'Giải thích thứ tự',
     noExplanation:'Không có giải thích', ruleSort:'Mỗi thẻ thuộc nhóm mà nó nằm trong – đó là đáp án.',
     ruleSequence:'Thứ tự ở đây là đáp án. Người học thấy các bước đã xáo trộn.', ruleMemory:'Mỗi dòng là một cặp thẻ: trái và phải thuộc về nhau.',
@@ -162,6 +162,10 @@ const copy = {
   },
 } as const;
 export type UXKey = keyof typeof copy.en;
+/** Picks the singular copy for exactly one item, so German and English counts read naturally ("1 Paar", "2 Paare"). */
+export function count(locale: Locale, singular: UXKey, plural: UXKey, n: number) {
+  return u(locale, n === 1 ? singular : plural, { n });
+}
 export function u(locale: Locale, key: UXKey, values?: Record<string,string|number>) {
   let result: string = copy[locale][key];
   for (const [k,v] of Object.entries(values ?? {})) result = result.replaceAll('{' + k + '}', String(v));
