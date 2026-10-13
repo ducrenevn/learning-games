@@ -58,7 +58,7 @@ describe('Memory local play: per-player ownership', () => {
     await startLocal('Ann, Ben', 'vi');
     expect(document.querySelector('.scoreboard .eyebrow')?.textContent).toBe('LƯỢT HIỆN TẠI');
     expect(document.querySelector('.scoreboard h2')?.textContent).toBe('Đến lượt Ann');
-    expect(cards()[0].getAttribute('aria-label')).toBe('Thẻ úp');
+    expect(cards()[0].getAttribute('aria-label')).toBe('Thẻ úp 1');
   });
   it('previews each player colour and shape on the setup screen', async () => {
     const user = userEvent.setup();
@@ -79,7 +79,7 @@ describe('Memory local play: per-player ownership', () => {
 describe('Memory shared components keep their online defaults', () => {
   it('renders the German labels and no owner badge without the optional props', () => {
     render(<MemoryBoard cards={[{ id: 1, visible: false, matched: false, value: null }, { id: 2, visible: true, matched: true, value: 'Haus' }]} canFlip onFlip={() => {}} />);
-    expect(screen.getByRole('button', { name: 'Verdeckte Karte' })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /^Verdeckte Karte \d+$/ })[0]).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Haus' })).toBeTruthy();
     expect(document.querySelector('.card-owner')).toBeNull();
     cleanup();

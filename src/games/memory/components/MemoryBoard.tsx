@@ -20,11 +20,12 @@ export function MemoryBoard({ cards, canFlip, onFlip, notice, wrong, owners, lab
   return <div className="board-panel">
     {notice && <div role="status" className={'feedback ' + (wrong ? 'feedback-wrong' : '')}>{notice}</div>}
     <div className="memory-grid" style={{ '--cols': desktop, '--cols-phone': phone } as CSSProperties}>
-      {cards.map(card => {
+      {cards.map((card, index) => {
         const shown = card.visible || card.matched;
         const emoji = !!card.value && /\p{Extended_Pictographic}/u.test(card.value) && card.value.length <= 8;
         const owner = card.matched ? owners?.[card.id] : undefined;
-        const name = shown ? (card.value || labels.revealed) : labels.hidden;
+        // Face-down cards get their position so each one has a unique accessible name.
+        const name = shown ? (card.value || labels.revealed) : labels.hidden + ' ' + (index + 1);
         return <button
           key={card.id} type="button"
           className={'memory-card ' + (shown ? 'revealed ' : '') + (card.matched ? 'matched' : '') + (owner ? ' owned' : '')}
