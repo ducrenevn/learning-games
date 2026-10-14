@@ -1,3 +1,9 @@
+# MP1 v3 roadmap update (2026-10-14)
+
+Opus second delta: APPROVED WITH REQUIRED CORRECTIONS (B1–B4, C1–C6). Documentation reconciled to [MP1 v3](architecture/MP1_BACKEND_CONTRACT.md). **Next gated work:** owner-authorized, disposable-only MP1-AB-db Sort Individual backend; local SQL and PostgREST security/race/corpus proof, then independent executable SQL review. No further contract design pass is required absent a blocker. No hosted access or frontend integration as part of that task.
+
+---
+
 # Roadmap update — MP1 review reconciled (2026-10-14)
 
 1. **Done:** MP0 engineering/browser/hosted ordinary Memory functional QA; accepted Preview code `b569d76`, no production release.
