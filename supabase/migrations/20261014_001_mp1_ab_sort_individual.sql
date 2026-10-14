@@ -1203,3 +1203,10 @@ ALTER FUNCTION public.lg_v1_create(text, text, jsonb, text, boolean, text) OWNER
 ALTER FUNCTION public.lg_v1_join(text, text, text) OWNER TO postgres;
 ALTER FUNCTION public.lg_v1_state(text, text, bigint, bigint) OWNER TO postgres;
 ALTER FUNCTION public.lg_v1_command(text, text, text, jsonb, bigint, bigint) OWNER TO postgres;
+
+REVOKE EXECUTE ON FUNCTION lg_v1._mode_guard(text, text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION lg_v1._safe_token(text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION lg_v1._sort_room_handles(jsonb) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION lg_v1._sort_score(jsonb, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION lg_v1.validate_sort_activity(jsonb) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION lg_v1.purge_expired_rooms(integer) FROM PUBLIC, anon, authenticated;
