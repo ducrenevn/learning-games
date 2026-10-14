@@ -1,3 +1,14 @@
+# Roadmap update — MP1 review reconciled (2026-10-14)
+
+1. **Done:** MP0 engineering/browser/hosted ordinary Memory functional QA; accepted Preview code `b569d76`, no production release.
+2. **Done:** Opus independent MP1 review (`APPROVE WITH CHANGES`), v2 documentation reconciliation [audit](audits/2026-10-14-mp1-opus-reconciliation.md).
+3. **Next:** focused independent v2 delta acceptance, with no code edits.
+4. **After owner authorization:** MP1-AB-db — *one* disposable PostgreSQL/PostgREST SQL foundation + Sort Individual, 4 private tables and 4 public VOLATILE POST-only RPCs, safety tests.
+5. **After independent executable SQL review and new owner authorization:** Sort Individual browser client; hosted project choice/security/abuse/backup gates before any installation.
+6. **Future:** Sort Teacher-paced and Collaborative, Sequence 3 modes, Detective 3 modes, Memory Individual; legacy Memory Turns preserved. SPP Homework separately gated.
+
+---
+
 # Learning Games Roadmap — current control-room update (2026-10-14)
 
 ## Accepted, unreleased
