@@ -1,3 +1,26 @@
+# Handoff — MP1 contract review (2026-10-14)
+
+**Task owner:** Product owner coordinates independent reviewer; control room owns MP1 draft and reconciles findings.
+
+**Baseline:** `ducrenevn/learning-games` MP0 feature `feat/lg-mp0-ux2-m3a-integration-20261013@b569d767e18ae0330cfbb028192470fde60a710d` (accepted **Preview**, no Production merge). Docs-only planning branch `docs/lg-mp0-closure-mp1-backend-contract-20261014` carries closure + review proposal. Live `main`/deployment refs must be reverified. Installed M3a Memory migration must **not** be replayed.
+
+## Next assignment — independent review, NOT implementation
+
+Have Opus independently evaluate:
+1. [Locked product/mode matrix](architecture/MULTIPLAYER_V1_CONTRACT.md);
+2. [Concrete MP1 proposed backend contract](architecture/MP1_BACKEND_CONTRACT.md);
+3. [Review scope, evidence demands and owner gates](architecture/MP1_REVIEW_AND_ROLLOUT.md);
+4. [Installed Memory baseline](architecture/BACKEND_BASELINE.md), [MP0 hosted evidence](audits/2026-10-14-mp0-hosted-acceptance.md), game validators/engines and Detective v2 model.
+
+Return APPROVE / APPROVE WITH CHANGES / REJECT with specific P0/P1/P2 findings, evidence, exact contract edits, security proof requirements and smallest disposable MP1-A plan. Prefer a bounded **review of concrete design**, not a fresh unlimited architecture brainstorming run. **Read-only:** no repo edits, branch changes, hosted SQL, game-room writes, SPP/Auth/Homework work or deployment.
+
+## After reviewer result
+Control room reconciles findings and updates this docs branch. Product owner authorizes (or declines) a separate isolated MP1-A disposable-only implementation task. First proposed full mode: Sort Individual. Explicit new approval required for any hosted SQL/migration or merge/release.
+
+**Historical UX-2 instructions below are superseded by this handoff.**
+
+---
+
 # Handoff — UX-2 owner smoke test (2026-10-13)
 > **Newer branch:** `feat/lg-mp0-ux2-m3a-integration-20261013` integrates the M3a room-language policy into UX-2. Integration commit `3f1854b` is on origin, and a source-audit correction commit follows it on the same branch. Vercel Preview status is owner-reported. Not merged, not promoted to Production. See the LG-MP0 sections of [CURRENT_STATE](CURRENT_STATE.md).
 **Supersedes the 2026-10-12 Wave F acceptance handoff for the Learning Games UI.** The Wave F branch is historical; its review gates still apply to that branch only.
