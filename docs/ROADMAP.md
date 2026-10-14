@@ -1,3 +1,19 @@
+# Learning Games Roadmap — current control-room update (2026-10-14)
+
+## Accepted, unreleased
+**MP0:** UX-2 local experience for Memory/Sort/Sequence/Detective plus M3a Memory online language-policy integration; source `b569d76`; 454/454 implementer-reported tests, 42/42 AG browser scenarios, 2 hosted Memory synthetic games completed under both room language policies. See [MP0 closure](audits/2026-10-14-mp0-hosted-acceptance.md). Source/Preview accepted; Production release and merges remain gated.
+
+## Next gated phase
+1. **MP1 contract review — NOW:** control-room-authored [MP1 backend draft](architecture/MP1_BACKEND_CONTRACT.md) and [review packet](architecture/MP1_REVIEW_AND_ROLLOUT.md) for independent evaluation. Locked 11 game/mode combinations remain [here](architecture/MULTIPLAYER_V1_CONTRACT.md).
+2. **MP1-A:** after review and owner authorization, develop *disposable-only* shared room lifecycle, capabilities, validation, actor-specific projections, revision/idempotency/security proof. No hosted SQL implicitly authorized.
+3. **MP1-B:** first independently gated full multiplayer implementation, provisionally **Sort Individual**, with strict private answer keys and attempts.
+4. **Following slices:** Sort teacher-paced/collaborative; Sequence modes; Detective modes; Memory Individual. Existing Memory Turns remains on its installed prototype until a separately reviewed migration.
+5. **Separate later tracks:** SPP Homework assignment adapter; Production merge/release sequencing for UX-2/MP0; accessibility/security hardening.
+
+**No current authorization:** new SQL, hosted installation, merging MP0 into main, changing SPP, adding accounts, generic turns for Sort/Sequence/Detective, fifth mode, unreviewed Realtime.
+
+---
+
 # Learning Games Roadmap — 2026-10-12
 **Check [CURRENT_STATE](CURRENT_STATE.md) and live GitHub refs, not only this plan.**
 
