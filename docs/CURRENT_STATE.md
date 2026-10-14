@@ -1,3 +1,19 @@
+# CURRENT STATE — 2026-10-14 MP0 closure and MP1 design
+
+## Authoritative current control-room state
+
+- **MP0 accepted (engineering and hosted functional QA):** branch `feat/lg-mp0-ux2-m3a-integration-20261013` final source `b569d767e18ae0330cfbb028192470fde60a710d`, **not merged or production-released**. Built on accepted UX-2 `d998237` with M3a Memory `create_v2` language-policy integration. Includes all four local UX-2 games and Memory online Turns.
+- **Vercel Preview:** `https://learning-games-k7194h9ue-rene-s-projects1.vercel.app` READY at exact `b569d76`; Vercel deployment ID `dpl_AMZ5NxPKyHZypFCZJXCrxuF7qF14`. Last independently verified Production `main@f8ac534` was unchanged at audit; reverify live refs before operations.
+- **Verification sources:** implementer reported typecheck, build, 454/454 tests; AG reported 42/42 Chromium browser scenarios, and two **real hosted synthetic Memory rooms** with two synthetic students each, both interface-language policies, polling, normal turns, reconnect, score and game completion. Two hosted rooms were intentionally created through existing RPCs; no SQL/DDL or SPP records were touched according to AG. See [2026-10-14 MP0 hosted acceptance](audits/2026-10-14-mp0-hosted-acceptance.md) for exact provenance and limitations.
+- **Not proven:** hostile server permission probes; physical room-row deletion (server `expiresAt` is only metadata); physical devices, Safari/Firefox/screen readers, internet abuse resilience. Minor Join input id/name semantic note remains backlog. No need to reopen MP0 for these unless they become release-critical.
+- **MP1 draft contract prepared by control room:** [MP1_BACKEND_CONTRACT](architecture/MP1_BACKEND_CONTRACT.md) and [MP1_REVIEW_AND_ROLLOUT](architecture/MP1_REVIEW_AND_ROLLOUT.md). The [owner-locked V1 11-combination matrix](architecture/MULTIPLAYER_V1_CONTRACT.md) is separate from **proposed** backend architecture. All MP1 code, SQL, Supabase installation, frontend integration and release **remain unapproved**.
+- **SPP Homework adapter:** independent discovery only; see [SPP_HOMEWORK_INTEGRATION_DISCOVERY](architecture/SPP_HOMEWORK_INTEGRATION_DISCOVERY.md). No SPP Auth/Homework coupling to anonymous room tokens.
+- **Current work:** independent technical/security evaluation of MP1 draft, then owner-approved isolated disposable MP1-A foundation proof and Sort Individual. Continue on this docs branch for review; do not silently merge the docs into the code branch.
+
+**Important:** Older sections below preserve historical implementation reports as originally recorded, including now-stale phrases such as “local only”, “not yet hosted” and older test counts. This 2026-10-14 section supersedes those status claims. Do not treat historical proposed instructions as current authorization.
+
+---
+
 # Current State — 2026-10-12 documentation reconciliation
 
 ## UX-2 + Memory M3a room integration — LG-MP0 (2026-10-13, local branch)
