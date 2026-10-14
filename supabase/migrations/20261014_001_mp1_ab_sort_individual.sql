@@ -284,25 +284,7 @@ AS $$
   );
 $$;
 
-CREATE OR REPLACE FUNCTION lg_v1._sort_private_mapping(p_activity jsonb)
-RETURNS jsonb
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = ''
-AS $$
-  SELECT (lg_v1._sort_room_handles(p_activity)->'privateMapping');
-$$;
-
-CREATE OR REPLACE FUNCTION lg_v1._student_sort_projection(p_activity jsonb)
-RETURNS jsonb
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = ''
-AS $$
-  SELECT (lg_v1._sort_room_handles(p_activity)->'studentProjection');
-$$;
-
-CREATE OR REPLACE FUNCTION lg_v1._sort_score(p_activity jsonb, p_placement jsonb)
+CREATE OR REPLACE FUNCTION lg_v1._sort_score(p_activity jsonb, p_private_mapping jsonb, p_placement jsonb)
 RETURNS jsonb
 LANGUAGE sql
 SECURITY DEFINER
@@ -311,15 +293,20 @@ AS $$
   WITH item_rows AS (
     SELECT
       i.item_value->>'id' AS authored_item_id,
-      i.item_value->>'categoryId' AS correct_category_id,
-      (p_placement ->> (i.item_value->>'id')) IS NOT NULL AS has_placement,
-      (p_placement ->> (i.item_value->>'id')) = i.item_value->>'categoryId' AS is_correct
+      p_private_mapping->'items'->>(i.item_value->>'id') AS item_handle,
+      p_private_mapping->'categories'->>(i.item_value->>'categoryId') AS correct_category_handle
     FROM jsonb_array_elements(COALESCE(p_activity->'content'->'items', '[]'::jsonb)) AS i(item_value)
+  ), evaluated_rows AS (
+    SELECT authored_item_id,
+           (p_placement ->> item_handle) IS NOT NULL AS has_placement,
+           COALESCE((p_placement ->> item_handle) = correct_category_handle, false) AS is_correct
+    FROM item_rows
   )
   SELECT jsonb_build_object(
-    'total', (SELECT count(*) FROM item_rows),
-    'correct', (SELECT count(*) FROM item_rows WHERE is_correct),
-    'complete', (SELECT bool_and(has_placement) FROM item_rows),
+    'evaluator', 'scoreSort',
+    'total', (SELECT count(*) FROM evaluated_rows),
+    'correct', (SELECT count(*) FROM evaluated_rows WHERE is_correct),
+    'complete', (SELECT bool_and(has_placement) FROM evaluated_rows),
     'perItem', (
       SELECT jsonb_agg(
         jsonb_build_object(
@@ -328,7 +315,7 @@ AS $$
           'placed', has_placement
         )
       )
-      FROM item_rows
+      FROM evaluated_rows
     )
   );
 $$;
@@ -639,7 +626,12 @@ BEGIN
       'mode', v_room.mode,
       'roomLanguage', v_room.room_language,
       'allowStudentLanguageChoice', v_room.allow_student_language_choice,
-      'studentView', COALESCE(v_snapshot.student_projection, jsonb_build_object('categories', jsonb_build_array(), 'items', jsonb_build_array()))
+      'studentView', COALESCE(v_snapshot.student_projection, jsonb_build_object('categories', jsonb_build_array(), 'items', jsonb_build_array())),
+      'placements', COALESCE(v_attempt.placement, '{}'::jsonb),
+      'submission', CASE
+        WHEN v_attempt.submission IS NULL THEN NULL
+        ELSE jsonb_build_object('status', 'submitted', 'submittedAt', v_attempt.submitted_at)
+      END
     );
   END IF;
 
@@ -687,6 +679,7 @@ DECLARE
   v_token_digest text;
   v_payload_item_handle text;
   v_payload_category_handle text;
+  v_current_category_handle text;
   v_next_room_rev bigint;
   v_next_attempt_rev bigint;
 BEGIN
@@ -750,13 +743,32 @@ BEGIN
       IF p_payload IS NULL OR jsonb_typeof(p_payload) <> 'object' THEN
         RAISE EXCEPTION 'INVALID_PAYLOAD';
       END IF;
+      IF NOT (p_payload ? 'itemHandle') OR jsonb_typeof(p_payload->'itemHandle') <> 'string'
+         OR NOT (p_payload ? 'categoryHandle')
+         OR jsonb_typeof(p_payload->'categoryHandle') NOT IN ('string', 'null') THEN
+        RAISE EXCEPTION 'INVALID_PAYLOAD';
+      END IF;
       v_payload_item_handle := p_payload->>'itemHandle';
       v_payload_category_handle := p_payload->>'categoryHandle';
-      IF v_payload_item_handle IS NULL OR v_payload_category_handle IS NULL THEN
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM jsonb_each_text(COALESCE(v_snapshot.private_mapping->'items', '{}'::jsonb)) AS mapping(authored_id, handle)
+        WHERE mapping.handle = v_payload_item_handle
+      ) THEN
         RAISE EXCEPTION 'INVALID_PAYLOAD';
       END IF;
 
-      IF v_attempt.placement = jsonb_build_object(v_payload_item_handle, v_payload_category_handle) THEN
+      IF v_payload_category_handle IS NOT NULL AND NOT EXISTS (
+        SELECT 1
+        FROM jsonb_each_text(COALESCE(v_snapshot.private_mapping->'categories', '{}'::jsonb)) AS mapping(authored_id, handle)
+        WHERE mapping.handle = v_payload_category_handle
+      ) THEN
+        RAISE EXCEPTION 'INVALID_PAYLOAD';
+      END IF;
+
+      v_current_category_handle := v_attempt.placement->>v_payload_item_handle;
+      IF v_current_category_handle IS NOT DISTINCT FROM v_payload_category_handle THEN
         RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'attemptRevision', v_attempt.attempt_revision, 'status', 'ok');
       END IF;
 
@@ -764,7 +776,11 @@ BEGIN
         RAISE EXCEPTION 'REVISION_CONFLICT';
       END IF;
 
-      v_attempt.placement := jsonb_build_object(v_payload_item_handle, v_payload_category_handle);
+      IF v_payload_category_handle IS NULL THEN
+        v_attempt.placement := v_attempt.placement - v_payload_item_handle;
+      ELSE
+        v_attempt.placement := jsonb_set(v_attempt.placement, ARRAY[v_payload_item_handle], to_jsonb(v_payload_category_handle), true);
+      END IF;
       v_attempt.attempt_revision := v_attempt.attempt_revision + 1;
       v_attempt.updated_at := now();
       UPDATE lg_v1.attempts
@@ -808,7 +824,7 @@ BEGIN
 
       UPDATE lg_v1.attempts
       SET submission = v_attempt.placement,
-          score = lg_v1._sort_score(v_snapshot.private_activity, v_attempt.placement),
+          score = lg_v1._sort_score(v_snapshot.private_activity, v_snapshot.private_mapping, v_attempt.placement),
           submitted_at = now(),
           attempt_revision = v_attempt.attempt_revision + 1,
           updated_at = now()
@@ -1040,9 +1056,7 @@ ALTER FUNCTION lg_v1._mode_guard(text, text) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1._safe_token(text) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1.validate_sort_activity(jsonb) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1._sort_room_handles(jsonb) OWNER TO lg_v1_owner;
-ALTER FUNCTION lg_v1._sort_private_mapping(jsonb) OWNER TO lg_v1_owner;
-ALTER FUNCTION lg_v1._student_sort_projection(jsonb) OWNER TO lg_v1_owner;
-ALTER FUNCTION lg_v1._sort_score(jsonb, jsonb) OWNER TO lg_v1_owner;
+ALTER FUNCTION lg_v1._sort_score(jsonb, jsonb, jsonb) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1.create(text, text, jsonb, text, boolean, text) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1.join(text, text, text) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1.state(text, text, bigint, bigint) OWNER TO lg_v1_owner;
