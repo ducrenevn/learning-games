@@ -50,7 +50,7 @@ Nonexposed lg_v1 schema (restricted owner, private tables/internal functions)
 
 **No credentials in URL:** all capability-bearing RPCs MUST accept **POST only**; `VOLATILE` function volatility is required to prevent PostgREST GET invocation, with negative GET tests and URL/log scans. Never put tokens in QR links, query strings, thrown errors, screenshots or diagnostic telemetry. Client `sessionStorage` is a session-scoped bearer holder, not user identity proof.
 
-**Room code is an admission credential during an open lobby**, not just a locator. It is intentionally shareable via QR and does not authorize room **state/mutation** after join. Use cryptographically secure nonambiguous room-code generation; choose alphabet, entropy, collision retry and throttling only after abuse/capacity review. Host closes new joining at `start`. Only a valid host capability can `remove_participant`, revoke student access and preserve/freeze prior submitted data according to retention policy.
+**Room code is an admission credential during an open lobby**, not just a locator. It is intentionally shareable via QR and does not authorize room **state/mutation** after join. Use cryptographically secure generation: use `gen_random_uuid()` as the entropy source for opaque handles **and the server-side shuffle keys**, never PostgreSQL `random()`; select a separate securely generated nonambiguous join code with collision checks. choose alphabet, entropy, collision retry and throttling only after abuse/capacity review. Host closes new joining at `start`. Only a valid host capability can `remove_participant`, revoke student access and preserve/freeze prior submitted data according to retention policy.
 
 ## 4. Opaque student handles — mandatory F1
 
