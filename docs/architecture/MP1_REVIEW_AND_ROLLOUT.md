@@ -1,3 +1,13 @@
+# MP1 review status update — reconciled v2 (2026-10-14)
+
+**First Opus review completed:** APPROVE WITH CHANGES against `ea403e3`; see [finding-by-finding reconciliation](../audits/2026-10-14-mp1-opus-reconciliation.md). [MP1_BACKEND_CONTRACT](MP1_BACKEND_CONTRACT.md) is rewritten as **v2**. The original open-ended review brief below is now historical; do not rerun it as if no review occurred.
+
+**Next reviewer action:** focused **read-only v2 delta check**, not implementation. Concentrate on (a) no authored ID/order leakage including Detective, (b) SQL/server validator parity with TS corpus, (c) restricted NOLOGIN owner and POST-only/ VOLATILE function hardening, (d) create/join retry token recovery and actor-attempt CAS for stale absolute placements, (e) READ COMMITTED locks and freeze, (f) four-table single disposable Sort Individual design. Return unresolved blockers and exact targeted amendments, then STOP.
+
+**Only after owner go:** develop isolated disposable-only MP1-AB-db (Sort Individual + minimal room service); proof of pgTAP ACL, PostgREST boundary, GET rejection, modes 11/5, key confidentiality, Unicode/duplicate corpus, bad capabilities, lost replies, simultaneous edits/host close, expiry and purge. No hosted SQL, DDL, roles, deployments, application integration or SPP changes.
+
+---
+
 # MP1 — independent backend review packet and release gates
 
 **State:** Review-ready **proposal** prepared 2026-10-14. MP1 backend contract is not an approved schema/migration, installed code or permission to implement. Product V1 matrix remains locked in [MULTIPLAYER_V1_CONTRACT](MULTIPLAYER_V1_CONTRACT.md). Start with [MP1_BACKEND_CONTRACT](MP1_BACKEND_CONTRACT.md).
