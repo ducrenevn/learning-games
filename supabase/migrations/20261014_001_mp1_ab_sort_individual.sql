@@ -106,7 +106,7 @@ LANGUAGE sql
 IMMUTABLE
 SET search_path = ''
 AS $$
-  SELECT CASE WHEN p_token ~ '^[a-f0-9]{64}$' THEN encode(digest(p_token, 'sha256'), 'hex') ELSE NULL END;
+  SELECT CASE WHEN p_token ~ '^[a-f0-9]{64}$' THEN encode(extensions.digest(p_token, 'sha256'), 'hex') ELSE NULL END;
 $$;
 
 CREATE OR REPLACE FUNCTION lg_v1.validate_sort_activity(p_activity jsonb)
@@ -252,7 +252,7 @@ AS $$
     SELECT
       category->>'id' AS authored_category_id,
       category->>'label' AS label,
-      md5(concat('cat:', category->>'id', ':', encode(gen_random_bytes(16), 'hex'))) AS category_handle
+      md5(concat('cat:', category->>'id', ':', encode(extensions.gen_random_bytes(16), 'hex'))) AS category_handle
     FROM jsonb_array_elements(COALESCE(p_activity->'content'->'categories', '[]'::jsonb)) AS category
   ),
   items AS (
@@ -260,7 +260,7 @@ AS $$
       item->>'id' AS authored_item_id,
       item->>'text' AS text,
       item->>'categoryId' AS authored_category_id,
-      md5(concat('item:', item->>'id', ':', encode(gen_random_bytes(16), 'hex'))) AS item_handle
+      md5(concat('item:', item->>'id', ':', encode(extensions.gen_random_bytes(16), 'hex'))) AS item_handle
     FROM jsonb_array_elements(COALESCE(p_activity->'content'->'items', '[]'::jsonb)) AS item
   )
   SELECT jsonb_build_object(
