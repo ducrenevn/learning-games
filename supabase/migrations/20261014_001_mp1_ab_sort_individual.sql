@@ -75,6 +75,8 @@ CREATE TABLE lg_v1.attempts (
   submitted_at timestamptz,
   submission jsonb,
   score jsonb,
+  completion_status text NOT NULL DEFAULT 'in_progress' CHECK (completion_status IN ('in_progress', 'submitted', 'closed_unsubmitted')),
+  submitted_room_revision bigint,
   reveal_visible boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
@@ -822,11 +824,7 @@ BEGIN
       IF v_actor.actor_role <> 'student' OR v_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
       END IF;
-      IF v_room.status <> 'active' THEN
-        RAISE EXCEPTION 'ROOM_CLOSED';
-      END IF;
-      IF v_room.expires_at < now() THEN
-        UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+      IF v_room.expires_at < now() OR v_room.status = 'expired' THEN
         RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
       IF p_expected_attempt_rev IS NULL THEN
@@ -838,29 +836,53 @@ BEGIN
       WHERE room_id = v_room.room_id AND actor_id = v_actor.actor_id
       FOR UPDATE;
 
+      IF NOT FOUND THEN
+        RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+      IF v_attempt.completion_status = 'submitted' THEN
+        RETURN jsonb_build_object(
+          'roomRevision', v_attempt.submitted_room_revision,
+          'attemptRevision', v_attempt.attempt_revision,
+          'status', 'submitted'
+        );
+      END IF;
+      IF v_room.status <> 'active' THEN
+        RAISE EXCEPTION 'ROOM_CLOSED';
+      END IF;
       IF p_expected_attempt_rev <> v_attempt.attempt_revision THEN
         RAISE EXCEPTION 'REVISION_CONFLICT';
       END IF;
-      IF v_attempt.submission IS NOT NULL THEN
-        RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'attemptRevision', v_attempt.attempt_revision, 'status', 'submitted');
+      IF EXISTS (
+        SELECT 1
+        FROM jsonb_each_text(COALESCE(v_snapshot.private_mapping->'items', '{}'::jsonb)) AS item(authored_id, handle)
+        WHERE NOT (v_attempt.placement ? item.handle)
+          OR NOT EXISTS (
+            SELECT 1
+            FROM jsonb_each_text(COALESCE(v_snapshot.private_mapping->'categories', '{}'::jsonb)) AS category(authored_id, handle)
+            WHERE category.handle = v_attempt.placement->>item.handle
+          )
+      ) THEN
+        RAISE EXCEPTION 'INCOMPLETE_ATTEMPT';
       END IF;
+
+      UPDATE lg_v1.rooms
+      SET room_revision = room_revision + 1,
+          updated_at = now()
+      WHERE room_id = v_room.room_id
+      RETURNING room_revision INTO v_room.room_revision;
 
       UPDATE lg_v1.attempts
       SET submission = v_attempt.placement,
           score = lg_v1._sort_score(v_snapshot.private_activity, v_snapshot.private_mapping, v_attempt.placement),
+          completion_status = 'submitted',
+          submitted_room_revision = v_room.room_revision,
           submitted_at = now(),
           attempt_revision = v_attempt.attempt_revision + 1,
           updated_at = now()
       WHERE attempt_id = v_attempt.attempt_id;
 
-      UPDATE lg_v1.rooms
-      SET room_revision = room_revision + 1,
-          status = 'review',
-          updated_at = now()
-      WHERE room_id = v_room.room_id;
-
       RETURN jsonb_build_object(
-        'roomRevision', v_room.room_revision + 1,
+        'roomRevision', v_room.room_revision,
         'attemptRevision', v_attempt.attempt_revision + 1,
         'status', 'submitted'
       );
@@ -891,12 +913,38 @@ BEGIN
         UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
         RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
+      IF v_room.status = 'review' THEN
+        RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
+      END IF;
+      IF v_room.status <> 'active' THEN
+        RAISE EXCEPTION 'ROOM_CLOSED';
+      END IF;
+
+      FOR v_attempt IN
+        SELECT *
+        FROM lg_v1.attempts
+        WHERE room_id = v_room.room_id
+          AND completion_status = 'in_progress'
+          AND submission IS NULL
+        ORDER BY actor_id
+        FOR UPDATE
+      LOOP
+        UPDATE lg_v1.attempts
+        SET submission = v_attempt.placement,
+            score = lg_v1._sort_score(v_snapshot.private_activity, v_snapshot.private_mapping, v_attempt.placement),
+            completion_status = 'closed_unsubmitted',
+            submitted_at = now(),
+            attempt_revision = v_attempt.attempt_revision + 1,
+            updated_at = now()
+        WHERE attempt_id = v_attempt.attempt_id;
+      END LOOP;
+
       UPDATE lg_v1.rooms
       SET status = 'review',
           room_revision = room_revision + 1,
           updated_at = now()
-      WHERE room_id = v_room.room_id AND status <> 'review';
-      SELECT * INTO v_room FROM lg_v1.rooms WHERE room_id = v_room.room_id;
+      WHERE room_id = v_room.room_id AND status = 'active'
+      RETURNING * INTO v_room;
       RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
 
     WHEN 'room.reveal' THEN
