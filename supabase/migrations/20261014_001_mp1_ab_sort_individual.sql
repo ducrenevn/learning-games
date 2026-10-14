@@ -41,6 +41,7 @@ CREATE TABLE lg_v1.snapshots (
   schema_version integer NOT NULL CHECK (schema_version = 1),
   activity_fingerprint text NOT NULL,
   private_activity jsonb NOT NULL,
+  private_mapping jsonb NOT NULL DEFAULT '{}'::jsonb,
   student_projection jsonb NOT NULL,
   teacher_projection jsonb NOT NULL,
   presentation_order jsonb NOT NULL,
@@ -238,6 +239,30 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION lg_v1._sort_private_mapping(p_activity jsonb)
+RETURNS jsonb
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  WITH categories AS (
+    SELECT
+      category->>'id' AS authored_category_id,
+      md5(concat('cat:', category->>'id', ':', gen_random_uuid()::text)) AS category_handle
+    FROM jsonb_array_elements(COALESCE(p_activity->'content'->'categories', '[]'::jsonb)) AS category
+  ),
+  items AS (
+    SELECT
+      item->>'id' AS authored_item_id,
+      md5(concat('item:', item->>'id', ':', gen_random_uuid()::text)) AS item_handle
+    FROM jsonb_array_elements(COALESCE(p_activity->'content'->'items', '[]'::jsonb)) AS item
+  )
+  SELECT jsonb_build_object(
+    'categories', COALESCE((SELECT jsonb_object_agg(authored_category_id, category_handle) FROM categories), '{}'::jsonb),
+    'items', COALESCE((SELECT jsonb_object_agg(authored_item_id, item_handle) FROM items), '{}'::jsonb)
+  );
+$$;
+
 CREATE OR REPLACE FUNCTION lg_v1._student_sort_projection(p_activity jsonb)
 RETURNS jsonb
 LANGUAGE sql
@@ -246,22 +271,16 @@ SET search_path = ''
 AS $$
   WITH categories AS (
     SELECT
-      row_number() OVER () AS ordinal,
-      category->>'id' AS authored_category_id,
-      md5(concat('cat:', category->>'id', ':', gen_random_uuid()::text)) AS category_handle,
-      category->>'label' AS label
+      row_number() OVER (ORDER BY random()) AS ordinal,
+      category->>'label' AS label,
+      md5(concat('cat:', category->>'id', ':', gen_random_uuid()::text)) AS category_handle
     FROM jsonb_array_elements(COALESCE(p_activity->'content'->'categories', '[]'::jsonb)) AS category
   ),
   items AS (
     SELECT
-      row_number() OVER () AS ordinal,
-      item->>'id' AS authored_item_id,
-      md5(concat('item:', item->>'id', ':', gen_random_uuid()::text)) AS item_handle,
+      row_number() OVER (ORDER BY random()) AS ordinal,
       item->>'text' AS text,
-      COALESCE(
-        (SELECT category_handle FROM categories WHERE authored_category_id = item->>'categoryId'),
-        md5(concat('item:', item->>'id', ':missing'))
-      ) AS category_handle
+      md5(concat('item:', item->>'id', ':', gen_random_uuid()::text)) AS item_handle
     FROM jsonb_array_elements(COALESCE(p_activity->'content'->'items', '[]'::jsonb)) AS item
   )
   SELECT jsonb_build_object(
@@ -277,8 +296,7 @@ AS $$
       SELECT jsonb_agg(
         jsonb_build_object(
           'handle', item_handle,
-          'text', text,
-          'categoryHandle', category_handle
+          'text', text
         ) ORDER BY ordinal)
       FROM items
     )
@@ -336,6 +354,8 @@ DECLARE
   v_room lg_v1.rooms%ROWTYPE;
   v_snapshot_id uuid;
   v_actor_id uuid;
+  v_student_projection jsonb;
+  v_private_mapping jsonb;
 BEGIN
   v_mode_guard := lg_v1._mode_guard(p_game, p_mode);
   IF v_mode_guard = 'MODE_UNAVAILABLE' THEN
@@ -399,11 +419,15 @@ BEGIN
     now() + interval '24 hours'
   ) RETURNING * INTO v_room;
 
+  v_student_projection := lg_v1._student_sort_projection(p_activity);
+  v_private_mapping := lg_v1._sort_private_mapping(p_activity);
+
   INSERT INTO lg_v1.snapshots (
     room_id,
     schema_version,
     activity_fingerprint,
     private_activity,
+    private_mapping,
     student_projection,
     teacher_projection,
     presentation_order
@@ -412,12 +436,16 @@ BEGIN
     1,
     md5(p_activity::text),
     p_activity,
-    lg_v1._student_sort_projection(p_activity),
+    v_private_mapping,
+    v_student_projection,
     jsonb_build_object(
       'categories', jsonb_build_array(),
       'items', jsonb_build_array()
     ),
-    jsonb_build_array()
+    (
+      SELECT jsonb_agg(item->>'handle')
+      FROM jsonb_array_elements(v_student_projection->'items') AS item
+    )
   ) RETURNING snapshot_id INTO v_snapshot_id;
 
   INSERT INTO lg_v1.actors (
@@ -496,6 +524,9 @@ BEGIN
   FOR UPDATE;
 
   IF FOUND THEN
+    IF v_actor.status = 'revoked' THEN
+      RAISE EXCEPTION 'FORBIDDEN';
+    END IF;
     RETURN jsonb_build_object(
       'roomCode', v_room.room_code,
       'participantId', v_actor.actor_id,
@@ -578,6 +609,11 @@ BEGIN
     RAISE EXCEPTION 'ROOM_NOT_FOUND';
   END IF;
 
+  IF v_room.expires_at < now() THEN
+    UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+    RAISE EXCEPTION 'ROOM_EXPIRED';
+  END IF;
+
   SELECT * INTO v_actor
   FROM lg_v1.actors
   WHERE room_id = v_room.room_id AND token_digest = v_token_digest
@@ -586,23 +622,37 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'FORBIDDEN';
   END IF;
+  IF v_actor.status = 'revoked' THEN
+    RAISE EXCEPTION 'FORBIDDEN';
+  END IF;
 
   SELECT * INTO v_snapshot FROM lg_v1.snapshots WHERE room_id = v_room.room_id;
-  SELECT * INTO v_attempt FROM lg_v1.attempts WHERE room_id = v_room.room_id AND actor_id = v_actor.actor_id;
+
+  IF v_actor.actor_role = 'student' THEN
+    SELECT * INTO v_attempt FROM lg_v1.attempts WHERE room_id = v_room.room_id AND actor_id = v_actor.actor_id;
+    RETURN jsonb_build_object(
+      'roomRevision', v_room.room_revision,
+      'attemptRevision', COALESCE(v_attempt.attempt_revision, 0),
+      'roomStatus', v_room.status,
+      'game', v_room.game,
+      'mode', v_room.mode,
+      'roomLanguage', v_room.room_language,
+      'allowStudentLanguageChoice', v_room.allow_student_language_choice,
+      'studentView', COALESCE(v_snapshot.student_projection, jsonb_build_object('categories', jsonb_build_array(), 'items', jsonb_build_array()))
+    );
+  END IF;
 
   RETURN jsonb_build_object(
     'roomRevision', v_room.room_revision,
-    'attemptRevision', COALESCE(v_attempt.attempt_revision, 0),
     'roomStatus', v_room.status,
     'game', v_room.game,
     'mode', v_room.mode,
     'roomLanguage', v_room.room_language,
     'allowStudentLanguageChoice', v_room.allow_student_language_choice,
-    'studentView', COALESCE(v_snapshot.student_projection, jsonb_build_object('cards', jsonb_build_array())),
     'hostView', jsonb_build_object(
       'status', v_room.status,
       'participants', (
-        SELECT jsonb_agg(jsonb_build_object('participantId', a.actor_id, 'role', a.actor_role, 'displayName', a.display_name, 'status', a.status))
+        SELECT jsonb_agg(jsonb_build_object('participantId', a.actor_id, 'role', a.actor_role, 'displayName', a.display_name, 'status', a.status) ORDER BY a.joined_at)
         FROM lg_v1.actors a
         WHERE a.room_id = v_room.room_id
       ),
@@ -630,6 +680,7 @@ AS $$
 DECLARE
   v_room lg_v1.rooms%ROWTYPE;
   v_actor lg_v1.actors%ROWTYPE;
+  v_target_actor lg_v1.actors%ROWTYPE;
   v_attempt lg_v1.attempts%ROWTYPE;
   v_snapshot lg_v1.snapshots%ROWTYPE;
   v_token_digest text;
@@ -664,13 +715,23 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'FORBIDDEN';
   END IF;
+  IF v_actor.status = 'revoked' THEN
+    RAISE EXCEPTION 'FORBIDDEN';
+  END IF;
 
   SELECT * INTO v_snapshot FROM lg_v1.snapshots WHERE room_id = v_room.room_id;
 
   CASE p_kind
     WHEN 'sort.place' THEN
-      IF v_actor.actor_role <> 'student' THEN
+      IF v_actor.actor_role <> 'student' OR v_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+      IF v_room.status <> 'active' THEN
+        RAISE EXCEPTION 'ROOM_CLOSED';
+      END IF;
+      IF v_room.expires_at < now() THEN
+        UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+        RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
       IF p_expected_attempt_rev IS NULL THEN
         RAISE EXCEPTION 'REVISION_CONFLICT';
@@ -680,6 +741,10 @@ BEGIN
       FROM lg_v1.attempts
       WHERE room_id = v_room.room_id AND actor_id = v_actor.actor_id
       FOR UPDATE;
+
+      IF v_attempt.submission IS NOT NULL THEN
+        RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
 
       IF p_payload IS NULL OR jsonb_typeof(p_payload) <> 'object' THEN
         RAISE EXCEPTION 'INVALID_PAYLOAD';
@@ -714,8 +779,15 @@ BEGIN
       );
 
     WHEN 'sort.submit' THEN
-      IF v_actor.actor_role <> 'student' THEN
+      IF v_actor.actor_role <> 'student' OR v_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+      IF v_room.status <> 'active' THEN
+        RAISE EXCEPTION 'ROOM_CLOSED';
+      END IF;
+      IF v_room.expires_at < now() THEN
+        UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+        RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
       IF p_expected_attempt_rev IS NULL THEN
         RAISE EXCEPTION 'REVISION_CONFLICT';
@@ -729,7 +801,6 @@ BEGIN
       IF p_expected_attempt_rev <> v_attempt.attempt_revision THEN
         RAISE EXCEPTION 'REVISION_CONFLICT';
       END IF;
-
       IF v_attempt.submission IS NOT NULL THEN
         RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'attemptRevision', v_attempt.attempt_revision, 'status', 'submitted');
       END IF;
@@ -755,8 +826,12 @@ BEGIN
       );
 
     WHEN 'room.start' THEN
-      IF v_actor.actor_role <> 'host' THEN
+      IF v_actor.actor_role <> 'host' OR v_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+      IF v_room.expires_at < now() THEN
+        UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+        RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
       IF v_room.status = 'lobby' THEN
         UPDATE lg_v1.rooms
@@ -769,8 +844,12 @@ BEGIN
       RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
 
     WHEN 'room.close' THEN
-      IF v_actor.actor_role <> 'host' THEN
+      IF v_actor.actor_role <> 'host' OR v_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+      IF v_room.expires_at < now() THEN
+        UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+        RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
       UPDATE lg_v1.rooms
       SET status = 'review',
@@ -781,8 +860,12 @@ BEGIN
       RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
 
     WHEN 'room.reveal' THEN
-      IF v_actor.actor_role <> 'host' THEN
+      IF v_actor.actor_role <> 'host' OR v_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+      IF v_room.expires_at < now() THEN
+        UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+        RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
       UPDATE lg_v1.rooms
       SET status = 'review',
@@ -793,8 +876,12 @@ BEGIN
       RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
 
     WHEN 'room.finish' THEN
-      IF v_actor.actor_role <> 'host' THEN
+      IF v_actor.actor_role <> 'host' OR v_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+      IF v_room.expires_at < now() THEN
+        UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+        RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
       UPDATE lg_v1.rooms
       SET status = 'finished',
@@ -805,13 +892,30 @@ BEGIN
       RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
 
     WHEN 'room.remove_participant' THEN
-      IF v_actor.actor_role <> 'host' THEN
+      IF v_actor.actor_role <> 'host' OR v_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
       END IF;
+      IF v_room.expires_at < now() THEN
+        UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+        RAISE EXCEPTION 'ROOM_EXPIRED';
+      END IF;
+      IF p_payload IS NULL OR jsonb_typeof(p_payload) <> 'object' OR p_payload->>'participantId' IS NULL THEN
+        RAISE EXCEPTION 'INVALID_PAYLOAD';
+      END IF;
+
+      SELECT * INTO v_target_actor
+      FROM lg_v1.actors
+      WHERE room_id = v_room.room_id AND actor_id = (p_payload->>'participantId')::uuid
+      FOR UPDATE;
+
+      IF NOT FOUND OR v_target_actor.actor_role = 'host' THEN
+        RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+
       UPDATE lg_v1.actors
       SET status = 'revoked', revoked_at = now(), last_seen_at = now()
       WHERE room_id = v_room.room_id
-        AND actor_id = (p_payload->>'participantId')::uuid;
+        AND actor_id = v_target_actor.actor_id;
       RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'status', 'ok');
 
     ELSE
@@ -934,6 +1038,7 @@ $$;
 ALTER FUNCTION lg_v1._mode_guard(text, text) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1._safe_token(text) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1.validate_sort_activity(jsonb) OWNER TO lg_v1_owner;
+ALTER FUNCTION lg_v1._sort_private_mapping(jsonb) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1._student_sort_projection(jsonb) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1._sort_score(jsonb, jsonb) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1.create(text, text, jsonb, text, boolean, text) OWNER TO lg_v1_owner;
