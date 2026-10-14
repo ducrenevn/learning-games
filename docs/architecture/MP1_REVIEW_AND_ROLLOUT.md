@@ -1,3 +1,13 @@
+# MP1 review status — second Opus delta reconciled (2026-10-14)
+
+Opus reviewed v2 at `eedaa67` and returned **APPROVED WITH REQUIRED CORRECTIONS**, no new P0. The control room incorporated B1–B4/C1–C6 into [v3 contract](MP1_BACKEND_CONTRACT.md) and [finding reconciliation](../audits/2026-10-14-mp1-opus-v2-reconciliation.md). The prior reviews below are historical.
+
+**Next step (only after product-owner authorization):** isolated, disposable-only **MP1-AB-db**: minimal four-table Sort Individual room service, public VOLATILE INVOKER wrappers/private restricted DEFINER entries, SQL validator/scorer, cryptographically opaque IDs, bounded purge, and pgTAP + real local PostgREST proofs. Pay particular attention to room locks/revisions, retry lookup-before-lobby, CAS no-op order, Unicode parity and effective grants. No code implementation is authorized by this documentation alone.
+
+**STOP:** after local disposable tests and report; independent executable SQL security review before any hosted installation. No hosted access even read-only; no `supabase link`, `supabase db push`, `--linked`, SPP changes, Memory code edits, application client integration, merge or deployment.
+
+---
+
 # MP1 review status update — reconciled v2 (2026-10-14)
 
 **First Opus review completed:** APPROVE WITH CHANGES against `ea403e3`; see [finding-by-finding reconciliation](../audits/2026-10-14-mp1-opus-reconciliation.md). [MP1_BACKEND_CONTRACT](MP1_BACKEND_CONTRACT.md) is rewritten as **v2**. The original open-ended review brief below is now historical; do not rerun it as if no review occurred.
