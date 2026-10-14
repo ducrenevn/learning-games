@@ -30,7 +30,8 @@ CREATE TABLE lg_v1.rooms (
   capacity integer NOT NULL CHECK (capacity BETWEEN 1 AND 50),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  expires_at timestamptz NOT NULL DEFAULT (now() + interval '24 hours')
+  expires_at timestamptz NOT NULL DEFAULT (now() + interval '24 hours'),
+  revealed_at timestamptz
 );
 ALTER TABLE lg_v1.rooms OWNER TO lg_v1_owner;
 ALTER TABLE lg_v1.rooms ENABLE ROW LEVEL SECURITY;
@@ -637,6 +638,15 @@ BEGIN
 
   IF v_actor.actor_role = 'student' THEN
     SELECT * INTO v_attempt FROM lg_v1.attempts WHERE room_id = v_room.room_id AND actor_id = v_actor.actor_id;
+    IF p_room_rev IS NOT NULL AND p_attempt_rev IS NOT NULL
+       AND p_room_rev = v_room.room_revision
+       AND p_attempt_rev = COALESCE(v_attempt.attempt_revision, 0) THEN
+      RETURN jsonb_build_object(
+        'roomRevision', v_room.room_revision,
+        'attemptRevision', COALESCE(v_attempt.attempt_revision, 0),
+        'unchanged', true
+      );
+    END IF;
     RETURN jsonb_build_object(
       'roomRevision', v_room.room_revision,
       'attemptRevision', COALESCE(v_attempt.attempt_revision, 0),
@@ -648,10 +658,24 @@ BEGIN
       'studentView', COALESCE(v_snapshot.student_projection, jsonb_build_object('categories', jsonb_build_array(), 'items', jsonb_build_array())),
       'placements', COALESCE(v_attempt.placement, '{}'::jsonb),
       'submission', CASE
-        WHEN v_attempt.submission IS NULL THEN NULL
-        ELSE jsonb_build_object('status', 'submitted', 'submittedAt', v_attempt.submitted_at)
-      END
+        WHEN v_attempt.completion_status = 'in_progress' THEN NULL
+        ELSE jsonb_build_object('status', v_attempt.completion_status, 'submittedAt', v_attempt.submitted_at)
+      END,
+      'result', CASE WHEN v_room.revealed_at IS NOT NULL THEN jsonb_build_object(
+        'score', v_attempt.score,
+        'answerFeedback', (
+          SELECT jsonb_object_agg(
+            v_snapshot.private_mapping->'items'->>(item->>'id'),
+            v_snapshot.private_mapping->'categories'->>(item->>'categoryId')
+          )
+          FROM jsonb_array_elements(COALESCE(v_snapshot.private_activity->'content'->'items', '[]'::jsonb)) AS items(item)
+        )
+      ) ELSE NULL END
     );
+  END IF;
+
+  IF p_room_rev IS NOT NULL AND p_room_rev = v_room.room_revision THEN
+    RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'unchanged', true);
   END IF;
 
   RETURN jsonb_build_object(
@@ -664,13 +688,33 @@ BEGIN
     'hostView', jsonb_build_object(
       'status', v_room.status,
       'participants', (
-        SELECT jsonb_agg(jsonb_build_object('participantId', a.actor_id, 'role', a.actor_role, 'displayName', a.display_name, 'status', a.status) ORDER BY a.joined_at)
+        SELECT jsonb_agg(
+          jsonb_build_object(
+            'participantId', a.actor_id,
+            'role', a.actor_role,
+            'displayName', a.display_name,
+            'status', a.status,
+            'completionStatus', t.completion_status
+          ) || CASE WHEN v_room.status IN ('review', 'finished') AND a.actor_role = 'student'
+            THEN jsonb_build_object('submission', t.submission, 'score', t.score)
+            ELSE '{}'::jsonb
+          END
+          ORDER BY a.joined_at
+        )
         FROM lg_v1.actors a
+        LEFT JOIN lg_v1.attempts t ON t.room_id = a.room_id AND t.actor_id = a.actor_id
         WHERE a.room_id = v_room.room_id
       ),
       'studentCount', (
         SELECT count(*) FROM lg_v1.actors WHERE room_id = v_room.room_id AND actor_role = 'student'
-      )
+      ),
+      'answerReference', CASE WHEN v_room.status IN ('review', 'finished') THEN (
+        SELECT jsonb_object_agg(
+          v_snapshot.private_mapping->'items'->>(item->>'id'),
+          v_snapshot.private_mapping->'categories'->>(item->>'categoryId')
+        )
+        FROM jsonb_array_elements(COALESCE(v_snapshot.private_activity->'content'->'items', '[]'::jsonb)) AS items(item)
+      ) ELSE NULL END
     )
   );
 END;
@@ -955,12 +999,18 @@ BEGIN
         UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
         RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
+      IF v_room.revealed_at IS NOT NULL THEN
+        RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
+      END IF;
+      IF v_room.status <> 'review' THEN
+        RAISE EXCEPTION 'ROOM_CLOSED';
+      END IF;
       UPDATE lg_v1.rooms
-      SET status = 'review',
+      SET revealed_at = now(),
           room_revision = room_revision + 1,
           updated_at = now()
-      WHERE room_id = v_room.room_id;
-      SELECT * INTO v_room FROM lg_v1.rooms WHERE room_id = v_room.room_id;
+      WHERE room_id = v_room.room_id
+      RETURNING * INTO v_room;
       RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
 
     WHEN 'room.finish' THEN
@@ -971,12 +1021,18 @@ BEGIN
         UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
         RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
+      IF v_room.status = 'finished' THEN
+        RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
+      END IF;
+      IF v_room.status <> 'review' THEN
+        RAISE EXCEPTION 'ROOM_CLOSED';
+      END IF;
       UPDATE lg_v1.rooms
       SET status = 'finished',
           room_revision = room_revision + 1,
           updated_at = now()
-      WHERE room_id = v_room.room_id;
-      SELECT * INTO v_room FROM lg_v1.rooms WHERE room_id = v_room.room_id;
+      WHERE room_id = v_room.room_id AND status = 'review'
+      RETURNING * INTO v_room;
       RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'roomStatus', v_room.status, 'status', 'ok');
 
     WHEN 'room.remove_participant' THEN
@@ -996,14 +1052,24 @@ BEGIN
       WHERE room_id = v_room.room_id AND actor_id = (p_payload->>'participantId')::uuid
       FOR UPDATE;
 
-      IF NOT FOUND OR v_target_actor.actor_role = 'host' THEN
+      IF NOT FOUND OR v_target_actor.actor_role <> 'student' THEN
+        RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+      IF v_target_actor.status = 'revoked' THEN
+        RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'status', 'ok');
+      END IF;
+      IF v_target_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
       END IF;
 
       UPDATE lg_v1.actors
       SET status = 'revoked', revoked_at = now(), last_seen_at = now()
+      WHERE room_id = v_room.room_id AND actor_id = v_target_actor.actor_id;
+
+      UPDATE lg_v1.rooms
+      SET room_revision = room_revision + 1, updated_at = now()
       WHERE room_id = v_room.room_id
-        AND actor_id = v_target_actor.actor_id;
+      RETURNING room_revision INTO v_room.room_revision;
       RETURN jsonb_build_object('roomRevision', v_room.room_revision, 'status', 'ok');
 
     ELSE
