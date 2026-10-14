@@ -480,6 +480,8 @@ DECLARE
   v_token_digest text;
   v_actor lg_v1.actors%ROWTYPE;
   v_attempt_id uuid;
+  v_join_fingerprint text;
+  v_active_student_count bigint;
 BEGIN
   IF p_room_code IS NULL OR p_room_code !~ '^[A-Z0-9]{8}$' THEN
     RAISE EXCEPTION 'INVALID_ROOM_CODE';
@@ -487,23 +489,16 @@ BEGIN
   IF p_player_token IS NULL OR p_player_token !~ '^[a-f0-9]{64}$' THEN
     RAISE EXCEPTION 'INVALID_TOKEN';
   END IF;
-  IF p_display_name IS NULL OR length(trim(p_display_name)) < 1 OR length(p_display_name) > 80 THEN
-    RAISE EXCEPTION 'INVALID_NAME';
-  END IF;
-
   v_token_digest := lg_v1._safe_token(p_player_token);
+  v_join_fingerprint := md5(trim(p_display_name));
 
   SELECT * INTO v_room
   FROM lg_v1.rooms
   WHERE room_code = upper(p_room_code)
-  FOR UPDATE;
+  FOR NO KEY UPDATE;
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'ROOM_NOT_FOUND';
-  END IF;
-  IF v_room.expires_at < now() THEN
-    UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
-    RAISE EXCEPTION 'ROOM_EXPIRED';
   END IF;
 
   SELECT * INTO v_actor
@@ -511,9 +506,17 @@ BEGIN
   WHERE room_id = v_room.room_id AND token_digest = v_token_digest
   FOR UPDATE;
 
+  IF v_room.expires_at < now() THEN
+    UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
+    RAISE EXCEPTION 'ROOM_EXPIRED';
+  END IF;
+
   IF FOUND THEN
     IF v_actor.status <> 'active' THEN
       RAISE EXCEPTION 'FORBIDDEN';
+    END IF;
+    IF v_actor.join_fingerprint IS DISTINCT FROM v_join_fingerprint THEN
+      RAISE EXCEPTION 'IDEMPOTENCY_CONFLICT';
     END IF;
     RETURN jsonb_build_object(
       'roomCode', v_room.room_code,
@@ -525,8 +528,19 @@ BEGIN
     );
   END IF;
 
-  IF v_room.status NOT IN ('lobby', 'active') THEN
+  IF p_display_name IS NULL OR length(trim(p_display_name)) < 1 OR length(p_display_name) > 80 THEN
+    RAISE EXCEPTION 'INVALID_NAME';
+  END IF;
+
+  IF v_room.status <> 'lobby' THEN
     RAISE EXCEPTION 'ROOM_CLOSED';
+  END IF;
+
+  SELECT count(*) INTO v_active_student_count
+  FROM lg_v1.actors
+  WHERE room_id = v_room.room_id AND actor_role = 'student' AND status = 'active';
+  IF v_active_student_count >= v_room.capacity THEN
+    RAISE EXCEPTION 'ROOM_FULL';
   END IF;
 
   INSERT INTO lg_v1.actors (
@@ -541,13 +555,18 @@ BEGIN
     'student',
     trim(p_display_name),
     v_token_digest,
-    md5(concat(v_room.room_id::text, p_player_token)),
+    v_join_fingerprint,
     'active'
   ) RETURNING * INTO v_actor;
 
   INSERT INTO lg_v1.attempts (room_id, actor_id, placement, attempt_revision, submission, score, reveal_visible)
   VALUES (v_room.room_id, v_actor.actor_id, '{}'::jsonb, 0, NULL, NULL, false)
   RETURNING attempt_id INTO v_attempt_id;
+
+  UPDATE lg_v1.rooms
+  SET room_revision = room_revision + 1, updated_at = now()
+  WHERE room_id = v_room.room_id
+  RETURNING * INTO v_room;
 
   RETURN jsonb_build_object(
     'roomCode', v_room.room_code,
@@ -590,15 +609,13 @@ BEGIN
 
   SELECT * INTO v_room
   FROM lg_v1.rooms
-  WHERE room_code = upper(p_room_code)
-  FOR UPDATE;
+  WHERE room_code = upper(p_room_code);
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'ROOM_NOT_FOUND';
   END IF;
 
   IF v_room.expires_at < now() THEN
-    UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
     RAISE EXCEPTION 'ROOM_EXPIRED';
   END IF;
 
@@ -692,10 +709,17 @@ BEGIN
 
   v_token_digest := lg_v1._safe_token(p_token);
 
-  SELECT * INTO v_room
-  FROM lg_v1.rooms
-  WHERE room_code = upper(p_room_code)
-  FOR UPDATE;
+  IF p_kind = 'sort.place' THEN
+    SELECT * INTO v_room
+    FROM lg_v1.rooms
+    WHERE room_code = upper(p_room_code)
+    FOR SHARE;
+  ELSE
+    SELECT * INTO v_room
+    FROM lg_v1.rooms
+    WHERE room_code = upper(p_room_code)
+    FOR NO KEY UPDATE;
+  END IF;
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'ROOM_NOT_FOUND';
@@ -724,7 +748,6 @@ BEGIN
         RAISE EXCEPTION 'ROOM_CLOSED';
       END IF;
       IF v_room.expires_at < now() THEN
-        UPDATE lg_v1.rooms SET status = 'expired', updated_at = now() WHERE room_id = v_room.room_id;
         RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
       IF p_expected_attempt_rev IS NULL THEN
