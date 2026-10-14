@@ -1,201 +1,174 @@
-# MP1 — Game-typed multiplayer backend contract (proposal for independent review)
+# MP1 — Game-typed multiplayer backend contract (reconciled v2)
 
-**Status: DRAFT TECHNICAL DESIGN, NOT APPROVED TO IMPLEMENT.** Prepared by the control room on 2026-10-14. Product modes are locked in [MULTIPLAYER_V1_CONTRACT](MULTIPLAYER_V1_CONTRACT.md); database/API shapes, policies and limits below are **recommendations subject to independent security/architecture review and product-owner approval**. No hosted SQL, source implementation, migration or merge is authorized by this document.
+**Status (2026-10-14): REVIEW RECONCILED; DESIGN PROPOSAL, NOT IMPLEMENTATION AUTHORIZATION.** Opus independently reviewed v1 at \`ea403e3\` and returned **APPROVE WITH CHANGES** (F1–F16). This document incorporates technical corrections and identifies *owner decisions still pending*. No backend code, SQL migration, Supabase project, role, grant, frontend release, or SPP artifact has been changed by this documentation pass. See [review disposition](../audits/2026-10-14-mp1-opus-reconciliation.md) and [execution/review gates](MP1_REVIEW_AND_ROLLOUT.md).
 
-**Source baseline:** accepted MP0 `feat/lg-mp0-ux2-m3a-integration-20261013@b569d767e18ae0330cfbb028192470fde60a710d` (unmerged Vercel Preview), public Supabase project reference `iizsyphqlezesbvaiztd`, current Memory RPCs in `src/games/memory/api/memoryRpc.ts`. MP0 existing Memory Turns stays operational and unchanged. SPP Auth/Homework are unrelated domains. The V1 product target has exactly 11 supported combinations; only existing Memory Turns is hosted today.
+**Verified source baseline:** MP0 feature \`feat/lg-mp0-ux2-m3a-integration-20261013@b569d767e18ae0330cfbb028192470fde60a710d\` (Preview accepted, **unmerged and unreleased**). Hosted Memory Turns uses \`game_poc_memory_*\`; M3a \`game_poc_memory_create_v2\` has been installed. MP0 hosted functional smoke completed two synthetic rooms, *not* hostile RPC proof or physical expiry purge. The new multiplayer service is not installed. Existing hosted SPP project reference: \`iizsyphqlezesbvaiztd\`; whether to install MP1 there is **UNDECIDED**.
 
-## 1. Decision and alternatives
+## 1. Product contract stays locked
 
-**Recommend additive, game-typed shared lifecycle with game-specific validators/transitions**, **not** (A) cloning seven room RPCs and private tables per game, nor (B) generalizing the existing Memory flip/turn hook and schema into an unrestricted JSON reducer.
+The owner-approved [MULTIPLAYER_V1_CONTRACT](MULTIPLAYER_V1_CONTRACT.md) has **11 supported combinations and 5 forbidden**:
 
-- Shared: creation, admission, capability authorization, expiry, phase/revision, room reads, actor-safe projections, idempotency and bounded command dispatch.
-- Game-typed: valid commands, content sanitization, answer key, state transition, evaluation and review policy. Register supported game+mode pairs in a server-side allowlist; register capabilities separately in the client for hiding unavailable options.
-- RPC surface is deliberately small but strongly typed *internally*. A JSON command **must** be dispatched through an explicit server allowlist with strict per-game schema validation; it must never be accepted as an arbitrary patch to stored JSON.
-- Preserve the working Memory prototype as an isolated compatibility lane. Migration of Memory Turns to the new service is **deferred**; do not create parallel active room backends invisibly. Memory Individual is a separate later vertical slice.
-- Polling is the first transport, with conditional `revision` reads and jitter/backoff. No Realtime publication or schema exposure initially; consider Realtime only after independent access-control review.
-- **First implementation slice recommendation:** Sort Individual, built as foundation-plus-first-game inside a disposable PostgreSQL/PostgREST environment. Its hosted activation remains separately gated. This is a recommendation, not product-owner implementation authorization.
-
-## 2. Locked matrix (enforce at server boundary)
-
-| Game | turns | collaborative | individual | teacher_paced |
-|---|---|---|---|---|
-| Memory | YES (existing prototype) | NO | YES (future) | NO |
+| Game | Turns | Collaborative | Individual | Teacher-paced |
+|---|:---:|:---:|:---:|:---:|
+| Memory | YES (existing legacy service) | NO | YES (future) | NO |
 | Sort | NO | YES | YES | YES |
 | Sequence | NO | YES | YES | YES |
 | Language Detective | NO | YES | YES | YES |
 
-**Exactly 11 YES; 5 NO.** An unshipped YES must return `MODE_UNAVAILABLE` until independently tested/activated; a NO always returns `UNSUPPORTED_MODE`. Client must not offer either. `gameId`, `participationMode`, activity version and activity snapshot are immutable after creation. A browser cannot cause a mode switch or enable unsupported combinations. Client `PlayMode` (`preview|presentation|independent`) is a *local delivery* mode and must **not** be conflated with multiplayer participation mode.
+A supported but unimplemented combination returns \`MODE_UNAVAILABLE\`; forbidden returns \`UNSUPPORTED_MODE\`. In the new \`lg_v1_create\` API, **Memory Turns explicitly returns \`MODE_UNAVAILABLE\`**, because its working legacy RPC remains sole authority until an independently approved migration. New MP1 initially enables **Sort Individual only**. No unshipped combination appears available in the UI.
 
-## 3. Trust zones and reference data flow
+Local \`preview\`/\`presentation\`/\`independent\` (\`src/shared/activities/contract.ts\`) remain offline delivery contexts; they must never be confused with multiplayer \`individual\` or teacher-paced modes. Teacher-owned portable JSON contains **no** room identity, capability, student attempt or result. The SPP Homework adapter is an independent later decision; anonymous room membership is not SPP Auth.
 
-```text
-Teacher browser (anonymous host capability)    Student browser (anonymous student capability)
-                    |                                          |
-            narrow public RPCs in exposed public schema; schema-validated arguments
-                    |
-          locked-down SECURITY DEFINER facade
-             | capability/role/phase/expiry authorization
-             | atomic revision / idempotency / bounded validation
-             +--- PRIVATE room/lifecycle/participants/commands/attempts
-             +--- PRIVATE immutable canonical activity + answer key
-             +--- STRICT game-specific transition + evaluation functions
-                    |
-        actor-specific SAFE JSON projection returned from RPC
-```
+## 2. Architecture decision — lean typed service
 
-A classroom room code is a locator, **not a secret or authority**. A room bearer capability is not an SPP identity, does not prove enrollment, and must never be put into join QR/query parameters or exported teaching JSON. Public browser uses only the Supabase publishable/anon key. Client scores/results never become authoritative by declaration.
+Choose **one additive, game-typed room lifecycle**, not clones of Memory’s turn-specific RPCs and not an unrestricted generic JSON reducer. Internally dispatch with a static allowlist \`CASE\` on \`(game, mode, kind, role, lifecycle status)\`; no dynamic SQL and no caller-supplied SQL identifiers. Game-specific SQL validators/evaluators own content, rules and safe DTO builders. Entry RPCs are narrow and VERSIONED. Polling first, not Realtime.
 
-The backend sits in the same Supabase project as active SPP production; every new object must be namespaced `lg_v1_*` (or a separately reviewed dedicated private namespace), with an independent privileges and dependency audit. No mutations to SPP tables/functions/roles, no reuse of SPP Auth, no global role/GRANT changes. If isolation in the shared project cannot be proven in disposable tests, **stop and recommend a separate Supabase project** before hosted installation.
+**MP1-AB-db is one usable disposable-DB deliverable**: shared foundational operations plus complete Sort Individual SQL/test proof. There is **no speculative foundation-only MP1-A**, no general round engine in this slice and no command/event history table. Memory Turns remains unchanged. MP1-AB-client (separate later authorization) renders a typed \`StudentSortView\` and performs actor-scoped polling.
 
-## 4. Proposed private persistence (not migration SQL)
+## 3. Trust boundaries and projection security
 
-All names/columns below are a reviewable schema *sketch*, not an installation-ready migration.
+\`\`\`text
+Anonymous teacher/student browser, synthetic test only before public release
+   | POST JSON to public lg_v1_* facades (no GET for any capability-bearing call)
+   | only publishable/anon key; high-entropy bearer in request BODY
+   v
+SECURITY DEFINER facade owned by restricted NOLOGIN lg_v1_owner
+   | strict validation + capability digest + permission + phase + size
+   | deterministic lock order + compare-and-set + private evaluation
+   v
+Nonexposed lg_v1 schema (restricted owner, private tables/internal functions)
+   | rooms | snapshots | actors | attempts
+   +---- independently constructed student-safe / teacher-safe DTO
+\`\`\`
 
-- `private.lg_v1_rooms`: immutable room ID UUID, unique high-entropy join code (minimum effective entropy and collision/guess rate to be measured), `game_id`, `mode`, server-validated `activity_version`, immutable content hash, status `lobby|active|review|finished|expired`, `phase`/round, integer `revision`, room interface language DE/EN/VI, `allow_student_language_choice`, server-created and expires-at times, locked visibility settings; no plaintext bearer secrets.
-- `private.lg_v1_activity_snapshots`: room ID, immutable exact teacher-authoring activity envelope and version, plus **separate student-safe prompt projection** and **private answer/reference material**. Creation validates full 128 KiB UTF-8 cap and existing per-game limits *again on server*, not only in browser. Store reference/canonical item order for Sequence privately, even if authored item order defines the correct answer; publish an independently ordered playable item list.
-- `private.lg_v1_room_actors`: room ID, unique participant ID, host/student role, display name and admission status, capability token digest (salted/keyed construction with server-only secret or appropriately sized random tokens + strong keyed digest; choose and justify in review), join/revoke/last-seen metadata. Enforce host role/participant ownership server-side and a maximum participants policy before hosted activation.
-- `private.lg_v1_room_commands`: room ID, actor ID, high-entropy `command_id`, command type, validated canonical payload (strictly bounded), expected scope/revision, outcome digest/result, server timestamp. Unique (room, actor, command_id), including retries after timeout.
-- `private.lg_v1_room_state`: room ID, game-specific **private** authoritative state, **public-safe projection constructed by code** (not a raw copy), state revision. Transactional updates use room row lock / optimistic expected revision.
-- `private.lg_v1_attempts`: room ID + actor ID + round ID, private student state, attempt revision, submitted status/time, immutable submission snapshot(s), evaluator version and provenance. Student A must never receive Student B's attempt in response to any API, error, summary or transport payload.
-- `private.lg_v1_results`: immutable evaluated outcomes linked to source submission and evaluator version; separately store review/reveal event/time and permissioned aggregates. Never overwrite raw answers when generating scores.
+**Security decision proposal, requires owner approval for creating role/schema:** \`lg_v1_owner NOLOGIN\` owns **only** MP1 objects and facade functions; it has no membership or privileges enabling access to SPP objects. Private \`lg_v1\` schema is not exposed by PostgREST and is **not** the shared \`private\` schema. All new private tables have RLS enabled and **no direct policies** for app roles, as a defense-in-depth boundary. Do not \`FORCE ROW LEVEL SECURITY\` with an owner-definer design. Explicitly review effective definer bypass/ownership privileges and role memberships, not merely whether RLS is marked ON.
 
-**Prefer private tables without exposed roles' table privileges** and narrow public RPCs. Establish effective ACL tests for `anon`, `authenticated`, `PUBLIC`, `service_role`, function owner and definer's inherited privileges; do not assume `private` schema alone guarantees isolation. If using RLS, define and test `FORCE ROW LEVEL SECURITY` compatibility with privileged definer roles; the execution role must not silently bypass intended policies. Review ownership, search path, extensions, operator resolution, temp-object spoofing and `EXECUTE` grants. Revoke default `PUBLIC` EXECUTE on newly created functions and explicitly grant only required entrypoints, with minimum privileges.
+All \`public.lg_v1_*\` facades: own by \`lg_v1_owner\`, \`SECURITY DEFINER\`, \`SET search_path = ''\`, every object name fully qualified, fixed safe SQLSTATE/codes, bounded inputs, **VOLATILE** (even read-only \`state\`), explicit \`REVOKE ALL ON FUNCTION ... FROM PUBLIC, anon, authenticated\` then \`GRANT EXECUTE ... TO anon\` only where warranted. Inspect role-specific/default privileges rather than assume \`PUBLIC\` revoke is sufficient. Internal functions and tables receive no effective \`anon\` or \`authenticated\` usage/execute/select. Changes to global default privileges or existing SPP role memberships are **not** implied or allowed. Pin and verify built-in cryptographic function availability and qualification against the actual disposable/hosted PostgreSQL version.
 
-## 5. Public API proposal (name and signature approval pending)
+**No credentials in URL:** all capability-bearing RPCs MUST accept **POST only**; \`VOLATILE\` function volatility is required to prevent PostgREST GET invocation, with negative GET tests and URL/log scans. Never put tokens in QR links, query strings, thrown errors, screenshots or diagnostic telemetry. Client \`sessionStorage\` is a session-scoped bearer holder, not user identity proof.
 
-Use a new `public.lg_v1_*` family. Arguments below are illustrative; wire payloads are capped and rejected on unknown fields. All replies are JSON objects with `version`, `roomCode`, `revision`, `status`, `serverTime` and a role-specific `view`; errors are **stable non-sensitive codes**.
+**Room code is an admission credential during an open lobby**, not just a locator. It is intentionally shareable via QR and does not authorize room **state/mutation** after join. Use cryptographically secure nonambiguous room-code generation; choose alphabet, entropy, collision retry and throttling only after abuse/capacity review. Host closes new joining at \`start\`. Only a valid host capability can \`remove_participant\`, revoke student access and preserve/freeze prior submitted data according to retention policy.
 
-1. `lg_v1_create(p_game_id, p_mode, p_activity, p_room_language, p_allow_student_language_choice, p_request_id, p_host_recovery_secret)` → host capability/room code **only on authenticated request outcome**. `p_host_recovery_secret` is a random high-entropy client-side retry credential provided only in RPC body, not URL/log; server stores only a securely constructed digest. Review this idempotency mechanism before implementation.
-2. `lg_v1_join(p_room_code, p_display_name, p_join_request_id, p_join_recovery_secret)` → student capability on successful authorized admission. Avoid duplicate participants on retry, even when response was lost.
-3. `lg_v1_state(p_room_code, p_capability, p_since_revision?)` → actor-filtered projection, or `unchanged` plus current revision. No private answer key or peer-private state even for invalid/stale tokens.
-4. `lg_v1_command(p_room_code, p_capability, p_command_id, p_expected_revision, p_kind, p_payload)` → server-validated mutation and actor-safe resulting state; separate `actor_attempt_revision` or scoped field revision for commands targeting private attempts/collaborative fields. The exact conflict protocol is fixed per command; stale edits never silently overwrite data.
-5. `lg_v1_leave(p_room_code,p_capability,p_request_id)` → revoke participant/capability or mark departed, preserving submitted answers under configured retention.
+## 4. Opaque student handles — mandatory F1
 
-Host-only commands go through the same authoritative service but are checked against explicit command permissions, not client `isHost`. Each command has a typed allowlist for `(game,mode,status,phase,role)`, limit checks, and canonical input normalization. Use one database transaction around permission read, revision check, mutation, idempotency record and response/projection; specify row locking order to avoid deadlocks. No generic `patchState`, `setScore`, `markCorrect`, `setAnswerKey`, or client `finish` bypass.
+The **entire authored identity pattern** may leak answers. Do not reuse authored \`card-N\`, \`step-N\`, \`segment-N\`, category IDs, task IDs, or authoring order in student DTOs, action arguments or student-visible errors.
 
-**Important retry invariant:** A lost response must not create an additional room/participant/move simply because the teacher clicks again. Duplicate `command_id` with *identical canonical input* returns the stored actor-safe result if still authorized; same ID with changed input returns `IDEMPOTENCY_CONFLICT`. Mutations that fail definitively do not create a committed command record. Create/join retry credentials must be unguessable, collision-resistant and excluded from all URLs/telemetry.
+At room creation, server generates random, opaque, room-scoped handles for every identity domain: Sort item and category handles; Sequence item handles; Detective task and **task-local** segment handles; future Memory card/pair handles. Store immutable handle → authored ID mapping in private snapshot metadata. Choose a handle namespace distinct from author-provided IDs and use independent randomness; never derive handles from row index or authored key. **Permute the initial presentation on the server** independently of authored order (Sort cards and category order; Sequence cards; Detective preserves sentence/segment text reading order while remapping all handles, since changing word order changes the pedagogy). For Sequence explicitly reject an already-correct initial shuffled order; avoid inferring order from random handle lexicographic sorting.
 
-## 6. Lifecycle and permissions
+All student mutations reference **opaque handles**, resolved and validated server-side against this exact room and role. Unknown/cross-room handles return generic safe errors; cannot enumerate authored IDs from lookup errors. Server projection must be constructed from an explicit allowlist, **not** generated by stripping confidential keys from a full teacher activity JSON.
 
-- `lobby`: host can create/invite/start; students may join while capacity permits; no game mutation. Host sets language policy once at creation.
-- `active`: game-specific actions; host may close submissions, skip only where relevant, or advance rounds in teacher-paced mode.
-- `review`: server locks submissions/board according to game/mode; host may reveal/evaluate/release according to explicit policy. A student cannot read keys until the **authorized reveal boundary** has been committed.
-- `finished`: responses and results are frozen for remaining room lifetime; explicit actor-scoped view only.
-- `expired`: all commands fail with `ROOM_EXPIRED`; reads reveal no secret even if rows remain. Scheduled physical deletion/anonymization and independently verified retention are separate requirements.
+**Tests:** a fixture with naturally ordered \`step-N\`, clustered \`card-N\`, and edited Detective \`segment-N\`; assert no authored identifier or answer-correlated ordering appears in DTOs, logs, errors or browser props. Statistical unpredictability is not proved by one run: add independent random-seed/repeated-generation checks and membership/invariance tests. For the Sort first slice prove handles are stable across polling/reconnect but random across independent rooms.
 
-Allowed transitions are enumerated and checked server-side: `lobby->active->review->finished`, with game-specific permitted shortcuts (e.g., forced finish only by authorized host, never an arbitrary browser state patch); `*->expired` when time passes. No student-controlled phase changes. Clarify whether automatic finish for Memory is a mode-specific permitted transition. State revision increments on every committed shared mutation; actor-attempt revision increments for private individual changes. A stale revision returns safe `REVISION_CONFLICT` and current permitted projection, never updates persistent state.
+## 5. Four tables for first slice (proposed; SQL schema must be reviewed)
 
-Admission policy must be explicit before implementation: no joining a started/finished room by new participants without a named late-join decision. Existing participants may resume by capability until expiry unless revoked. Host cannot impersonate a student by merely supplying a participant ID. Guessable room code does not enable state access. Apply measured abuse controls at edge/database boundary for anonymous create/join and rejected-token probes. Treat CAPTCHA/rate limits as separate deployable prerequisites if anonymous write endpoints are internet accessible.
+**\`lg_v1.rooms\`**: \`room_id uuid\`, unique invitation code, \`game=sort\`, \`mode=individual\`, lifecycle (\`lobby|active|review|finished|expired\`), \`room_revision bigint\`, server language \`de|en|vi\`, \`allow_student_language_choice boolean\`, capacity, \`created_at\`, \`expires_at\`, and a bounded state machine. No generic mutable game blob, no speculative rounds. Server-generated non-identifying room code.
 
-## 7. Data projection rules — non-negotiable
+**\`lg_v1.snapshots\`**: exactly one frozen validated activity per room; schema version and canonical content fingerprint; **private** authored activity with Sort \`categoryId\` and explanations, immutable mapping for random opaque item/category handles, immutable allowlisted student prompt/cards DTO (or components to build it). Protect explanations and other possible solution text until authorized review, even for host projected screens.
 
-Return only *constructed* allowlisted DTOs for students. A view assembled by deleting fields from a full private JSON object is forbidden. Before authorized reveal:
+**\`lg_v1.actors\`**: host/student actor ID, room ID, display name/admission/revoked status, globally unique \`sha256\` digest of a high-entropy client-generated capability, join content fingerprint, joined timestamp. Hashed tokens are bearer capabilities, **not password hashes**: SHA-256 is acceptable only because token entropy is 256 random bits. No plaintext token storage. Participant removal marks/revokes access. Do not log raw token or digest. A room-code guess can request admission **only while lobby open**; room state reads still require valid capability.
 
-- **Sort:** categories expose `id,label`; cards expose `id,text`, **never `categoryId`** or private `explanation`. Student placements for their private attempt only; collaborative shared placement is visible but still not correctness.
-- **Sequence:** prompt + independent shuffled items `id,text`, not canonical teacher order/position or private `explanation`; student-submitted order privately stored. Maintain a server-defined initial display order independent of answer key.
-- **Detective:** v1 segment stream and v2 task/segment streams with stable task-local segment identifiers. Student projections **never include `issues`, model `correction`, `explanation`, or summary that reveals answers**. Student submissions include selected segment IDs, explicit no-error per task and optional correction text, scoped by task ID for v2. Teacher-authorized review yields key material only at the defined boundary.
-- **Memory:** existing turn-based room uses its existing independently proven safe `PublicCard` projection; any future Memory Individual service uses server-owned pair identity, private shuffled board and scoring/reveal separately. Do not simply publish all pairs or matched hidden card values.
+**\`lg_v1.attempts\`**: room ID and actor ID, private placement JSON mapped to opaque handles, \`attempt_revision\`, submission status/time, frozen raw submission, deterministic evaluation metrics with pinned \`sort-v1\` evaluator version, reveal visibility and current/frozen data. No peer attempt visibility; no speculative stand-alone results table.
 
-Before reveal, *do not leak via* validators, field counts (“3 issues remain”), sorted server arrays, completion percentages showing correctness, errors, mutation timing, aggregate heat maps, or per-student status. Never allow a student to request `view=teacher` as a string argument. Teacher views may carry private references only after exact host capability verification. After reveal, explicit projections may include only the authorized answer section and appropriate teacher-authored explanations.
+No \`commands\`, \`room_state\`, or \`results\` table in MP1-AB. Add shared \`room_state\` only for collaborative mode later; rounds only when Detective teacher-paced proves need; immutable append/history only when an explicit product/retention use case is approved. Long-term persistence is not the goal of anonymous classrooms.
 
-## 8. Mode-specific state and command contracts
+**Canonical activity validation:** enforce existing Sort shape and limits independently on server: common envelope and strict unknown-field checks; max **128 KiB** and appropriate request-body cap; title/ID/targetLanguage/instruction/text length, whitespace/control/markup protections, 2–5 categories, 4–30 items, unique ID/label/text rules, referential category ID and category labels. SQL/plpgsql is the authoritative MP1-AB validator and scorer, *not* client TypeScript and not a privileged Edge Function. Current TS Unicode/NFC rules have no trivial \`char_length\` equivalent. **Parity is a release gate:** run the complete existing valid/invalid corpus and targeted tricky Unicode, invisible/control, normalization, markup and duplicate-ID fixtures against both; if outcomes diverge, fix the server, explicitly version/limit the supported canonical subset, or return for reviewed design decision. Do **not** silently drop safety checks just because React renders text inertly. \`jsonb\` cannot reveal duplicate keys already collapsed by the parser; document the limitation, check raw body limits at ingress and define handling of ambiguous duplicate-key input before hosted release. Never claim \`octet_length(p_activity::text)\` alone enforces the original request's wire-byte limit.
 
-Each command family below is scoped by game and mode. Exact wire discriminants and signatures are implementation-review tasks, but no additional mode is authorized.
+## 6. Public API — four VOLATILE POST-only functions
 
-| Game / mode | Student mutates | Host controls | Protection/evaluation |
+Signatures below are *proposed contract shapes*, not final SQL:
+
+\`\`\`text
+public.lg_v1_create(
+  p_game text, p_mode text, p_activity jsonb,
+  p_room_language text, p_allow_student_language_choice boolean,
+  p_host_token text
+)
+→ { roomCode, roomRevision, roomLanguage, allowStudentLanguageChoice, ...safeHostView }
+
+public.lg_v1_join(
+  p_room_code text, p_display_name text, p_player_token text
+)
+→ { roomCode, participantId, roomRevision, ...safeStudentView }
+
+public.lg_v1_state(
+  p_room_code text, p_token text,
+  p_room_rev bigint DEFAULT NULL, p_attempt_rev bigint DEFAULT NULL
+)
+→ { roomRevision, attemptRevision?, unchanged?, ...actorSafeView }
+
+public.lg_v1_command(
+  p_room_code text, p_token text,
+  p_kind text, p_payload jsonb,
+  p_expected_room_rev bigint DEFAULT NULL,
+  p_expected_attempt_rev bigint DEFAULT NULL
+)
+→ { roomRevision, attemptRevision?, ...actorSafeView }
+\`\`\`
+
+**Tokens created by browser, not database:** \`crypto.getRandomValues\` produces **256 bits / 64 random hex characters** for host and participant capabilities. Send token only in POST body. Server stores \`sha256(token)\` with global uniqueness and rejects wrong format. Create/join retries use the **same token** and canonical validated input fingerprint and return same actor/room on exact match; altered payload with same token returns \`IDEMPOTENCY_CONFLICT\`. The client must retain the token *before* first request and preserve it on uncertain network outcomes, rather than automatically creating a new room/student. It is never returned by the server in responses or URL. Because the token is a bearer, an attacker who steals it can impersonate the actor; TLS, storage isolation, leak avoidance and expiry are required.
+
+**Commands (Sort Individual):** student \`sort.place(itemHandle,categoryHandle|null)\` and \`sort.submit\`; host \`room.start\`, \`room.close\`, \`room.reveal\`, \`room.finish\`, \`room.remove_participant\`. No client-supplied correctness, score, grader, participant role or arbitrary state JSON. Unavailable modes/actions are denied from server CASE allowlist. Every payload rejects extra keys, invalid types, bad handles and oversize strings.
+
+**Idempotent but order-safe:** \`sort.place\` is an *absolute placement*, not a toggle. However, absolute commands can still arrive out of order; a late earlier placement **must not overwrite** a later placement of the same item. Therefore the control room keeps a narrowly scoped **expected_attempt_rev comparison** (or demonstrably equivalent per-item monotonic sequence), with \`REVISION_CONFLICT\` and safe resync on stale commands. A literal duplicate that leaves current assignment unchanged can be no-op; an uncertain retry after later changes returns conflict instead of rewinding state. Host lifecycle commands are idempotent no-ops only when the *same authorized target state and semantics* remain valid; \`reveal\` and \`submit\` are one-way freeze transitions and never replay private data to a revoked caller. This uses **no command log** for the first slice. Reviewer recommendation "no expected revision for place" is not adopted because it risks late-request stale overwrite; Opus can review the narrower CAS.
+
+**Capability scope:** \`roomCode\` is required alongside bearer but no role field is trusted from client; server selects actor by digest, verifies room, active status and role. \`lg_v1_state\` is a true read (even though declared VOLATILE) and MUST NOT update last_seen or mutate rows. Poll rate limit/backoff is a client plus gateway decision; private attempts don't bump global \`room_revision\`.
+
+## 7. Transaction and lifecycle rules
+
+**Transaction isolation:** READ COMMITTED. Fixed lock hierarchy across all mutations: room (\`FOR SHARE\` for student commands, \`FOR NO KEY UPDATE\` for host lifecycle) → actor → attempt (\`FOR UPDATE\`). Review actual PostgreSQL lock compatibility with concurrent state/commands and prove it with two-session tests; do not treat prose as concurrency proof. Host \`close\` conflicts with in-flight student row-share lock, waits to acquire and freezes updates; later \`place\` rechecks phase and rejects. Student placement locks their own attempt, so Student A cannot block Student B's independent attempt (apart from brief room/DB resource contention).
+
+Use **two revisions**: \`room_revision\` for roster/lifecycle/reveal and \`attempt_revision\` for one student's own placements/submission. \`state\` accepts both and returns unchanged only if **both** the actor-visible room view and own attempt view are unchanged. Avoid cross-student polling invalidation: private placement must not bump room revision. On conflict, provide stable safe error + current actor-safe revisions/view for resynchronization; do not expose peer attempt or answer key in errors.
+
+**Lifecycle**: \`lobby → active → review → finished\`, plus server-time expiry from any phase. Joining closes at start (proposed owner choice), an already-admitted active participant may reconnect until expiry/revocation. Sort Individual: host starts; students privately place/submit; host closes (hard-freezes unsubmitted attempts as specified by reviewed policy); host enters review and may reveal; host finishes. Server must reject impossible or repeated phase transitions that would change semantics. Removal is host-only and revokes bearer; exact effect on previously submitted work depends on retention policy. Teacher's projected screen should default to student-safe content until deliberate private review.
+
+**Errors:** map expected validation and permission cases to a small stable vocabulary, e.g. \`INVALID_INPUT\`, \`ROOM_UNAVAILABLE\`, \`ROOM_EXPIRED\`, \`UNAUTHORIZED\`, \`MODE_UNAVAILABLE\`, \`UNSUPPORTED_MODE\`, \`IDEMPOTENCY_CONFLICT\`, \`REVISION_CONFLICT\`, \`ALREADY_SUBMITTED\`, \`RATE_LIMITED\`. Public facades must prevent PostgreSQL \`message/detail/hint\` or constraint/secret reflection. Catch unexpected errors at external facade only and produce generic safe \`INTERNAL_ERROR\` without leaking private payloads, while preserving internal diagnostics with redaction and avoiding indiscriminate error swallowing. Negative tests search entire HTTP error body, not just \`message\`, for private IDs, keys, tokens and answers.
+
+## 8. Student and teacher projections; Sort v1 evaluation
+
+**StudentSortView** is a separate TS/DTO type, never \`SortActivity\` or an opaque copy of it. It includes room-scoped **opaque** category handles/labels and item handles/text, shuffled presentation, own placement handles, own attempt revision, shared state/language settings and **only permitted** results/reveal fields. Before reveal, never return original \`categoryId\`, authored \`id\`, category mapping, item explanations, per-item correct/incorrect, peer attempt, or answer-correlated order/metadata. Check React props, serializable DTO, PostgREST payload, error and HTML render paths.
+
+**Host projection:** role-authorized control state, roster and submission receipts. Host screen can be projected, so hide teacher-private answer keys and student submissions by default; explicit host review action and UI boundary necessary for private review. Teacher may inspect individual submissions only after closure under proposed default (owner to decide); no automatic public score display.
+
+**Scoring:** when \`sort.submit\` freezes a complete set of valid placements, server recomputes from frozen private canonical \`categoryId\` mapping, with algorithm semantically equivalent to \`scoreSort\`. Submission cannot spoof correctness or evaluation version. A student receives only a submission receipt until teacher \`room.reveal\` (proposed, owner pending). An immutable frozen answer snapshot plus pinned evaluator version is stored on the attempt row; correctness visible only after explicit reveal. Multiple students are fully isolated before the reveal boundary; even after reveal, no peer private attempt unless explicitly permitted by product policy.
+
+## 9. Future 10 combinations: mode boundaries (NOT built now)
+
+| Combination | Safe student action | Host authority | Sensitive state |
 |---|---|---|---|
-| Memory / turns | `flip(cardId)` only during assigned turn | `start,skip/advance` | Existing Memory RPCs; do not modify for MP1 |
-| Memory / individual (later) | private `flip` per participant | `start,close,review` | Each private board and score; no peer cards or responses |
-| Sort / collaborative | atomic `place(itemId,categoryId|null)` to shared board | `start,close,check,reveal` | Shared revision/field conflicts; answer categories private until reveal |
-| Sort / individual | private `place`, then `submit` | `start,close,review,reveal` | Per-actor revision and private placements; server scores after submit |
-| Sort / teacher-paced | private `place` in 1 activity-wide round, then submit | `start,closeRound,review,reveal,finish` | Host advances shared phase; peer responses private |
-| Sequence / collaborative | atomic `move(itemId,afterItemId|null)` on shared order | `start,close,check,reveal` | Expected shared revision; reject stale whole-order rewrites |
-| Sequence / individual | private `move`, then `submit` | `start,close,review,reveal` | Server verifies permutation and canonical answer order |
-| Sequence / teacher-paced | private `move` in 1 activity-wide round, submit | `start,closeRound,review,reveal,finish` | Private attempts and host progression |
-| Detective / collaborative | `toggle(taskId,segmentId)`; `proposeCorrection(taskId,segmentId,text)`; `setNoError(taskId,bool)` on shared state | `start,close,check,reveal` | Per-target revisions, conflict messages for simultaneous text edits; reference issue keys private |
-| Detective / individual | same operations on private per-actor attempt, then `submit` | `start,close,review,reveal` | Server scores segment identification only; correction text ungraded |
-| Detective / teacher-paced | same per-task private operations in current sentence round, then `submitRound` | `start,closeRound,review,reveal,advance` | Per-task private attempts, teacher-controlled rounds, no automatic grading of prose |
+| Memory Turns | legacy \`flip\` on designated turn | legacy \`start/skip/next\` | existing safely projected cards; no migration |
+| Memory Individual | private flip/finish | start/close/reveal | private randomized board/pair key |
+| Sort Collaborative | atomic place shared card | start/close/check/reveal | private category answer; shared placements |
+| Sort Teacher-paced | same private placement as Individual, single activity-round | start/close/reveal/finish | private responses; no generic round table |
+| Sequence Individual | private item reordering/submit | start/close/reveal | private canonical answer order |
+| Sequence Teacher-paced | same private order, one activity-round | start/close/reveal/finish | private responses |
+| Sequence Collaborative | shared \`move(item,after)\` command (decide semantics in its slice) | start/close/reveal | revisioned shared order |
+| Detective Individual | \`setSelected(task,seg,bool)\`, \`setCorrection(task,seg,text)\`, \`setNoError(task,bool)\`, submit | start/close/reveal | private issue keys / corrections |
+| Detective Teacher-paced | same private actions within current task | start/closeTask/reveal/advance | task-local IDs, private responses, rounds later |
+| Detective Collaborative | same absolute actions on shared fields | start/close/reveal | field-CAS for correction text, private model key |
 
-Commands must reject unknown game/mode discriminants, invalid IDs, missing/duplicated payload fields, cross-round edits, repeated submissions, attempts to edit after closure, hidden-key requests, and oversize text. `check` is a server evaluation action and its visibility policy must be explicit; not a browser-supplied correctness verdict. The host's ability to reveal private student attempts vs publish results is separately permissioned.
+Those are 10 *new* combinations plus the existing legacy Memory Turns = 11 target. **Detective free-text corrections are NEVER machine graded**: only teacher-authored error segment identification/no-error logic is deterministic; typed language remains raw and teacher-reviewable. No speculative timers, leaderboards, role teams, broad undo or universal reducer. Version-specific v1 flat passage vs v2 task/segment contracts preserved; opaque task-local IDs cannot leak teacher edits.
 
-**Collaborative conflict policy (recommended):** Use atomic per-item commands for Sort; revisioned stable-ID move commands for Sequence; revisioned task/segment selections and per-correction-field compare-and-swap for Detective. On conflicting concurrent text edits return `FIELD_CONFLICT` with only the currently permitted shared field text and revision, never silently last-writer-wins. Explicitly test two editors at the same time.
+## 10. Capacity, abuse and retention
 
-**Teacher-paced initial bounds:** Sort and Sequence use exactly one entire activity round; Detective v1 one round, v2 each `task.id` one round in immutable order. Student answers are private until review. No speculative subsets, live dashboards with answers or multi-round Sort/Sequence in V1.
+**Owner decisions pending:** hosted Supabase project (recommended: **new dedicated Learning Games project** to isolate anonymous write/poll load from SPP), participant cap, invitation code alphabet/entropy, new-room/create/join rate limits, response visibility policy, retention period and actual purge schedule. Do not treat Word-of-Opus as owner approval.
 
-## 9. Evaluation and result envelope
+For disposable proof implement \`lg_v1.purge_expired(p_limit)\`, callable **internally by an owner-authorized maintenance operation only**, bounded and tested with correct dependency order and lock safety. Optional opportunistic bounded purge on \`create\` may reduce backlog but does **not** replace a reliable separately authorized scheduled cleanup (such as \`pg_cron\`, if installed and scoped safely). \`expires_at\` prevents reads/mutations at runtime; physical deletion/anonymization remains separate and must be verified. No blanket scheduler permissions, background jobs or direct grants to app roles.
 
-Evaluation must occur on the trusted backend using frozen canonical content and private keys, with version-pinned pure validators/evaluators. Result envelope proposal:
-```json
-{
-  "gameId": "sort",
-  "mode": "individual",
-  "activitySchemaVersion": 1,
-  "evaluatorVersion": "sort-v1",
-  "roomRevision": 12,
-  "actorAttemptRevision": 4,
-  "submissionId": "opaque-server-id",
-  "submittedAt": "server-utc-timestamp",
-  "status": "submitted",
-  "metrics": { "correct": 3, "total": 4 },
-  "grading": { "kind": "deterministic", "scope": "item-placement" },
-  "revealed": false
-}
-```
-Responses must be role-filtered: do not return private per-item correctness, model answers, or peers' metrics to unauthorized actors before an explicit check/reveal decision. ScoreSort is exactly category assignment equality; Sequence exact positional ordering; Detective only teacher-tagged issue detection and no-error per sentence. **Detective free-text corrections must remain raw, ungraded, teacher-reviewable, never an LLM or string-match correctness grade.** Even `matchesModel` is comparison feedback, not authoritative score.
+Room quota and anonymous rate enforcement cannot be assumed from SQL without a trustworthy client-network origin. Before public internet exposure, implement verified gateway/edge throttling and whole-system quotas; if hosted alongside SPP, demonstrate circuit breakers and load isolation or choose a new project. Limit polling cadence, body bytes, participant count, lifecycle duration, state sizes and exception work.
 
-Do not present ranking/leaderboards/timed scoring or team competition without an approved disclosure/product rule. Snapshots and result provenance must survive evaluator upgrades within the configured room retention; no backdating or rewriting already-submitted attempts.
+## 11. Disposable MP1-AB-db and proof plan
 
-## 10. Default policies proposed for owner decision (NOT locked)
+**This is the next proposed engineering task after separate owner authorization**, not an instruction automatically approved by accepting this document.
 
-To keep the first slice small, propose: (a) anonymous **synthetic-only** beta rooms until abuse protections are reviewed; (b) short ephemeral 3-hour expiry aligned with existing Memory prototype observation, but do **not** assume expiry implies physical row deletion; (c) no configurable timer, leaderboard, peer submissions or auto-reveal in Slice 1; (d) explicit student `submit`, host `close` and `reveal` boundaries; (e) initial student count cap chosen after capacity testing, not guessed; (f) no new participant admission after `start`; (g) retry/rejoin within validity using same bearer capability; (h) versioned snapshots and results; (i) no persistent account linkage or homework grade exports. Owner/reviewer must accept or amend these policies prior to implementation.
+- One isolated implementation branch/worktree based on exact accepted MP0 source (or reviewed docs baseline with identical \`src/\`), no edits to existing Memory RPC files. Candidate migration \`supabase/migrations/<unique_timestamp>_lg_v1_sort_individual.sql\` **not installed remotely**; local disposable Supabase only.
+- Run \`npx supabase start\` after checking local Docker safety/resource constraints. Determine hosted PostgreSQL major version **read-only** before claiming version parity. If Docker/local Supabase cannot start safely, STOP; no substitution with hosted test database.
+- Four tables + four VOLATILE POST RPCs, role/schema, Sort Individual private projection, frozen submit and host lifecycle/removal, bounded purge, restrictive ACLs. No new Realtime publication, hosted migration, command/event table or SPP integration.
+- pgTAP/SQL ACL and ownership tests and real PostgREST \`supabase-js\` anon integration tests. Test **all 16 matrix combinations**, including legacy Memory Turns \`MODE_UNAVAILABLE\` in new service, student capability negative tests, role definer restrictions, direct table/internal function calls denied, invalid JSON corpus + Unicode parity, private answer-key leakage, opaque handles across room creation/reconnect, host screen safe projection, join closure, cap/revocation, GET refusal, create/join lost-response retries, attempt revision/no stale rollback, simultaneous students and close/placement race, submission freeze, safe error bodies, expiry and bounded physical purge.
+- Locally reported functional tests must include exact commands/results; feature-code tests do not replace disposable SQL/PostgREST proof. Independently review **executable SQL and grants** before any hosted installation.
+- **STOP after local proofs and source audit.** No production deployment, no hosted SQL/DDL, no SPP read/write, no change to existing Memory Turns and no release.
 
-**Open decision requiring explicit resolution:** who can see their own correctness feedback immediately on submit and when can teacher see each student's response? Recommended secure default: submissions freeze, student sees *receipt only* until host starts review, teacher can inspect submitted responses after closure, and only an explicit host reveal exposes model answers/correctness to students. Do not ship inconsistent scoring feedback across modes by accident.
+## 12. Hosted gates (after independent executable SQL review)
 
-## 11. Build slices, each independently gated
+Separate owner choices: (1) approve dedicated role/schema **in the selected environment**, (2) new Learning Games Supabase vs shared SPP project, (3) participant/capacity and abuse controls, (4) submit/feedback/reveal visibility, (5) retention/purge. Verify actual hosted database version, role/default ACLs, schema and PostgREST configuration **read-only**, and backup/recovery or safe isolation. Explicit owner authorization needed to install reviewed migration. Deploy only to approved target, run bounded synthetic hosted QA, verify old Memory RPC path unaffected, and require a separate merge/release GO. SPP/Auth/Homework tables remain forbidden as incidental changes.
 
-**MP1-A — foundation in disposable DB only:** versioned room schema, restricted roles/RPCs, typed allowlist, admission, room-language policy, capability digest and safe state/projection, deterministic creation/join retries, expiry and revision contracts. No hosted installation and no app integration.
-
-**MP1-B — Sort Individual:** server-validated Sort snapshot split, server-owned private placements/submit, evaluation + host review/reveal, one React room client reusing only proven shared UI and locale. This is the recommended first complete vertical slice. Fail-closed tests for teacher key confidentiality and student-to-student isolation.
-
-**MP1-C — Sort Teacher-paced:** one complete activity round, host close/reveal/progress; per-student private responses.
-
-**MP1-D — Sort Collaborative:** shared placements and atomic item commands; conflict tests.
-
-**MP1-E — Sequence Individual → Teacher-paced → Collaborative:** server-private canonical order, initial shuffle and permutation checks; racing reorder commands.
-
-**MP1-F — Detective Individual → Teacher-paced → Collaborative:** v1/v2 task IDs, per-task no-error, free-text preserved/ungraded; field conflict resolution.
-
-**MP1-G — Memory Individual:** new safe per-student Memory board path while leaving installed Memory Turns on the prototype. Full V1 = all 11 supported pairs (10 new, 1 existing), not necessarily one backend implementation. Whether to migrate Turns is separate work.
-
-Each slice: exact source baseline → isolated worktree and docs → local/disposable schema + PostgREST permission proof → independent reviewer at security-critical boundaries → separately approved hosted migration → AG synthetic browser test → separate owner merge/release decision. No stage is implicitly authorized by acceptance of this document.
-
-## 12. Mandatory security/disposable proof matrix
-
-Before hosted SQL, prove in disposable PostgreSQL matching hosted **major version** and PostgREST behavior:
-
-1. All 11 allowed and 5 forbidden combinations, plus feature-unavailable mode rejection.
-2. No direct grants for `anon`/`authenticated` on private tables, views, sequences; no `PUBLIC` function EXECUTE; only intended RPCs exposed.
-3. Positive/negative capability tests (missing, expired, revoked, wrong room, replayed, student acting as host, cross-student access, guessed code).
-4. Missing/malformed/oversize/unknown JSON fields rejected; wrong schema versions and Detective v1/v2 boundaries.
-5. Sort `categoryId` and explanation, Sequence canonical order/explanation, Detective issue/correction/explanation/summary absent from student read **and error/retry responses** before authorization.
-6. Concurrent mutations (simultaneous item placements, Sequence moves, two correction text writers), conflict response, serializable state, deterministic revisions and no lost updates.
-7. Idempotent create/join/mutation under lost replies, duplicate command ID with different payload, and uncertain timeout recovery.
-8. Submission freeze, evaluator version pinning, correct teacher reveal, teacher-paced round gating, privacy of peer attempts and results, reconnect and no duplicate participation.
-9. Simulated expiry **and actual retention cleanup job** independently (expiry metadata is not proof of deletion); check lifecycle with missing workers.
-10. No mutation/grant/redefinition of SPP objects; exact schema diff and rollback strategy; no privileges bleed through executor roles or `search_path`.
-11. Resource abuse: code enumeration, create/join throttling, per-room sizes/participants, payload/mutation rate, polling load and retention.
-12. Privacy-safe telemetry: room code and bearer capability redacted; no raw teacher answer keys or student attempts in logs/exceptions.
-
-**Release gate:** Independent Opus security/architecture review of precise schema, role ownership, RPC signatures, permission matrix, projection builders, transaction locking/idempotency, tests and migration/rollback **before building or installing hosted backend**. The review may recommend a different project or strategy. Owner decides after review.
-
-## 13. Acceptance evidence and migration protocol
-
-Produce (a) exact SQL migration proposal with checksums, (b) reviewed migration and rollback/forward-fix plan; data-loss or nonreversible operations require separate authorization, (c) disposable proof with test commands/output and ACL/row-privacy reports, (d) snapshot of hosted PostgreSQL version and actual effective grants/RLS ownership read-only, (e) verified backup/recovery path plus SPP freeze/coordination, (f) staged installation/deployment and precise room testing with synthetic identities, (g) old Memory RPC regression, and (h) no writes to SPP tables or Auth.
-
-Do **not** treat the hosted Memory smoke as hostile-adversary proof. The 2026-10-14 AG test verified ordinary role UI behavior, two room completions and three-browser synchronization; it did not exhaust unauthorized RPC probes. It observed `expiresAt` approximately three hours out, not a purge job.
-
-## 14. Independent review questions
-
-The reviewer should explicitly answer: Is the additive shared typed lifecycle safer/smaller than per-game isolated RPCs given this Supabase environment? Can strict answer projections survive independent local content schemas? Are proposed retry credentials and bearer digests sufficient or overly complex? Are transaction/revision semantics deadlock-safe and compatible with PostgREST? Does `SECURITY DEFINER` privilege configuration actually restrict all private data? What first-slice preconditions require changing the project or approving rate-limit/retention policy? Are the 11 combinations and teacher-paced semantics complete without premature abstractions? See [MP1_REVIEW_AND_ROLLOUT](MP1_REVIEW_AND_ROLLOUT.md).
-
-**STOP:** Documentation only. Do not implement SQL, APIs, backend or frontend under this draft.
+**Next:** [MP1_REVIEW_AND_ROLLOUT](MP1_REVIEW_AND_ROLLOUT.md) for exact reviewer recheck and executable implementation gate. Original v1 design can be viewed in Git history at \`ea403e3\`. No SQL or source implementation was undertaken during this reconciliation.
