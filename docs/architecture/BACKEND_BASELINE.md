@@ -21,3 +21,7 @@ Production changes to RPC logic, grants, policies, schema and SPP domain integra
 
 ## M3a language-policy note (2026-10-12)
 The later Memory language migration is reported applied and verified. See [CURRENT_STATE](../CURRENT_STATE.md); do not recreate or reapply it as part of LG-A1 documentation, sorting, or migration planning.
+
+## Shared Supabase migration history
+
+Learning Games migrations are authored and retained in `supabase/migrations/` in Learning Games. Before any hosted apply, copy each new migration byte-for-byte, with its exact versioned filename, into Speak Practice Pro's authoritative `supabase/migrations/` directory. Run hosted `supabase db push` only from the Speak Practice Pro repository. Never use migration repair to compensate for missing local history, and never reapply an already-installed migration. Confirm the target and obtain separate hosted-change approval before any push.
