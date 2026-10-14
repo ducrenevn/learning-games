@@ -1,3 +1,17 @@
+# Handoff — MP1 reviewed contract v2 (2026-10-14)
+
+**Current state:** Opus reviewed original MP1 architecture and returned **APPROVE WITH CHANGES**. Control room reconciled F1–F16 in [MP1_BACKEND_CONTRACT](architecture/MP1_BACKEND_CONTRACT.md) v2 and [review disposition](audits/2026-10-14-mp1-opus-reconciliation.md). **No implementation is authorized**, no SQL has been installed, and accepted MP0 remains frozen.
+
+**Read these:** [CURRENT_STATE](CURRENT_STATE.md) → [MP1_BACKEND_CONTRACT](architecture/MP1_BACKEND_CONTRACT.md) → [MP1_REVIEW_AND_ROLLOUT](architecture/MP1_REVIEW_AND_ROLLOUT.md) → [Opus disposition](audits/2026-10-14-mp1-opus-reconciliation.md).
+
+**Next review:** brief, read-only Opus delta check focusing on F1 opaque handles, F2 SQL validator parity, F3 restricted ownership, F4 POST-only tokens, idempotent create/join, attempt revision CAS, lock order, and four-table Sort Individual slice. Return only remaining blockers or explicit acceptance, then STOP.
+
+**Following owner gate:** approve or decline a separate *disposable-only* MP1-AB-db implementation. No remote SQL, Supabase migrations, app frontend integration, hosted writes, SPP changes, merges, or deployment. Owner policies (visibility, limits/admission/removal, hosted project choice, retention) remain pending.
+
+**Baseline:** accepted MP0 code `b569d767e18ae0330cfbb028192470fde60a710d`; documentation-only branch `docs/lg-mp0-closure-mp1-backend-contract-20261014`. Keep legacy Memory Turns unchanged.
+
+---
+
 # Handoff — MP1 contract review (2026-10-14)
 
 **Task owner:** Product owner coordinates independent reviewer; control room owns MP1 draft and reconciles findings.
