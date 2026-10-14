@@ -1,3 +1,13 @@
+# Handoff — MP1-AB-db pending owner authorization (2026-10-14)
+
+**Accepted:** MP0 on isolated `b569d76` branch; hosted functional Memory QA completed. **Review state:** initial Opus APPROVE WITH CHANGES and second Opus APPROVED WITH REQUIRED CORRECTIONS. Control room updated [MP1 v3 backend contract](architecture/MP1_BACKEND_CONTRACT.md) and recorded [second reconciliation](audits/2026-10-14-mp1-opus-v2-reconciliation.md). No MP1 SQL, app code, local DB proof, hosted operation or merge has been performed.
+
+**Next:** obtain explicit owner approval for **MP1-AB-db disposable-only**; then one bounded engineering implementation: new local-only Supabase scaffolding, four private tables, four POST-only entry points with secure invoker/definer boundary, Sort Individual SQL, Unicode fixture generator and ACL/secret/race/retry/purge tests. Exactly four-table scope; no app integration. Local CLI PG version recorded. If local Docker cannot run safely, STOP. No hosted Supabase read/write at all; no link, push, linked flags or SPP/Memory changes. STOP for independent SQL audit.
+
+**Owner policy decisions needed later:** learner feedback reveal, cap, join-at-start, removed and unsubmitted attempt handling, and hosted project/abuse/retention choice. Local disposable test defaults do not decide production policy.
+
+---
+
 # Handoff — MP1 reviewed contract v2 (2026-10-14)
 
 **Current state:** Opus reviewed original MP1 architecture and returned **APPROVE WITH CHANGES**. Control room reconciled F1–F16 in [MP1_BACKEND_CONTRACT](architecture/MP1_BACKEND_CONTRACT.md) v2 and [review disposition](audits/2026-10-14-mp1-opus-reconciliation.md). **No implementation is authorized**, no SQL has been installed, and accepted MP0 remains frozen.
