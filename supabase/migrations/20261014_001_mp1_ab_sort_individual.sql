@@ -909,6 +909,9 @@ BEGIN
       ) THEN
         RAISE EXCEPTION 'INCOMPLETE_ATTEMPT';
       END IF;
+      IF p_expected_room_rev IS NULL OR p_expected_room_rev <> v_room.room_revision THEN
+        RAISE EXCEPTION 'REVISION_CONFLICT';
+      END IF;
 
       UPDATE lg_v1.rooms
       SET room_revision = room_revision + 1,
@@ -941,6 +944,9 @@ BEGIN
         RAISE EXCEPTION 'ROOM_EXPIRED';
       END IF;
       IF v_room.status = 'lobby' THEN
+        IF p_expected_room_rev IS NULL OR p_expected_room_rev <> v_room.room_revision THEN
+          RAISE EXCEPTION 'REVISION_CONFLICT';
+        END IF;
         UPDATE lg_v1.rooms
         SET status = 'active',
             room_revision = room_revision + 1,
@@ -963,6 +969,9 @@ BEGIN
       END IF;
       IF v_room.status <> 'active' THEN
         RAISE EXCEPTION 'ROOM_CLOSED';
+      END IF;
+      IF p_expected_room_rev IS NULL OR p_expected_room_rev <> v_room.room_revision THEN
+        RAISE EXCEPTION 'REVISION_CONFLICT';
       END IF;
 
       FOR v_attempt IN
@@ -1006,6 +1015,9 @@ BEGIN
       IF v_room.status <> 'review' THEN
         RAISE EXCEPTION 'ROOM_CLOSED';
       END IF;
+      IF p_expected_room_rev IS NULL OR p_expected_room_rev <> v_room.room_revision THEN
+        RAISE EXCEPTION 'REVISION_CONFLICT';
+      END IF;
       UPDATE lg_v1.rooms
       SET revealed_at = now(),
           room_revision = room_revision + 1,
@@ -1027,6 +1039,9 @@ BEGIN
       END IF;
       IF v_room.status <> 'review' THEN
         RAISE EXCEPTION 'ROOM_CLOSED';
+      END IF;
+      IF p_expected_room_rev IS NULL OR p_expected_room_rev <> v_room.room_revision THEN
+        RAISE EXCEPTION 'REVISION_CONFLICT';
       END IF;
       UPDATE lg_v1.rooms
       SET status = 'finished',
@@ -1061,6 +1076,9 @@ BEGIN
       END IF;
       IF v_target_actor.status <> 'active' THEN
         RAISE EXCEPTION 'FORBIDDEN';
+      END IF;
+      IF p_expected_room_rev IS NULL OR p_expected_room_rev <> v_room.room_revision THEN
+        RAISE EXCEPTION 'REVISION_CONFLICT';
       END IF;
 
       UPDATE lg_v1.actors
