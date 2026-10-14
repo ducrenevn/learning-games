@@ -1,3 +1,16 @@
+# Learning Games — current game status (2026-10-14)
+
+| Game | Local Presentation / Independent Practice | Hosted rooms |
+| --- | --- | --- |
+| Memory | Accepted on unmerged MP0 branch `b569d76` | **Turns functional hosted QA accepted**; Individual planned MP1 |
+| Sort | Accepted on unmerged MP0 branch | Collaborative, Individual, Teacher-paced planned MP1 |
+| Sequence | Accepted on unmerged MP0 branch | Collaborative, Individual, Teacher-paced planned MP1 |
+| Language Detective | Accepted on unmerged MP0 branch (v1/v2) | Collaborative, Individual, Teacher-paced planned MP1 |
+
+Exactly 11 total approved target game/mode combinations, **not all implemented**. See [V1 matrix](architecture/MULTIPLAYER_V1_CONTRACT.md), [MP1 draft](architecture/MP1_BACKEND_CONTRACT.md) and [MP0 closure](audits/2026-10-14-mp0-hosted-acceptance.md). Other games remain future ideas. The 2026-10-12 catalog below is retained as historical status and must not override this table.
+
+---
+
 # Learning Games — Agent Game Map
 **Short game-discovery index · 2026-10-12.** Start here, open only what the task needs.
 
