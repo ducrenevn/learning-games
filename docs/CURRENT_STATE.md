@@ -1,3 +1,9 @@
+# MP1 contract v3 — second Opus delta reconciled (2026-10-14)
+
+The second Opus review of v2 `eedaa67` found no new P0, but required four P1 fixes (B1 locks and host polling; B2 exact attempt CAS; B3 SQL owner/wrapper privileges; B4 retry before admission check) and six refinements C1–C6. All are reconciled as **design-only** in [MP1_BACKEND_CONTRACT](architecture/MP1_BACKEND_CONTRACT.md) and [second review audit](audits/2026-10-14-mp1-opus-v2-reconciliation.md). Next step requires product-owner authorization for isolated disposable-only MP1-AB-db implementation and real SQL/PostgREST proof. No MP1 SQL, SPP access, hosted changes or application code modifications have occurred.
+
+---
+
 # Control-room update — MP1 Opus design review (2026-10-14)
 
 - Original backend draft `ea403e3` was independently reviewed by Opus: **APPROVE WITH CHANGES**. No hosted SQL, deployed ACLs or local Supabase startup was verified in that review.
