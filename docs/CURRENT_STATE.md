@@ -1,3 +1,12 @@
+# Control-room update — MP1 Opus design review (2026-10-14)
+
+- Original backend draft `ea403e3` was independently reviewed by Opus: **APPROVE WITH CHANGES**. No hosted SQL, deployed ACLs or local Supabase startup was verified in that review.
+- Reconciled v2 is now in [MP1_BACKEND_CONTRACT](architecture/MP1_BACKEND_CONTRACT.md), with all F1–F16 dispositions documented in [Opus reconciliation](audits/2026-10-14-mp1-opus-reconciliation.md). The architecture is **still a proposal**, not an approved implementation or new installed backend.
+- Main changes: opaque student handles so authored IDs don't reveal answers; SQL-first validation and strict fixture parity; restricted `lg_v1_owner` + unexposed schema; POST-only VOLATILE capability RPCs; high-entropy client bearer + create/join retry; actor-scoped CAS revisions; four-table disposable Sort Individual slice and bounded expiry purge. A reviewer-recommended no-revision placement was **not** adopted due to stale request rollback risk.
+- Next: focused independent v2 delta review, then separate owner approval for a strictly disposable MP1-AB-db implementation. Product decisions about results, admission/capacity, role creation and hosted Supabase location remain owner-held. MP0 `b569d76` remains frozen and unmerged.
+
+---
+
 # CURRENT STATE — 2026-10-14 MP0 closure and MP1 design
 
 ## Authoritative current control-room state
