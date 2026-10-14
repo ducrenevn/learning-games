@@ -239,7 +239,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION lg_v1._sort_private_mapping(p_activity jsonb)
+CREATE OR REPLACE FUNCTION lg_v1._sort_room_handles(p_activity jsonb)
 RETURNS jsonb
 LANGUAGE sql
 SECURITY DEFINER
@@ -248,19 +248,49 @@ AS $$
   WITH categories AS (
     SELECT
       category->>'id' AS authored_category_id,
-      md5(concat('cat:', category->>'id', ':', gen_random_uuid()::text)) AS category_handle
+      category->>'label' AS label,
+      md5(concat('cat:', category->>'id', ':', encode(gen_random_bytes(16), 'hex'))) AS category_handle
     FROM jsonb_array_elements(COALESCE(p_activity->'content'->'categories', '[]'::jsonb)) AS category
   ),
   items AS (
     SELECT
       item->>'id' AS authored_item_id,
-      md5(concat('item:', item->>'id', ':', gen_random_uuid()::text)) AS item_handle
+      item->>'text' AS text,
+      item->>'categoryId' AS authored_category_id,
+      md5(concat('item:', item->>'id', ':', encode(gen_random_bytes(16), 'hex'))) AS item_handle
     FROM jsonb_array_elements(COALESCE(p_activity->'content'->'items', '[]'::jsonb)) AS item
   )
   SELECT jsonb_build_object(
-    'categories', COALESCE((SELECT jsonb_object_agg(authored_category_id, category_handle) FROM categories), '{}'::jsonb),
-    'items', COALESCE((SELECT jsonb_object_agg(authored_item_id, item_handle) FROM items), '{}'::jsonb)
+    'privateMapping', jsonb_build_object(
+      'categories', COALESCE((SELECT jsonb_object_agg(authored_category_id, category_handle) FROM categories), '{}'::jsonb),
+      'items', COALESCE((SELECT jsonb_object_agg(authored_item_id, item_handle) FROM items), '{}'::jsonb)
+    ),
+    'studentProjection', jsonb_build_object(
+      'categories', COALESCE((
+        SELECT jsonb_agg(
+          jsonb_build_object('handle', category_handle, 'label', label)
+          ORDER BY category_handle
+        )
+        FROM categories
+      ), '[]'::jsonb),
+      'items', COALESCE((
+        SELECT jsonb_agg(
+          jsonb_build_object('handle', item_handle, 'text', text)
+          ORDER BY item_handle
+        )
+        FROM items
+      ), '[]'::jsonb)
+    )
   );
+$$;
+
+CREATE OR REPLACE FUNCTION lg_v1._sort_private_mapping(p_activity jsonb)
+RETURNS jsonb
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT (lg_v1._sort_room_handles(p_activity)->'privateMapping');
 $$;
 
 CREATE OR REPLACE FUNCTION lg_v1._student_sort_projection(p_activity jsonb)
@@ -269,38 +299,7 @@ LANGUAGE sql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
-  WITH categories AS (
-    SELECT
-      row_number() OVER (ORDER BY random()) AS ordinal,
-      category->>'label' AS label,
-      md5(concat('cat:', category->>'id', ':', gen_random_uuid()::text)) AS category_handle
-    FROM jsonb_array_elements(COALESCE(p_activity->'content'->'categories', '[]'::jsonb)) AS category
-  ),
-  items AS (
-    SELECT
-      row_number() OVER (ORDER BY random()) AS ordinal,
-      item->>'text' AS text,
-      md5(concat('item:', item->>'id', ':', gen_random_uuid()::text)) AS item_handle
-    FROM jsonb_array_elements(COALESCE(p_activity->'content'->'items', '[]'::jsonb)) AS item
-  )
-  SELECT jsonb_build_object(
-    'categories', (
-      SELECT jsonb_agg(
-        jsonb_build_object(
-          'handle', category_handle,
-          'label', label
-        ) ORDER BY ordinal)
-      FROM categories
-    ),
-    'items', (
-      SELECT jsonb_agg(
-        jsonb_build_object(
-          'handle', item_handle,
-          'text', text
-        ) ORDER BY ordinal)
-      FROM items
-    )
-  );
+  SELECT (lg_v1._sort_room_handles(p_activity)->'studentProjection');
 $$;
 
 CREATE OR REPLACE FUNCTION lg_v1._sort_score(p_activity jsonb, p_placement jsonb)
@@ -354,6 +353,7 @@ DECLARE
   v_room lg_v1.rooms%ROWTYPE;
   v_snapshot_id uuid;
   v_actor_id uuid;
+  v_room_handles jsonb;
   v_student_projection jsonb;
   v_private_mapping jsonb;
 BEGIN
@@ -419,8 +419,9 @@ BEGIN
     now() + interval '24 hours'
   ) RETURNING * INTO v_room;
 
-  v_student_projection := lg_v1._student_sort_projection(p_activity);
-  v_private_mapping := lg_v1._sort_private_mapping(p_activity);
+  v_room_handles := lg_v1._sort_room_handles(p_activity);
+  v_student_projection := v_room_handles->'studentProjection';
+  v_private_mapping := v_room_handles->'privateMapping';
 
   INSERT INTO lg_v1.snapshots (
     room_id,
@@ -524,7 +525,7 @@ BEGIN
   FOR UPDATE;
 
   IF FOUND THEN
-    IF v_actor.status = 'revoked' THEN
+    IF v_actor.status <> 'active' THEN
       RAISE EXCEPTION 'FORBIDDEN';
     END IF;
     RETURN jsonb_build_object(
@@ -622,7 +623,7 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'FORBIDDEN';
   END IF;
-  IF v_actor.status = 'revoked' THEN
+  IF v_actor.status <> 'active' THEN
     RAISE EXCEPTION 'FORBIDDEN';
   END IF;
 
@@ -715,7 +716,7 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'FORBIDDEN';
   END IF;
-  IF v_actor.status = 'revoked' THEN
+  IF v_actor.status <> 'active' THEN
     RAISE EXCEPTION 'FORBIDDEN';
   END IF;
 
@@ -1038,6 +1039,7 @@ $$;
 ALTER FUNCTION lg_v1._mode_guard(text, text) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1._safe_token(text) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1.validate_sort_activity(jsonb) OWNER TO lg_v1_owner;
+ALTER FUNCTION lg_v1._sort_room_handles(jsonb) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1._sort_private_mapping(jsonb) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1._student_sort_projection(jsonb) OWNER TO lg_v1_owner;
 ALTER FUNCTION lg_v1._sort_score(jsonb, jsonb) OWNER TO lg_v1_owner;
