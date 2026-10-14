@@ -1,3 +1,13 @@
+# Start Here — Learning Games (2026-10-14)
+
+**Authoritative current status:** MP0 frontend and hosted functional Memory QA **accepted on isolated Preview branch** `feat/lg-mp0-ux2-m3a-integration-20261013@b569d76`. NOT merged or Production-released. New MP1 backend is **design-only**. Read [CURRENT_STATE](CURRENT_STATE.md) and [MP0 hosted acceptance](audits/2026-10-14-mp0-hosted-acceptance.md).
+
+**For independent backend review:** read [MULTIPLAYER_V1_CONTRACT](architecture/MULTIPLAYER_V1_CONTRACT.md) (locked product matrix), [MP1_BACKEND_CONTRACT](architecture/MP1_BACKEND_CONTRACT.md) (proposed technical contract), [MP1_REVIEW_AND_ROLLOUT](architecture/MP1_REVIEW_AND_ROLLOUT.md) (review and release gates), [BACKEND_BASELINE](architecture/BACKEND_BASELINE.md) and relevant source. Do not mistake documentation for deployed code. SPP Homework adapter is separate [discovery](architecture/SPP_HOMEWORK_INTEGRATION_DISCOVERY.md).
+
+**Rule:** The documentation review branch is based on accepted MP0 code, but is not implementation authorization, SQL/hosted-write authorization or release authorization. The historical text below is retained for previous waves and may have stale status.
+
+---
+
 # Start Here — Learning Games
 First read [AGENTS.md](../AGENTS.md). Verify the current `main`, open PRs, code and tests. Documentation marked "planning" is not implementation.
 
