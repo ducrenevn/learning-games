@@ -44,9 +44,11 @@ export function useSortRoom(identity: SortRoomIdentity) {
     finally { inflight.current = false; }
   }, [identity.roomCode, identity.token, identity.role]);
 
-  const send = useCallback(async (kind: string, payload: Record<string, unknown> = {}) => {
+  const queue = useRef<Array<{ kind: string; payload: Record<string, unknown>; resolve: (ok: boolean) => void }>>([]);
+
+  const executeCommand = async (kind: string, payload: Record<string, unknown>): Promise<boolean> => {
     const current = latest.current;
-    if (!current || mutating.current) return false;
+    if (!current) return false;
     const isPlacement = kind === 'sort.place';
     const isSubmit = kind === 'sort.submit';
     if ((isPlacement || isSubmit) && current.role !== 'student') return false;
@@ -58,7 +60,7 @@ export function useSortRoom(identity: SortRoomIdentity) {
     try {
       const receipt = await commandSortRoom(identity, kind, payload,
         isPlacement ? null : current.roomRevision,
-        (isPlacement || isSubmit) ? current.attemptRevision : null);
+        (isPlacement || isSubmit) && current.role === 'student' ? current.attemptRevision : null);
       // Server receipts carry revisions but not the full actor-scoped state.
       if (!Number.isSafeInteger(receipt.roomRevision)) throw new Error('INVALID_SORT_STATE');
       await fetchSortRoom(identity, null).then(incoming => {
@@ -82,9 +84,31 @@ export function useSortRoom(identity: SortRoomIdentity) {
       return false;
     } finally {
       mutating.current = false;
+      setBusy(queue.current.length > 0);
+    }
+  };
+
+  const runQueue = useCallback(async () => {
+    if (mutating.current || queue.current.length === 0) return;
+    const next = queue.current.shift()!;
+    const ok = await executeCommand(next.kind, next.payload);
+    next.resolve(ok);
+    if (ok && queue.current.length > 0) {
+      void runQueue();
+    } else if (!ok) {
+      while (queue.current.length > 0) {
+        queue.current.shift()!.resolve(false);
+      }
       setBusy(false);
     }
   }, [identity.roomCode, identity.token, identity.role]);
+
+  const send = useCallback((kind: string, payload: Record<string, unknown> = {}): Promise<boolean> => {
+    return new Promise(resolve => {
+      queue.current.push({ kind, payload, resolve });
+      void runQueue();
+    });
+  }, [runQueue]);
 
   useEffect(() => {
     void refresh();

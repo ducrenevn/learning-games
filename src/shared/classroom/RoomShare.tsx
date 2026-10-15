@@ -3,15 +3,15 @@ import { useState } from 'react';
 import type { Locale } from '../activities/contract';
 import { roomText } from './roomCopy';
 
-export function makeJoinUrl(roomCode: string, origin: string): string {
-  const url = new URL('/games/memory/join', origin);
+export function makeJoinUrl(roomCode: string, origin: string, joinPath = '/games/memory/join'): string {
+  const url = new URL(joinPath, origin);
   url.searchParams.set('room', roomCode);
   return url.toString();
 }
 
-export function RoomShare({ roomCode, locale }: { roomCode: string; locale: Locale }) {
+export function RoomShare({ roomCode, locale, joinPath = '/games/memory/join' }: { roomCode: string; locale: Locale; joinPath?: string }) {
   const [copied, setCopied] = useState(false);
-  const link = makeJoinUrl(roomCode, window.location.origin);
+  const link = makeJoinUrl(roomCode, window.location.origin, joinPath);
   async function copy() {
     try { await navigator.clipboard.writeText(link); setCopied(true); }
     catch { setCopied(false); }

@@ -5,6 +5,8 @@ import { MemoryHome } from '../games/memory/MemoryHome';
 import { MemoryJoin } from '../games/memory/MemoryJoin';
 import { MemoryRoom } from '../games/memory/MemoryRoom';
 import { SortPage } from '../games/sort/SortPage';
+import { SortJoin } from '../games/sort/online/SortJoin';
+import { SortRoom } from '../games/sort/online/SortRoom';
 import { SequencePage } from '../games/sequence/SequencePage';
 import { DetectivePage } from '../games/language-detective/DetectivePage';
 import { LanguageFlags, LocaleProvider, useLocale } from '../shared/locale/LocaleProvider';
@@ -14,7 +16,7 @@ const NOTE = { de: 'Gemeinsam spielen und lernen', en: 'Play and learn together'
  * Online room routes never show this global toggle. A room's language is set by the server's policy: a forced room
  * must not offer an override, and a student-choice room renders its own control inside the room (RoomLanguageBar).
  */
-const hasLocalisedPage = (path: string) => !/^\/games\/memory\/room(\/|$)/.test(path);
+const hasLocalisedPage = (path: string) => !/^\/games\/(memory|sort)\/room(\/|$)/.test(path);
 
 /** The single app bar: wordmark, tagline and the global interface-language toggle. Shared by the app and by DOM tests. */
 export function AppShell({ children }: { children: ReactNode }) {
@@ -43,6 +45,8 @@ export const appRoutes: RouteObject[] = [{
     { path: '/games/memory/join', element: <MemoryJoin /> },
     { path: '/games/memory/room/:roomCode', element: <MemoryRoom /> },
     { path: '/games/sort', element: <SortPage /> },
+    { path: '/games/sort/join', element: <SortJoin /> },
+    { path: '/games/sort/room/:roomCode', element: <SortRoom /> },
     { path: '/games/sequence', element: <SequencePage /> },
     { path: '/games/language-detective', element: <DetectivePage /> },
     { path: '*', element: <main className="page"><h1>Seite nicht gefunden</h1><Link to="/">Zur Startseite</Link></main> },

@@ -198,8 +198,10 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
     if(onlineBusy||!onOnline)return;
     const value=requireValid();
     if(!value)return;
-    const pairs=(value.content as {pairs?:unknown[]}).pairs;
-    if(!pairs||pairs.length<2){setOnlineError(u(locale,'roomNeedsPairs'));return;}
+    if (kind === 'memory') {
+      const pairs = (value.content as { pairs?: unknown[] }).pairs;
+      if (!pairs || pairs.length < 2) { setOnlineError(u(locale, 'roomNeedsPairs')); return; }
+    }
     setOnlineBusy(true);setOnlineError('');
     const session: OnlineSession = { unsaved, acknowledgeLeave: () => { leaveAcknowledged.current = true; } };
     void onOnline(structuredClone(value), session).catch(e => setOnlineError(e instanceof Error ? e.message : u(locale,'onlineError'))).finally(() => setOnlineBusy(false));

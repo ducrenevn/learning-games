@@ -18,10 +18,10 @@ export const gameRegistry: GameCatalogEntry[] = [
       en: { title: 'Memory game', description: 'Find matching pairs – locally or together in an online room.' },
       vi: { title: 'Trò chơi Memory', description: 'Tìm các cặp thẻ khớp nhau – tại chỗ hoặc cùng chơi trong phòng trực tuyến.' },
     } },
-  { id: 'sort', title: 'Sort', description: 'Karten in frei wählbare Kategorien sortieren – Präsentation oder Einzelübung.', symbol: '▤', href: '/games/sort', modes: ['present', 'try'],
+  { id: 'sort', title: 'Sort', description: 'Karten in frei wählbare Kategorien sortieren – Präsentation, Einzelübung oder Online-Raum.', symbol: '▤', href: '/games/sort', modes: ['present', 'try', 'online'],
     translations: {
-      en: { title: 'Sort', description: 'Sort cards into categories of your choice – for presenting or practising alone.' },
-      vi: { title: 'Sort', description: 'Xếp thẻ vào các nhóm tự chọn – để trình chiếu hoặc tự luyện tập.' },
+      en: { title: 'Sort', description: 'Sort cards into categories of your choice – for presenting, practising alone, or online room.' },
+      vi: { title: 'Sort', description: 'Xếp thẻ vào các nhóm tự chọn – để trình chiếu, tự luyện tập hoặc phòng trực tuyến.' },
     } },
   { id: 'sequence', title: 'Sequence', description: 'Schritte und Sätze in eine feste Reihenfolge bringen.', symbol: '☷', href: '/games/sequence', modes: ['present', 'try'],
     translations: {
