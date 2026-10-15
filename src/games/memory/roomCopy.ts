@@ -86,3 +86,4 @@ export function memoryText(locale: Locale, key: MemoryRoomCopyKey, values?: Reco
   for (const [name, value] of Object.entries(values ?? {})) result = result.replaceAll('{' + name + '}', String(value));
   return result;
 }
+
