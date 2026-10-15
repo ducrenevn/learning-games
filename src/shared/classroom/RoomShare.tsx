@@ -18,7 +18,10 @@ export function RoomShare({ roomCode, locale, joinPath = '/games/memory/join' }:
   }
   return <aside className="share-panel panel">
     <h2>{roomText(locale, 'shareTitle')}</h2>
-    <p>{roomText(locale, 'shareCode')} <strong className="room-code">{roomCode}</strong></p>
+    <div className="share-code-wrap">
+      <span className="share-code-label">{roomText(locale, 'shareCode')}</span>
+      <strong className="room-code">{roomCode}</strong>
+    </div>
     <div className="qr"><QRCodeSVG value={link} size={190} level="M" /></div>
     <label htmlFor="join-url">{roomText(locale, 'shareLink')}</label>
     <input id="join-url" className="field" readOnly value={link} onFocus={event => event.currentTarget.select()} />

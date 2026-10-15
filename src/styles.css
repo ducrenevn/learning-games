@@ -65,6 +65,49 @@ a:hover {
   margin-top: 14px;
 }
 
+/* Share panel centering, link and button spacing */
+.share-panel {
+  text-align: center;
+}
+.share-panel h2 {
+  text-align: center;
+}
+.share-code-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 6px 0 14px;
+}
+.share-code-label {
+  font-size: 0.95rem;
+  color: #607168;
+}
+.share-code-wrap .room-code {
+  font-size: 1.85rem;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+}
+.share-panel label {
+  display: block;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+.share-panel .field {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.share-panel .button {
+  margin-top: 0;
+}
+.share-panel .muted.small {
+  text-align: center;
+  margin-top: 16px;
+}
+
+
 /* Full-width container during active local gameplay */
 .page.page-wide {
   width: min(1480px, calc(100% - 24px));
