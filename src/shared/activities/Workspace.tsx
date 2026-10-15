@@ -37,7 +37,11 @@ interface Props<T extends ActivityBase<ActivityType, unknown, 1 | 2>> {
   joinHref?: string;
 }
 type Screen = 'choose' | 'import' | 'edit' | 'play';
-const LABELS: Record<ActivityType, string> = { sort:'Sort', sequence:'Sequence', 'language-detective':'Language Detective', memory:'Memory' };
+const LABELS: Record<Locale, Record<ActivityType, string>> = {
+  de: { sort: 'Was passt wohin?', sequence: 'Der Reihe nach', 'language-detective': 'Auf Fehlersuche', memory: 'Memory' },
+  en: { sort: 'Where Does It Go?', sequence: 'Line It Up', 'language-detective': 'Spot the Mistake', memory: 'Memory' },
+  vi: { sort: 'Thuộc nhóm nào?', sequence: 'Xếp đúng thứ tự', 'language-detective': 'Truy tìm lỗi sai', memory: 'Memory' },
+};
 const RULE: Record<ActivityType, 'ruleSort' | 'ruleSequence' | 'ruleDetective' | 'ruleMemory'> = { sort:'ruleSort', sequence:'ruleSequence', 'language-detective':'ruleDetective', memory:'ruleMemory' };
 const LIMIT = 20;
 
@@ -95,7 +99,7 @@ export function ActivityWorkspace<T extends ActivityBase<ActivityType, unknown, 
   const issues = validate(draft).issues;
   const { field, region } = makeFieldHelpers(issues.filter(issue => flagged.includes(issue.path)), attempted);
   const isPlay = screen === 'play';
-  const name = LABELS[kind];
+  const name = LABELS[locale][kind];
 
   useEffect(() => {
     if (!dirty && !fileBusy && !importCandidate) return;

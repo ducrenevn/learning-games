@@ -242,6 +242,9 @@ function HostRoomView({ state, roomCode, locale, busy, errorText, languageContro
         >
           {sortRoomText(locale, 'closeActivity')}
         </button>
+        <p className="muted small" style={{ margin: '8px 0 16px', textAlign: 'center' }}>
+          {sortRoomText(locale, 'closeActivityHint')}
+        </p>
         <button className="button subtle" onClick={leave}>{sortRoomText(locale, 'leaveRoom')}</button>
         {errorText && <p role="alert" className="error">{errorText}</p>}
       </section>
@@ -575,6 +578,10 @@ function StudentRoomView({ state, roomCode, locale, busy, errorText, languageCon
 
         {!allPlaced && !isReadOnly && (
           <p className="muted small">{sortRoomText(locale, 'allPlacedPrompt')}</p>
+        )}
+
+        {allPlaced && !isReadOnly && (
+          <p className="muted small">{sortRoomText(locale, 'submitWarning')}</p>
         )}
 
         {isReadOnly && (

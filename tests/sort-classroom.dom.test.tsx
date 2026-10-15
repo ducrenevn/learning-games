@@ -169,14 +169,14 @@ describe('Sort room join flow', () => {
     // Test too-short code
     await user.type(codeInput, 'ABC');
     await user.type(nameInput, 'Minh');
-    await user.click(screen.getByRole('button', { name: /Raum beitreten/i }));
+    await user.click(screen.getByRole('button', { name: /Mitspielen/i }));
 
     expect(screen.getByText(/Bitte gib einen 8-stelligen Raumcode ein/i)).toBeTruthy();
 
     // Type full 8 characters
     await user.clear(codeInput);
     await user.type(codeInput, 'abcdefgh'); // test auto-uppercase
-    await user.click(screen.getByRole('button', { name: /Raum beitreten/i }));
+    await user.click(screen.getByRole('button', { name: /Mitspielen/i }));
 
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/games/sort/room/ABCDEFGH');
@@ -211,13 +211,13 @@ describe('Sort room host controls', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Linh')).toBeTruthy();
-      expect(screen.getByRole('button', { name: /Aktivität starten/i })).toBeTruthy();
+      expect(screen.getByRole('button', { name: /Runde starten/i })).toBeTruthy();
     });
 
-    await user.click(screen.getByRole('button', { name: /Aktivität starten/i }));
+    await user.click(screen.getByRole('button', { name: /Runde starten/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Sortieren beenden/i })).toBeTruthy();
+      expect(screen.getByRole('button', { name: /Abgabe schließen/i })).toBeTruthy();
     });
   });
 
@@ -311,17 +311,17 @@ describe('Sort room host controls', () => {
     const { user, unmount } = mountAt('/games/sort/room/' + roomCode);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Sortieren beenden/i })).toBeTruthy();
+      expect(screen.getByRole('button', { name: /Abgabe schließen/i })).toBeTruthy();
     });
 
     // 1. Close: enters review phase
-    await user.click(screen.getByRole('button', { name: /Sortieren beenden/i }));
+    await user.click(screen.getByRole('button', { name: /Abgabe schließen/i }));
 
     // In real SQL, answerReference is present, but resultsRevealed is FALSE.
-    // Teacher MUST see "Ergebnisse freigeben" (Reveal results), and MUST NOT see "Aktivität abschließen" (Finish).
+    // Teacher MUST see "Ergebnisse zeigen" (Reveal results), and MUST NOT see "Runde abschließen" (Finish).
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Ergebnisse freigeben/i })).toBeTruthy();
-      expect(screen.queryByRole('button', { name: /Aktivität abschließen/i })).toBeNull();
+      expect(screen.getByRole('button', { name: /Ergebnisse zeigen/i })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: /Runde abschließen/i })).toBeNull();
     });
 
     // 2. Simulate teacher refresh/reconnection during unrevealed review
@@ -329,16 +329,16 @@ describe('Sort room host controls', () => {
     const { user: userAfterRefresh1, unmount: unmount2 } = mountAt('/games/sort/room/' + roomCode);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Ergebnisse freigeben/i })).toBeTruthy();
-      expect(screen.queryByRole('button', { name: /Aktivität abschließen/i })).toBeNull();
+      expect(screen.getByRole('button', { name: /Ergebnisse zeigen/i })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: /Runde abschließen/i })).toBeNull();
     });
 
-    // 3. Reveal: teacher clicks "Ergebnisse freigeben"
-    await userAfterRefresh1.click(screen.getByRole('button', { name: /Ergebnisse freigeben/i }));
+    // 3. Reveal: teacher clicks "Ergebnisse zeigen"
+    await userAfterRefresh1.click(screen.getByRole('button', { name: /Ergebnisse zeigen/i }));
 
-    // Now resultsRevealed is TRUE: teacher sees "Aktivität abschließen" and the score
+    // Now resultsRevealed is TRUE: teacher sees "Runde abschließen" and the score
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Aktivität abschließen/i })).toBeTruthy();
+      expect(screen.getByRole('button', { name: /Runde abschließen/i })).toBeTruthy();
       expect(screen.getByText('3 / 3')).toBeTruthy();
     });
 
@@ -347,15 +347,15 @@ describe('Sort room host controls', () => {
     const { user: userAfterRefresh2 } = mountAt('/games/sort/room/' + roomCode);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Aktivität abschließen/i })).toBeTruthy();
+      expect(screen.getByRole('button', { name: /Runde abschließen/i })).toBeTruthy();
       expect(screen.getByText('3 / 3')).toBeTruthy();
     });
 
     // 5. Finish activity
-    await userAfterRefresh2.click(screen.getByRole('button', { name: /Aktivität abschließen/i }));
+    await userAfterRefresh2.click(screen.getByRole('button', { name: /Runde abschließen/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Aktivität abgeschlossen/i)).toBeTruthy();
+      expect(screen.getByText(/Runde abgeschlossen/i)).toBeTruthy();
     });
   });
 });
@@ -429,7 +429,7 @@ describe('Sort room student interactions', () => {
     await user.click(submitBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Abgegeben! Bitte warten/i)).toBeTruthy();
+      expect(screen.getByText(/Deine Antworten sind abgegeben!/i)).toBeTruthy();
     });
   });
 

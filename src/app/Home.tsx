@@ -4,12 +4,12 @@ import { gameRegistry, type GameMode } from '../games/registry';
 import { useLocale } from '../shared/locale/LocaleProvider';
 
 const copy = {
-  de: { eyebrow: 'SPIELERISCH LERNEN', lead: 'Kurze Spiele für Unterricht, Gruppen und eigene Übung.', open: 'Spiel öffnen',
-    modes: { present: 'Präsentieren', try: 'Ausprobieren', online: 'Online-Raum' } },
-  en: { eyebrow: 'PLAYFUL LEARNING', lead: 'Short games for lessons, groups and self-study.', open: 'Open game',
-    modes: { present: 'Present', try: 'Try it', online: 'Online room' } },
-  vi: { eyebrow: 'HỌC QUA TRÒ CHƠI', lead: 'Trò chơi ngắn cho lớp học, nhóm và tự luyện tập.', open: 'Mở trò chơi',
-    modes: { present: 'Trình chiếu', try: 'Dùng thử', online: 'Phòng trực tuyến' } },
+  de: { eyebrow: 'SPIELERISCH LERNEN', lead: 'Gemeinsam spielen, verstehen und Sprachen vertiefen – im Unterricht oder für dich allein.', open: 'Spiel öffnen',
+    modes: { present: 'Präsentieren', try: 'Ausprobieren', online: 'Live-Runde' } },
+  en: { eyebrow: 'PLAYFUL LEARNING', lead: 'Play together, explore concepts, and build language skills – in class or on your own.', open: 'Open game',
+    modes: { present: 'Present', try: 'Try it', online: 'Live game' } },
+  vi: { eyebrow: 'HỌC QUA TRÒ CHƠI', lead: 'Cùng chơi, khám phá và nâng cao phản xạ ngôn ngữ – trên lớp hoặc tự luyện tập.', open: 'Mở trò chơi',
+    modes: { present: 'Trình chiếu', try: 'Dùng thử', online: 'Chơi trực tuyến' } },
 } as const satisfies Record<string, { eyebrow: string; lead: string; open: string; modes: Record<GameMode, string> }>;
 
 export function Home() {
