@@ -3,6 +3,7 @@ import type { Locale } from '../../../shared/activities/contract';
 export const sortRoomCopy = {
   de: {
     backToGame: '← Was passt wohin?',
+    gameTitle: 'Was passt wohin?',
     eyebrow: 'GEMEINSAM SPIELEN',
     joinTitle: 'Mitspielen',
     joinIntro: 'Gib deinen Namen und den 8-stelligen Raumcode ein.',
@@ -56,6 +57,7 @@ export const sortRoomCopy = {
   },
   en: {
     backToGame: '← Where Does It Go?',
+    gameTitle: 'Where Does It Go?',
     eyebrow: 'PLAY TOGETHER',
     joinTitle: 'Join game',
     joinIntro: 'Enter your name and the 8-character room code to join.',
@@ -109,6 +111,7 @@ export const sortRoomCopy = {
   },
   vi: {
     backToGame: '← Thuộc nhóm nào?',
+    gameTitle: 'Thuộc nhóm nào?',
     eyebrow: 'CHƠI CÙNG NHAU',
     joinTitle: 'Vào chơi',
     joinIntro: 'Nhập tên của bạn và mã phòng 8 ký tự để tham gia.',

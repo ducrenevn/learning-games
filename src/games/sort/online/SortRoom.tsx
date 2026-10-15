@@ -53,7 +53,7 @@ function SortChip(p: ChipProps) {
     >
       <strong>{p.item.text}</strong>
       {p.placedIn && <span className="sr-only">, {p.categoryWord}: {p.placedIn}</span>}
-      {p.checked && <span className="activity-status"><span aria-hidden="true">{p.right ? '✓' : '✗'}</span> {p.right ? p.correctWord : p.wrongWord}</span>}
+      {p.checked && <span className="sr-only"> ({p.right ? p.correctWord : p.wrongWord})</span>}
       {p.revealed && !p.right && p.correctLabel && <span className="chip-fix small"><span aria-hidden="true">→</span> <span>{p.correctLabel}</span></span>}
     </button>
   </li>;
@@ -346,10 +346,10 @@ function StudentRoomView({ state, roomCode, locale, busy, errorText, languageCon
   const refocus = useRef<string | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
 
-  const isSubmitted = state.submission !== null;
+  const isSubmitted = state.submission?.status === 'submitted';
   const isRevealed = state.resultsRevealed === true || state.result !== null;
   const isClosed = state.roomStatus !== 'lobby' && state.roomStatus !== 'active';
-  const isReadOnly = isSubmitted || isClosed;
+  const isReadOnly = state.submission !== null || isClosed;
 
   const placements = state.placements;
   const inBank = items.filter(item => !placements[item.handle]);
@@ -457,7 +457,7 @@ function StudentRoomView({ state, roomCode, locale, busy, errorText, languageCon
       <header className="activity-ux-head">
         <div className="activity-ux-heading">
           <div className="eyebrow">{sortRoomText(locale, 'eyebrow')} · {sortRoomText(locale, 'roomLabel')} {roomCode}</div>
-          <h1>{sortRoomText(locale, 'eyebrow')}</h1>
+          <h1>{sortRoomText(locale, 'gameTitle')}</h1>
         </div>
       </header>
 
@@ -478,13 +478,13 @@ function StudentRoomView({ state, roomCode, locale, busy, errorText, languageCon
       )}
 
       {!isRevealed && isSubmitted && (
-        <div className="feedback" style={{ position: 'static', margin: '0 auto 16px', maxWidth: 600 }}>
+        <div className="sort-status-banner">
           {sortRoomText(locale, 'submittedWait')}
         </div>
       )}
 
-      {!isRevealed && !isSubmitted && isClosed && (
-        <div className="feedback feedback-wrong" style={{ position: 'static', margin: '0 auto 16px', maxWidth: 600 }}>
+      {!isRevealed && !isSubmitted && (isClosed || state.submission?.status === 'closed_unsubmitted') && (
+        <div className="sort-status-banner">
           {sortRoomText(locale, 'closedWait')}
         </div>
       )}
@@ -500,37 +500,69 @@ function StudentRoomView({ state, roomCode, locale, busy, errorText, languageCon
           </span>
         </div>
 
-        <div className="sort-layout">
+        <div className={'sort-layout' + (isReadOnly ? ' readonly' : '')}>
           <div className="sort-bins">
-            {categories.map((cat, index) => (
-              <DropSection
-                key={cat.handle}
-                id={binId(cat.handle)}
-                className={'sort-bin' + (armed || dragging ? ' armed' : '')}
-                labelledBy={uid + cat.handle}
-                onBackgroundClick={target => backgroundClick(target, cat.handle)}
-              >
-                <header>
-                  <h3 id={uid + cat.handle}>{cat.label}</h3>
-                  <span className="rb-count" aria-hidden="true">
-                    {items.filter(i => placements[i.handle] === cat.handle).length}
-                  </span>
-                </header>
-                <ul className="sort-bin-chips">
-                  {items.filter(i => placements[i.handle] === cat.handle).map(i => chip(i, cat.label))}
-                </ul>
-                <button
-                  type="button"
-                  className="sort-drop"
-                  disabled={!armed}
-                  aria-label={sortRoomText(locale, 'category') + ': ' + cat.label}
-                  aria-keyshortcuts={String(index + 1)}
-                  onClick={() => place(cat.handle)}
+            {categories.map((cat, index) => {
+              const placedInCat = items.filter(i => placements[i.handle] === cat.handle);
+              const rightCount = isRevealed && state.result
+                ? placedInCat.filter(i => state.result?.answerFeedback[i.handle] === cat.handle).length
+                : 0;
+              const wrongCount = isRevealed && state.result
+                ? placedInCat.length - rightCount
+                : 0;
+              const isAllCorrect = isRevealed && placedInCat.length > 0 && wrongCount === 0;
+              const isMixed = isRevealed && placedInCat.length > 0 && rightCount > 0 && wrongCount > 0;
+              const isAllWrong = isRevealed && placedInCat.length > 0 && rightCount === 0 && wrongCount > 0;
+
+              return (
+                <DropSection
+                  key={cat.handle}
+                  id={binId(cat.handle)}
+                  className={'sort-bin' + (armed || dragging ? ' armed' : '') + (isAllCorrect ? ' bin-good' : '')}
+                  labelledBy={uid + cat.handle}
+                  onBackgroundClick={target => backgroundClick(target, cat.handle)}
                 >
-                  {sortRoomText(locale, 'category')}
-                </button>
-              </DropSection>
-            ))}
+                  <header>
+                    <h3 id={uid + cat.handle}>{cat.label}</h3>
+                    {!isRevealed && (
+                      <span className="rb-count" aria-hidden="true">{placedInCat.length}</span>
+                    )}
+                    {isRevealed && isAllCorrect && (
+                      <span className="bin-pill bin-pill-good" aria-label={`${rightCount} richtig`}>
+                        <span aria-hidden="true">✓ </span>{rightCount}
+                      </span>
+                    )}
+                    {isRevealed && isMixed && (
+                      <div className="bin-pill-group" aria-label={`${rightCount} richtig, ${wrongCount} falsch`}>
+                        <span className="bin-pill bin-pill-good"><span aria-hidden="true">✓ </span>{rightCount}</span>
+                        <span className="bin-pill bin-pill-bad"><span aria-hidden="true">✗ </span>{wrongCount}</span>
+                      </div>
+                    )}
+                    {isRevealed && isAllWrong && (
+                      <span className="bin-pill bin-pill-bad" aria-label={`${wrongCount} falsch`}>
+                        <span aria-hidden="true">✗ </span>{wrongCount}
+                      </span>
+                    )}
+                    {isRevealed && placedInCat.length === 0 && (
+                      <span className="rb-count muted" aria-hidden="true">0</span>
+                    )}
+                  </header>
+                  <ul className="sort-bin-chips">
+                    {placedInCat.map(i => chip(i, cat.label))}
+                  </ul>
+                  <button
+                    type="button"
+                    className="sort-drop"
+                    disabled={!armed}
+                    aria-label={sortRoomText(locale, 'category') + ': ' + cat.label}
+                    aria-keyshortcuts={String(index + 1)}
+                    onClick={() => place(cat.handle)}
+                  >
+                    {sortRoomText(locale, 'category')}
+                  </button>
+                </DropSection>
+              );
+            })}
           </div>
 
           <DropSection
