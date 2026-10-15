@@ -43,6 +43,7 @@ export interface SortParticipant {
 }
 export interface HostSortView {
   status: SortRoomStatus;
+  resultsRevealed?: boolean;
   participants: SortParticipant[];
   studentCount: number;
   /** Available to host during review/finished only. */
@@ -52,6 +53,7 @@ export interface HostSortView {
 interface BaseSortState {
   roomRevision: number;
   roomStatus: SortRoomStatus;
+  resultsRevealed: boolean;
   game: 'sort';
   mode: 'individual';
   roomLanguage: Locale;

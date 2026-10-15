@@ -53,4 +53,74 @@ describe('Sort MP1 safe projection', () => {
     expect(() => parseSortState({ ...base, hostView: { ...base.hostView,
       participants: [{ ...base.hostView.participants[0], score: { correct: 1 } }] } }, 'host', null)).toThrow();
   });
+  it('tracks explicit server-authoritative resultsRevealed during review before and after reveal', () => {
+    // 1. Close -> Review (not revealed yet). Real SQL already returns answerReference, but resultsRevealed is false.
+    const reviewUnrevealed = {
+      ...policy,
+      roomRevision: 5,
+      roomStatus: 'review',
+      resultsRevealed: false,
+      hostView: {
+        status: 'review',
+        resultsRevealed: false,
+        studentCount: 1,
+        participants: [{
+          participantId: 'student-1', role: 'student', displayName: 'Mai', status: 'active',
+          completionStatus: 'submitted', submission: { [item]: category }, score: { evaluator: 'scoreSort', correct: 1, total: 1, complete: true },
+        }],
+        answerReference: { [item]: category },
+      },
+    };
+    const parsedReview = parseSortState(reviewUnrevealed, 'host', null);
+    expect(parsedReview.role).toBe('host');
+    if (parsedReview.role !== 'host') throw new Error('wrong view');
+    expect(parsedReview.resultsRevealed).toBe(false);
+    expect(parsedReview.hostView.resultsRevealed).toBe(false);
+    expect(parsedReview.hostView.answerReference).toEqual({ [item]: category });
+
+    // 2. Teacher refresh/reconnect in review (unrevealed): fresh state with resultsRevealed: false
+    const refreshedUnrevealed = parseSortState(reviewUnrevealed, 'host', null);
+    expect(refreshedUnrevealed.resultsRevealed).toBe(false);
+
+    // 3. Reveal -> Review (revealed). Real SQL updates revealed_at and increments room revision.
+    const reviewRevealed = {
+      ...reviewUnrevealed,
+      roomRevision: 6,
+      resultsRevealed: true,
+      hostView: {
+        ...reviewUnrevealed.hostView,
+        resultsRevealed: true,
+      },
+    };
+    const parsedRevealed = parseSortState(reviewRevealed, 'host', parsedReview);
+    expect(parsedRevealed.resultsRevealed).toBe(true);
+    if (parsedRevealed.role !== 'host') throw new Error('wrong view');
+    expect(parsedRevealed.hostView.resultsRevealed).toBe(true);
+
+    // 4. Teacher refresh/reconnect in review (revealed): fresh state retains resultsRevealed: true
+    const refreshedRevealed = parseSortState(reviewRevealed, 'host', null);
+    expect(refreshedRevealed.resultsRevealed).toBe(true);
+
+    // 5. Student view: unrevealed has resultsRevealed: false; revealed has resultsRevealed: true
+    const studentUnrevealed = parseSortState({
+      ...student,
+      roomRevision: 5,
+      roomStatus: 'review',
+      resultsRevealed: false,
+      result: null,
+    }, 'student', null);
+    expect(studentUnrevealed.resultsRevealed).toBe(false);
+
+    const studentRevealed = parseSortState({
+      ...student,
+      roomRevision: 6,
+      roomStatus: 'review',
+      resultsRevealed: true,
+      result: {
+        score: { evaluator: 'scoreSort', correct: 1, total: 1, complete: true },
+        answerFeedback: { [item]: category },
+      },
+    }, 'student', studentUnrevealed);
+    expect(studentRevealed.resultsRevealed).toBe(true);
+  });
 });

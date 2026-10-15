@@ -169,7 +169,7 @@ function HostRoomView({ state, roomCode, locale, busy, errorText, languageContro
   const view = state.hostView;
   const students = view.participants.filter(p => p.role === 'student');
   const submittedCount = students.filter(p => p.completionStatus === 'submitted').length;
-  const isRevealed = view.answerReference !== null;
+  const isRevealed = view.resultsRevealed === true || state.resultsRevealed === true;
 
   if (state.roomStatus === 'lobby') {
     return <main className="page">
@@ -344,7 +344,7 @@ function StudentRoomView({ state, roomCode, locale, busy, errorText, languageCon
   const boardRef = useRef<HTMLDivElement>(null);
 
   const isSubmitted = state.submission !== null;
-  const isRevealed = state.result !== null;
+  const isRevealed = state.resultsRevealed === true || state.result !== null;
   const isClosed = state.roomStatus !== 'lobby' && state.roomStatus !== 'active';
   const isReadOnly = isSubmitted || isClosed;
 

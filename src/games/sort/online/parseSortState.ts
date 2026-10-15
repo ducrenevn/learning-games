@@ -80,8 +80,12 @@ export function parseSortState(raw: unknown, role: SortRoomRole, previous: SortR
     throw new Error('INVALID_SORT_STATE');
   }
   const roomStatus = status(data.roomStatus);
+  const resultsRevealed = data.resultsRevealed === true ||
+    (Boolean(data.hostView) && typeof data.hostView === 'object' && (data.hostView as JsonObject).resultsRevealed === true) ||
+    Boolean(data.result);
   const common = {
     game: 'sort' as const, mode: 'individual' as const, roomRevision, roomStatus,
+    resultsRevealed,
     roomLanguage: data.roomLanguage, allowStudentLanguageChoice: data.allowStudentLanguageChoice,
   };
   let next: SortRoomState;
@@ -89,7 +93,9 @@ export function parseSortState(raw: unknown, role: SortRoomRole, previous: SortR
     const view = object(data.hostView);
     next = {
       ...common, role: 'host', hostView: {
-        status: status(view.status), participants: participants(view.participants, roomStatus),
+        status: status(view.status),
+        resultsRevealed: view.resultsRevealed === true || resultsRevealed,
+        participants: participants(view.participants, roomStatus),
         studentCount: integer(view.studentCount),
         answerReference: roomStatus === 'review' || roomStatus === 'finished'
           ? (view.answerReference === null ? null : mapping(view.answerReference))

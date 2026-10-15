@@ -33,6 +33,7 @@ function mockStudentState(overrides: Record<string, unknown> = {}) {
   return {
     game: 'sort', mode: 'individual', roomRevision: 1, roomStatus: 'active',
     roomLanguage: 'de', allowStudentLanguageChoice: false, attemptRevision: 1,
+    resultsRevealed: false,
     studentView: {
       categories: [
         { handle: catHandle1, label: 'der' },
@@ -56,8 +57,10 @@ function mockHostState(overrides: Record<string, unknown> = {}) {
   return {
     game: 'sort', mode: 'individual', roomRevision: 1, roomStatus: 'lobby',
     roomLanguage: 'de', allowStudentLanguageChoice: false,
+    resultsRevealed: false,
     hostView: {
       status: 'lobby',
+      resultsRevealed: false,
       studentCount: 1,
       participants: [
         {
@@ -243,18 +246,36 @@ describe('Sort room host controls', () => {
       lg_v1_state: () => currentState,
       lg_v1_command: (args) => {
         if (args.p_kind === 'room.close') {
+          // Real SQL contract: on close, status is 'review', answerReference IS populated, but resultsRevealed is FALSE
           currentState = mockHostState({
+            roomRevision: 2,
             roomStatus: 'review',
-            hostView: { ...currentState.hostView, status: 'review' },
+            resultsRevealed: false,
+            hostView: {
+              ...currentState.hostView,
+              status: 'review',
+              resultsRevealed: false,
+              answerReference: { [itemHandle1]: catHandle1 },
+              participants: [
+                {
+                  ...currentState.hostView.participants[0],
+                  score: { evaluator: 'scoreSort', correct: 3, total: 3, complete: true },
+                },
+              ],
+            },
           });
           return { roomRevision: 2, status: 'ok' };
         }
         if (args.p_kind === 'room.reveal') {
+          // Real SQL contract: reveal sets revealed_at, exposing resultsRevealed: true
           currentState = mockHostState({
+            roomRevision: 3,
             roomStatus: 'review',
+            resultsRevealed: true,
             hostView: {
               ...currentState.hostView,
               status: 'review',
+              resultsRevealed: true,
               answerReference: { [itemHandle1]: catHandle1 },
               participants: [
                 {
@@ -267,39 +288,71 @@ describe('Sort room host controls', () => {
           return { roomRevision: 3, status: 'ok' };
         }
         if (args.p_kind === 'room.finish') {
+          // Real SQL contract: finish BEFORE reveal raises ROOM_CLOSED
+          if (!currentState.resultsRevealed) {
+            throw new Error('ROOM_CLOSED');
+          }
           currentState = mockHostState({
+            roomRevision: 4,
             roomStatus: 'finished',
-            hostView: { ...currentState.hostView, status: 'finished' },
+            resultsRevealed: true,
+            hostView: {
+              ...currentState.hostView,
+              status: 'finished',
+              resultsRevealed: true,
+            },
           });
           return { roomRevision: 4, status: 'ok' };
         }
-        throw new Error('unknown command');
+        throw new Error('unknown command ' + args.p_kind);
       },
     });
 
-    const { user } = mountAt('/games/sort/room/' + roomCode);
+    const { user, unmount } = mountAt('/games/sort/room/' + roomCode);
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Sortieren beenden/i })).toBeTruthy();
     });
 
-    // Close
+    // 1. Close: enters review phase
     await user.click(screen.getByRole('button', { name: /Sortieren beenden/i }));
+
+    // In real SQL, answerReference is present, but resultsRevealed is FALSE.
+    // Teacher MUST see "Ergebnisse freigeben" (Reveal results), and MUST NOT see "Aktivität abschließen" (Finish).
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Ergebnisse freigeben/i })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: /Aktivität abschließen/i })).toBeNull();
+    });
+
+    // 2. Simulate teacher refresh/reconnection during unrevealed review
+    unmount();
+    const { user: userAfterRefresh1, unmount: unmount2 } = mountAt('/games/sort/room/' + roomCode);
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Ergebnisse freigeben/i })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: /Aktivität abschließen/i })).toBeNull();
     });
 
-    // Reveal
-    await user.click(screen.getByRole('button', { name: /Ergebnisse freigeben/i }));
+    // 3. Reveal: teacher clicks "Ergebnisse freigeben"
+    await userAfterRefresh1.click(screen.getByRole('button', { name: /Ergebnisse freigeben/i }));
+
+    // Now resultsRevealed is TRUE: teacher sees "Aktivität abschließen" and the score
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Aktivität abschließen/i })).toBeTruthy();
+      expect(screen.getByText('3 / 3')).toBeTruthy();
+    });
+
+    // 4. Simulate teacher refresh/reconnection during revealed review
+    unmount2();
+    const { user: userAfterRefresh2 } = mountAt('/games/sort/room/' + roomCode);
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Aktivität abschließen/i })).toBeTruthy();
       expect(screen.getByText('3 / 3')).toBeTruthy();
     });
 
-    // Finish
-    await user.click(screen.getByRole('button', { name: /Aktivität abschließen/i }));
+    // 5. Finish activity
+    await userAfterRefresh2.click(screen.getByRole('button', { name: /Aktivität abschließen/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/Aktivität abgeschlossen/i)).toBeTruthy();
