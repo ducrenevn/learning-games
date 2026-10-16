@@ -1,3 +1,15 @@
+# Sort UI micro-polish — correction branch (2026-10-16)
+
+Branch `fix/sort-ui-micro-polish-20261016`, based on `08800e8`. Local commit only; not pushed, not merged, not deployed. Awaiting owner visual approval.
+
+- **Teacher action groups:** Lobby, Active, Review and Finished host screens in the Sort online room wrap their primary and leave actions in `.action-group` (one column, 14px gap). The Sort screens no longer rely on the `.setup-grid` margin workaround. That workaround remains for the Memory lobby.
+- **Room language label:** the Sort room's language selector is labelled Sprache / Language / Ngôn ngữ (`languageLabel`) instead of the category word. The flag controls and room language policy are unchanged.
+- **Information icon:** no permanent border or fill. A 40px target shows a brand-tint circle on hover (fine pointers only), on keyboard focus, and on press. The copper `:focus-visible` ring is kept. Tap highlight is transparent.
+- **Information note:** positioned by `HintPopover` as a fixed box beside the icon. Above by default, below when there is no room above, right-aligned and kept inside the viewport. Re-anchored on scroll and resize. The note is no longer pinned to the top of the screen on mobile.
+- **Verification:** typecheck, 482/482 tests (38 files, including the new `tests/hint-popover.dom.test.tsx` and `tests/sort-room-polish.dom.test.tsx`), and build pass. Browser checks ran against local Vite with all Supabase RPCs answered from fixtures, so no hosted room was touched. Not verified: real phones, Safari/Firefox, screen readers, real touch devices.
+
+---
+
 # MP1 contract v3 — second Opus delta reconciled (2026-10-14)
 
 The second Opus review of v2 `eedaa67` found no new P0, but required four P1 fixes (B1 locks and host polling; B2 exact attempt CAS; B3 SQL owner/wrapper privileges; B4 retry before admission check) and six refinements C1–C6. All are reconciled as **design-only** in [MP1_BACKEND_CONTRACT](architecture/MP1_BACKEND_CONTRACT.md) and [second review audit](audits/2026-10-14-mp1-opus-v2-reconciliation.md). Next step requires product-owner authorization for isolated disposable-only MP1-AB-db implementation and real SQL/PostgREST proof. No MP1 SQL, SPP access, hosted changes or application code modifications have occurred.

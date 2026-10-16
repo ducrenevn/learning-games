@@ -65,6 +65,10 @@ a:hover {
   margin-top: 14px;
 }
 
+/* Teacher action stack: one column with one fixed gap, so a primary action never touches the leave button. */
+.action-group { display: grid; gap: 14px; }
+.action-group > p { margin: 0; }
+
 /* Share panel centering, link and button spacing */
 .share-panel {
   text-align: center;
@@ -479,9 +483,17 @@ a:hover {
 .sort-bank-done{margin:0}
 .sort-return{align-self:flex-start}
 .hint-popover{position:relative}
-.hint-trigger{width:40px;height:40px;border:1px solid #c9d6cc;border-radius:50%;background:#fff;color:var(--green);display:grid;place-items:center;cursor:pointer;padding:0}
-.hint-trigger:hover{border-color:var(--green)}
-.hint-body{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:min(300px,78vw);padding:12px 14px;background:#fff;border:1px solid #b3c6b8;border-radius:12px;box-shadow:0 10px 26px #29312d29;font-size:.9rem;line-height:1.5;font-weight:400}
+/* Icon only at rest: a 40px target with a brand-tint circle that appears on hover (fine pointers only), keyboard focus or press. */
+.hint-trigger{width:40px;height:40px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--green);display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@media(hover:hover){.hint-trigger:hover{background:#e3eee7}}
+.hint-trigger:focus-visible{outline:3px solid var(--copper);outline-offset:2px;background:#e3eee7}
+.hint-trigger:active{background:#d3e5d9}
+/* Fixed, not absolute: a scrolling bank would clip an absolute note. JavaScript places it beside the icon (see HintPopover). */
+.hint-body{position:fixed;z-index:30;display:flex;flex-direction:column;box-sizing:border-box;width:min(300px,calc(100vw - 20px));background:#fff;border:1px solid #b3c6b8;border-radius:12px;box-shadow:0 12px 28px #29312d33;font-size:.9rem;line-height:1.5;font-weight:400}
+.hint-body-text{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px 14px}
+.hint-body::after{content:"";position:absolute;left:var(--arrow-x,50%);width:10px;height:10px;margin-left:-5px;background:#fff;border:0 solid #b3c6b8;transform:rotate(45deg)}
+.hint-body[data-placement="above"]::after{bottom:-6px;border-width:0 1px 1px 0}
+.hint-body[data-placement="below"]::after{top:-6px;border-width:1px 0 0 1px}
 .sort-key-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .sort-key-list p{margin:2px 0 0;color:#596c61}
 .activity-projected .sort-chip{min-height:64px;font-size:1.1em}
@@ -501,8 +513,6 @@ a:hover {
   .sort-bank-chips{gap:6px}
   .sort-chip{padding:8px 10px;font-size:1rem}
   .sort-chip.selected{padding:6.5px 8.5px}
-  /* fixed: the bank scrolls, and a scroll container would clip an absolutely positioned popover */
-  .hint-body{position:fixed;left:10px;right:10px;top:72px;width:auto}
 }
 .sort-status-banner{display:block;width:100%;max-width:580px;margin:0 auto 16px;padding:12px 18px;background:var(--green);color:#fff;border-radius:14px;font-weight:600;font-size:.95rem;line-height:1.45;text-align:center;box-sizing:border-box;box-shadow:0 4px 12px #00000014;transform:none}
 /* Author canvas */
@@ -534,7 +544,7 @@ a:hover {
 .sort-bin.ghost:disabled{opacity:.5;cursor:default}
 @media(max-width:700px){.sort-bin.ghost{flex:1 1 100%;min-height:72px}}
 .sort-bank header{grid-template-columns:minmax(0,1fr) auto auto}
-@media(max-width:700px){.sort-bank h3{font-size:1rem;overflow-wrap:normal}.sort-bank header{gap:6px}.hint-trigger{width:36px;height:36px}}
+@media(max-width:700px){.sort-bank h3{font-size:1rem;overflow-wrap:normal}.sort-bank header{gap:6px}}
 .sort-chip{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .sort-chip.dragging{opacity:.35;border-style:dashed}
 /* dnd-kit sizes the overlay wrapper to the source card, so the ghost sizes itself to its text: a word wraps only when it cannot fit the viewport. */

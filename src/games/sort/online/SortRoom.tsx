@@ -91,7 +91,7 @@ function NoAccess({ roomCode }: { roomCode: string }) {
 
 function RoomLanguageBar({ locale }: { locale: Locale }) {
   return <div className="room-language-bar">
-    <span className="muted small">{sortRoomText(locale, 'category')}</span>
+    <span className="muted small">{sortRoomText(locale, 'languageLabel')}</span>
     <LanguageFlags />
   </div>;
 }
@@ -197,14 +197,16 @@ function HostRoomView({ state, roomCode, locale, busy, errorText, languageContro
             ))}
           </div>
           {!students.length && <p className="muted">{sortRoomText(locale, 'noPlayers')}</p>}
-          <button
-            className="button primary stretch"
-            disabled={!students.length || busy}
-            onClick={() => void send('room.start')}
-          >
-            {sortRoomText(locale, 'startGame')}
-          </button>
-          <button className="button subtle" onClick={leave}>{sortRoomText(locale, 'leaveRoom')}</button>
+          <div className="action-group">
+            <button
+              className="button primary stretch"
+              disabled={!students.length || busy}
+              onClick={() => void send('room.start')}
+            >
+              {sortRoomText(locale, 'startGame')}
+            </button>
+            <button className="button subtle" onClick={leave}>{sortRoomText(locale, 'leaveRoom')}</button>
+          </div>
           {errorText && <p role="alert" className="error">{errorText}</p>}
         </section>
         <RoomShare roomCode={roomCode} locale={locale} joinPath="/games/sort/join" />
@@ -235,17 +237,19 @@ function HostRoomView({ state, roomCode, locale, busy, errorText, languageContro
             </div>
           ))}
         </div>
-        <button
-          className="button primary stretch"
-          disabled={busy}
-          onClick={() => void send('room.close')}
-        >
-          {sortRoomText(locale, 'closeActivity')}
-        </button>
-        <p className="muted small" style={{ margin: '8px 0 16px', textAlign: 'center' }}>
-          {sortRoomText(locale, 'closeActivityHint')}
-        </p>
-        <button className="button subtle" onClick={leave}>{sortRoomText(locale, 'leaveRoom')}</button>
+        <div className="action-group">
+          <button
+            className="button primary stretch"
+            disabled={busy}
+            onClick={() => void send('room.close')}
+          >
+            {sortRoomText(locale, 'closeActivity')}
+          </button>
+          <p className="muted small" style={{ textAlign: 'center' }}>
+            {sortRoomText(locale, 'closeActivityHint')}
+          </p>
+          <button className="button subtle" onClick={leave}>{sortRoomText(locale, 'leaveRoom')}</button>
+        </div>
         {errorText && <p role="alert" className="error">{errorText}</p>}
       </section>
     </main>;
@@ -276,24 +280,26 @@ function HostRoomView({ state, roomCode, locale, busy, errorText, languageContro
             </div>
           ))}
         </div>
-        {!isRevealed ? (
-          <button
-            className="button primary stretch"
-            disabled={busy}
-            onClick={() => void send('room.reveal')}
-          >
-            {sortRoomText(locale, 'revealResults')}
-          </button>
-        ) : (
-          <button
-            className="button primary stretch"
-            disabled={busy}
-            onClick={() => void send('room.finish')}
-          >
-            {sortRoomText(locale, 'finishActivity')}
-          </button>
-        )}
-        <button className="button subtle" onClick={leave}>{sortRoomText(locale, 'leaveRoom')}</button>
+        <div className="action-group">
+          {!isRevealed ? (
+            <button
+              className="button primary stretch"
+              disabled={busy}
+              onClick={() => void send('room.reveal')}
+            >
+              {sortRoomText(locale, 'revealResults')}
+            </button>
+          ) : (
+            <button
+              className="button primary stretch"
+              disabled={busy}
+              onClick={() => void send('room.finish')}
+            >
+              {sortRoomText(locale, 'finishActivity')}
+            </button>
+          )}
+          <button className="button subtle" onClick={leave}>{sortRoomText(locale, 'leaveRoom')}</button>
+        </div>
         {errorText && <p role="alert" className="error">{errorText}</p>}
       </section>
     </main>;
@@ -316,7 +322,9 @@ function HostRoomView({ state, roomCode, locale, busy, errorText, languageContro
           </div>
         ))}
       </div>
-      <button className="button subtle" onClick={leave}>{sortRoomText(locale, 'leaveRoom')}</button>
+      <div className="action-group">
+        <button className="button subtle" onClick={leave}>{sortRoomText(locale, 'leaveRoom')}</button>
+      </div>
     </section>
   </main>;
 }
