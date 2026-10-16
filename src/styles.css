@@ -68,6 +68,7 @@ a:hover {
 /* Teacher action stack: one column with one fixed gap, so a primary action never touches the leave button. */
 .action-group { display: grid; gap: 14px; }
 .action-group > p { margin: 0; }
+.action-group > .button.subtle { justify-self: start; }
 
 /* Share panel centering, link and button spacing */
 .share-panel {

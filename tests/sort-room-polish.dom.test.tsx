@@ -101,9 +101,12 @@ describe('Sort teacher action groups', () => {
     expect(buttons[buttons.length - 1]).toBe(leave);
     if (primary) {
       expect(buttons[0].textContent).toBe(primary);
+      expect(buttons[0].className).toContain('stretch');
       expect(buttons).toHaveLength(2);
     } else {
       expect(buttons).toHaveLength(1);
     }
+    expect(leave.className).toContain('subtle');
+    expect(leave.className).not.toContain('stretch');
   });
 });

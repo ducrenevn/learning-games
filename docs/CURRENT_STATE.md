@@ -2,7 +2,7 @@
 
 Branch `fix/sort-ui-micro-polish-20261016`, based on `08800e8`. Local commit only; not pushed, not merged, not deployed. Awaiting owner visual approval.
 
-- **Teacher action groups:** Lobby, Active, Review and Finished host screens in the Sort online room wrap their primary and leave actions in `.action-group` (one column, 14px gap). The Sort screens no longer rely on the `.setup-grid` margin workaround. That workaround remains for the Memory lobby.
+- **Teacher action groups:** Lobby, Active, Review and Finished host screens in the Sort online room wrap their primary and leave actions in `.action-group` (one column, 14px gap). The primary action stays full width, while "Raum verlassen" retains its natural compact width (`justify-self: start`). The Sort screens no longer rely on the `.setup-grid` margin workaround. That workaround remains for the Memory lobby.
 - **Room language label:** the Sort room's language selector is labelled Sprache / Language / Ngôn ngữ (`languageLabel`) instead of the category word. The flag controls and room language policy are unchanged.
 - **Information icon:** no permanent border or fill. A 40px target shows a brand-tint circle on hover (fine pointers only), on keyboard focus, and on press. The copper `:focus-visible` ring is kept. Tap highlight is transparent.
 - **Information note:** positioned by `HintPopover` as a fixed box beside the icon. Above by default, below when there is no room above, right-aligned and kept inside the viewport. Re-anchored on scroll and resize. The note is no longer pinned to the top of the screen on mobile.
