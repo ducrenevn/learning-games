@@ -1,0 +1,212 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 2,
+  "activityType": "language-detective",
+  "id": "ungueltig",
+  "title": "Ungültig",
+  "targetLanguage": "de",
+  "instructions": "Nur zum Testen.",
+  "content": {
+    "prompt": "Test.",
+    "tasks": [
+      {
+        "id": "task-1",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-2",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-3",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-4",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-5",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-6",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-7",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-8",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-9",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-10",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-11",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "habe"
+          },
+          {
+            "id": "segment-3",
+            "text": "Zeit."
+          }
+        ],
+        "issues": []
+      }
+    ]
+  }
+}

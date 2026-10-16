@@ -1,0 +1,359 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 2,
+  "activityType": "language-detective",
+  "id": "ungueltig",
+  "title": "Ungültig",
+  "targetLanguage": "de",
+  "instructions": "Nur zum Testen.",
+  "content": {
+    "prompt": "Test.",
+    "tasks": [
+      {
+        "id": "task-1",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Wort1"
+          },
+          {
+            "id": "segment-2",
+            "text": "Wort2"
+          },
+          {
+            "id": "segment-3",
+            "text": "Wort3"
+          },
+          {
+            "id": "segment-4",
+            "text": "Wort4"
+          },
+          {
+            "id": "segment-5",
+            "text": "Wort5"
+          },
+          {
+            "id": "segment-6",
+            "text": "Wort6"
+          },
+          {
+            "id": "segment-7",
+            "text": "Wort7"
+          },
+          {
+            "id": "segment-8",
+            "text": "Wort8"
+          },
+          {
+            "id": "segment-9",
+            "text": "Wort9"
+          },
+          {
+            "id": "segment-10",
+            "text": "Wort10"
+          },
+          {
+            "id": "segment-11",
+            "text": "Wort11"
+          },
+          {
+            "id": "segment-12",
+            "text": "Wort12"
+          }
+        ],
+        "issues": [
+          {
+            "segmentId": "segment-1",
+            "correction": "korrekt1",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-2",
+            "correction": "korrekt2",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-3",
+            "correction": "korrekt3",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-4",
+            "correction": "korrekt4",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-5",
+            "correction": "korrekt5",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-6",
+            "correction": "korrekt6",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-7",
+            "correction": "korrekt7",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-8",
+            "correction": "korrekt8",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-9",
+            "correction": "korrekt9",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-10",
+            "correction": "korrekt10",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-11",
+            "correction": "korrekt11",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-12",
+            "correction": "korrekt12",
+            "explanation": "Test."
+          }
+        ]
+      },
+      {
+        "id": "task-2",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Wort1"
+          },
+          {
+            "id": "segment-2",
+            "text": "Wort2"
+          },
+          {
+            "id": "segment-3",
+            "text": "Wort3"
+          },
+          {
+            "id": "segment-4",
+            "text": "Wort4"
+          },
+          {
+            "id": "segment-5",
+            "text": "Wort5"
+          },
+          {
+            "id": "segment-6",
+            "text": "Wort6"
+          },
+          {
+            "id": "segment-7",
+            "text": "Wort7"
+          },
+          {
+            "id": "segment-8",
+            "text": "Wort8"
+          },
+          {
+            "id": "segment-9",
+            "text": "Wort9"
+          },
+          {
+            "id": "segment-10",
+            "text": "Wort10"
+          },
+          {
+            "id": "segment-11",
+            "text": "Wort11"
+          },
+          {
+            "id": "segment-12",
+            "text": "Wort12"
+          }
+        ],
+        "issues": [
+          {
+            "segmentId": "segment-1",
+            "correction": "korrekt1",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-2",
+            "correction": "korrekt2",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-3",
+            "correction": "korrekt3",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-4",
+            "correction": "korrekt4",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-5",
+            "correction": "korrekt5",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-6",
+            "correction": "korrekt6",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-7",
+            "correction": "korrekt7",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-8",
+            "correction": "korrekt8",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-9",
+            "correction": "korrekt9",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-10",
+            "correction": "korrekt10",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-11",
+            "correction": "korrekt11",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-12",
+            "correction": "korrekt12",
+            "explanation": "Test."
+          }
+        ]
+      },
+      {
+        "id": "task-3",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Wort1"
+          },
+          {
+            "id": "segment-2",
+            "text": "Wort2"
+          },
+          {
+            "id": "segment-3",
+            "text": "Wort3"
+          },
+          {
+            "id": "segment-4",
+            "text": "Wort4"
+          },
+          {
+            "id": "segment-5",
+            "text": "Wort5"
+          },
+          {
+            "id": "segment-6",
+            "text": "Wort6"
+          },
+          {
+            "id": "segment-7",
+            "text": "Wort7"
+          },
+          {
+            "id": "segment-8",
+            "text": "Wort8"
+          },
+          {
+            "id": "segment-9",
+            "text": "Wort9"
+          },
+          {
+            "id": "segment-10",
+            "text": "Wort10"
+          },
+          {
+            "id": "segment-11",
+            "text": "Wort11"
+          },
+          {
+            "id": "segment-12",
+            "text": "Wort12"
+          }
+        ],
+        "issues": [
+          {
+            "segmentId": "segment-1",
+            "correction": "korrekt1",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-2",
+            "correction": "korrekt2",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-3",
+            "correction": "korrekt3",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-4",
+            "correction": "korrekt4",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-5",
+            "correction": "korrekt5",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-6",
+            "correction": "korrekt6",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-7",
+            "correction": "korrekt7",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-8",
+            "correction": "korrekt8",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-9",
+            "correction": "korrekt9",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-10",
+            "correction": "korrekt10",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-11",
+            "correction": "korrekt11",
+            "explanation": "Test."
+          },
+          {
+            "segmentId": "segment-12",
+            "correction": "korrekt12",
+            "explanation": "Test."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,15 +1,16 @@
 # Learning Games
 
-A modular, independent classroom-games web app. **Memory-Spiel** is the first game; future formats may include live quizzes, flashcards and other interactive activities.
+A standalone, adult-appropriate classroom learning toolkit. Memory is the first playable game, including local and hosted guest multiplayer; future games remain separately planned.
 
-## Get started
+## Find your way
+- [Start Here](docs/START_HERE.md) — short, role-specific agent reading paths
+- [Game Map](docs/GAME_MAP.md) — what is playable, planned or only proposed
+- [Game specifications](docs/games/) — mechanics and per-game contracts
+- [Architecture](docs/architecture/) — system, database boundaries, and portable activity format
+- [Teaching library](library/README.md) — learning applications and future real JSON resources
+- [Current State](docs/CURRENT_STATE.md) · [Roadmap](docs/ROADMAP.md)
 
-- Node.js 20.19+ or 22+
-- `npm install`
-- `npm run dev`
-- Local Memory works without any backend.
-- For online Memory, copy `.env.example` to `.env.local` and configure the **public** SPP Supabase URL and publishable key. Never use a service-role or secret key.
+## Local development
+Node 20.19+; run `npm install`, `npm run dev`, `npm run typecheck`, `npm test`, `npm run build`. Local Memory requires no credentials. Online Memory uses only public `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`; never browser-expose secret/service-role keys.
 
-`npm run typecheck`, `npm test`, and `npm run build` are intended checks. **Live multiplayer and Vercel are not yet verified.**
-
-Read `AGENTS.md` → `docs/START_HERE.md` → `docs/CURRENT_STATE.md` before changes. The source of the original Canva prototype is preserved outside this repository; this port is independent of that published version.
+Read [AGENTS.md](AGENTS.md) for authorization. Sort LG-A1 is planning only; library files are not automatically bundled into the live app.

@@ -1,0 +1,238 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 2,
+  "activityType": "language-detective",
+  "id": "zehn-saetze",
+  "title": "Zehn einfache Sätze",
+  "targetLanguage": "de",
+  "instructions": "Alle Sätze sind richtig – prüfe jeden einzeln.",
+  "content": {
+    "prompt": "Entscheide bei jedem Satz: Fehler oder kein Fehler?",
+    "tasks": [
+      {
+        "id": "task-1",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "lerne"
+          },
+          {
+            "id": "segment-3",
+            "text": "Deutsch."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-2",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Du"
+          },
+          {
+            "id": "segment-2",
+            "text": "kommst"
+          },
+          {
+            "id": "segment-3",
+            "text": "aus"
+          },
+          {
+            "id": "segment-4",
+            "text": "Vietnam."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-3",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Er"
+          },
+          {
+            "id": "segment-2",
+            "text": "trinkt"
+          },
+          {
+            "id": "segment-3",
+            "text": "ein"
+          },
+          {
+            "id": "segment-4",
+            "text": "Wasser."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-4",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Wir"
+          },
+          {
+            "id": "segment-2",
+            "text": "haben"
+          },
+          {
+            "id": "segment-3",
+            "text": "heute"
+          },
+          {
+            "id": "segment-4",
+            "text": "Unterricht."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-5",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Sie"
+          },
+          {
+            "id": "segment-2",
+            "text": "wohnt"
+          },
+          {
+            "id": "segment-3",
+            "text": "in"
+          },
+          {
+            "id": "segment-4",
+            "text": "Hanoi."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-6",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Das"
+          },
+          {
+            "id": "segment-2",
+            "text": "Kind"
+          },
+          {
+            "id": "segment-3",
+            "text": "spielt"
+          },
+          {
+            "id": "segment-4",
+            "text": "im"
+          },
+          {
+            "id": "segment-5",
+            "text": "Garten."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-7",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Der"
+          },
+          {
+            "id": "segment-2",
+            "text": "Lehrer"
+          },
+          {
+            "id": "segment-3",
+            "text": "schreibt"
+          },
+          {
+            "id": "segment-4",
+            "text": "an"
+          },
+          {
+            "id": "segment-5",
+            "text": "die"
+          },
+          {
+            "id": "segment-6",
+            "text": "Tafel."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-8",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ich"
+          },
+          {
+            "id": "segment-2",
+            "text": "esse"
+          },
+          {
+            "id": "segment-3",
+            "text": "gern"
+          },
+          {
+            "id": "segment-4",
+            "text": "Reis."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-9",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Ihr"
+          },
+          {
+            "id": "segment-2",
+            "text": "geht"
+          },
+          {
+            "id": "segment-3",
+            "text": "zur"
+          },
+          {
+            "id": "segment-4",
+            "text": "Schule."
+          }
+        ],
+        "issues": []
+      },
+      {
+        "id": "task-10",
+        "segments": [
+          {
+            "id": "segment-1",
+            "text": "Sie"
+          },
+          {
+            "id": "segment-2",
+            "text": "sind"
+          },
+          {
+            "id": "segment-3",
+            "text": "müde."
+          }
+        ],
+        "issues": []
+      }
+    ]
+  }
+}

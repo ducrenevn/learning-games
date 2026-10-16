@@ -1,0 +1,34 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sequence",
+  "id": "customer-support-email",
+  "title": "Customer support email",
+  "targetLanguage": "en",
+  "instructions": "Put the email sections in a logical order.",
+  "content": {
+    "prompt": "Put the support email steps in order.",
+    "items": [
+      {
+        "id": "step-1",
+        "text": "Thank the customer for their message."
+      },
+      {
+        "id": "step-2",
+        "text": "Acknowledge the problem they described."
+      },
+      {
+        "id": "step-3",
+        "text": "Explain the next step you will take."
+      },
+      {
+        "id": "step-4",
+        "text": "Offer a contact channel for follow-up."
+      },
+      {
+        "id": "step-5",
+        "text": "Close the email politely."
+      }
+    ]
+  }
+}

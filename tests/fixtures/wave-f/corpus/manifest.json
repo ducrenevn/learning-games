@@ -1,0 +1,355 @@
+{
+  "corpusVersion": 1,
+  "contract": "learning-games.activity / schemaVersion=1 (Language Detective: 1 and 2)",
+  "notes": "Schema fixtures only, not classroom-certified. Four JSON activity types; legacy Memory pipe-delimited text remains supported as advanced input.",
+  "files": [
+    {
+      "file": "invalid/language-detective/01-unknown-content-key.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/language-detective/02-dangling-issue.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "reference"
+    },
+    {
+      "file": "invalid/language-detective/03-duplicate-issue-reference.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/language-detective/04-too-few-segments.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/language-detective/05-missing-explanation.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "required"
+    },
+    {
+      "file": "invalid/language-detective/06-invisible-only-segment.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "length"
+    },
+    {
+      "file": "invalid/language-detective/07-unsafe-markup-correction.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "markup"
+    },
+    {
+      "file": "invalid/memory/01-room-token.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/memory/02-duplicate-pair-id.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/memory/03-duplicate-pair-values.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/memory/04-too-many-pairs.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/memory/05-unsafe-left.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "markup"
+    },
+    {
+      "file": "invalid/memory/06-overlong-right.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "length"
+    },
+    {
+      "file": "invalid/memory/07-extra-player-state.json",
+      "kind": "memory",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/sequence/01-unknown-content-key.json",
+      "kind": "sequence",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/sequence/02-duplicate-steps.json",
+      "kind": "sequence",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/sequence/03-too-few-steps.json",
+      "kind": "sequence",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/sequence/04-script-prompt.json",
+      "kind": "sequence",
+      "expected": "invalid",
+      "errorCode": "markup"
+    },
+    {
+      "file": "invalid/sequence/05-invalid-language.json",
+      "kind": "sequence",
+      "expected": "invalid",
+      "errorCode": "language"
+    },
+    {
+      "file": "invalid/sequence/06-duplicate-step-id.json",
+      "kind": "sequence",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/sequence/07-control-character.json",
+      "kind": "sequence",
+      "expected": "invalid",
+      "errorCode": "control"
+    },
+    {
+      "file": "invalid/sort/01-unknown-envelope-key.json",
+      "kind": "sort",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/sort/02-duplicate-category-id.json",
+      "kind": "sort",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/sort/03-dangling-category.json",
+      "kind": "sort",
+      "expected": "invalid",
+      "errorCode": "reference"
+    },
+    {
+      "file": "invalid/sort/04-too-few-cards.json",
+      "kind": "sort",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/sort/05-html-in-card.json",
+      "kind": "sort",
+      "expected": "invalid",
+      "errorCode": "markup"
+    },
+    {
+      "file": "invalid/sort/06-duplicate-card-label.json",
+      "kind": "sort",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/sort/07-unsupported-version.json",
+      "kind": "sort",
+      "expected": "invalid",
+      "errorCode": "version"
+    },
+    {
+      "file": "valid/language-detective/01-ich-habe-zeit.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/02-fehlerfreier-text.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/03-zwei-fehler-im-service.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/04-vietnamese-error-free.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/05-eighty-segments-twelve-issues.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/01-deutsch-englisch.json",
+      "kind": "memory",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/02-gastronomie-vokabular.json",
+      "kind": "memory",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/03-vietnamesische-woerter.json",
+      "kind": "memory",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/04-englische-wortpaare.json",
+      "kind": "memory",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/memory/05-sixteen-pairs-boundary.json",
+      "kind": "memory",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sequence/01-termin-vereinbaren.json",
+      "kind": "sequence",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sequence/02-rezept-gemuese.json",
+      "kind": "sequence",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sequence/03-email-customer-support.json",
+      "kind": "sequence",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sequence/04-vietnamese-check-in.json",
+      "kind": "sequence",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sequence/05-twenty-steps-boundary.json",
+      "kind": "sequence",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sort/01-artikel-im-alltag.json",
+      "kind": "sort",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sort/02-gastronomie-arbeitsbereiche.json",
+      "kind": "sort",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sort/03-praepositionen-kasus.json",
+      "kind": "sort",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sort/04-vietnamesische-begruessungen.json",
+      "kind": "sort",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/sort/05-five-categories-thirty-cards.json",
+      "kind": "sort",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/06-drei-kurze-saetze.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/07-ein-kurzer-satz.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/08-zehn-saetze.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "valid/language-detective/09-vietnamese-sentences.json",
+      "kind": "language-detective",
+      "expected": "valid"
+    },
+    {
+      "file": "invalid/language-detective/08-v2-cross-task-reference.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "reference"
+    },
+    {
+      "file": "invalid/language-detective/09-v2-no-tasks.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/language-detective/10-v2-eleven-tasks.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/language-detective/11-v2-one-word-sentence.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "count"
+    },
+    {
+      "file": "invalid/language-detective/12-v2-unknown-task-key.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/language-detective/13-v2-v1-keys-mixed-in.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/language-detective/14-v1-with-tasks-key.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "unknown"
+    },
+    {
+      "file": "invalid/language-detective/15-unsupported-version-3.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "version"
+    },
+    {
+      "file": "invalid/language-detective/16-v2-duplicate-task-id.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "duplicate"
+    },
+    {
+      "file": "invalid/language-detective/17-v2-too-many-errors-in-total.json",
+      "kind": "language-detective",
+      "expected": "invalid",
+      "errorCode": "count"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+Haus | house | Substantive
+Fenster | window | Substantive
+Tisch | table | Substantive
+Stuhl | chair | Substantive
+Lampe | lamp | Substantive
+Tür | door | Substantive

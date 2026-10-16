@@ -1,0 +1,185 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sort",
+  "id": "five-categories-thirty-cards",
+  "title": "Boundary: 5 Kategorien und 30 Karten",
+  "targetLanguage": "de",
+  "instructions": "Technisches Testmaterial, keine Unterrichtsvorlage.",
+  "content": {
+    "categories": [
+      {
+        "id": "category-1",
+        "label": "Bereich 1"
+      },
+      {
+        "id": "category-2",
+        "label": "Bereich 2"
+      },
+      {
+        "id": "category-3",
+        "label": "Bereich 3"
+      },
+      {
+        "id": "category-4",
+        "label": "Bereich 4"
+      },
+      {
+        "id": "category-5",
+        "label": "Bereich 5"
+      }
+    ],
+    "items": [
+      {
+        "id": "card-1",
+        "text": "Beispielkarte 01",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-2",
+        "text": "Beispielkarte 02",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-3",
+        "text": "Beispielkarte 03",
+        "categoryId": "category-3"
+      },
+      {
+        "id": "card-4",
+        "text": "Beispielkarte 04",
+        "categoryId": "category-4"
+      },
+      {
+        "id": "card-5",
+        "text": "Beispielkarte 05",
+        "categoryId": "category-5"
+      },
+      {
+        "id": "card-6",
+        "text": "Beispielkarte 06",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-7",
+        "text": "Beispielkarte 07",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-8",
+        "text": "Beispielkarte 08",
+        "categoryId": "category-3"
+      },
+      {
+        "id": "card-9",
+        "text": "Beispielkarte 09",
+        "categoryId": "category-4"
+      },
+      {
+        "id": "card-10",
+        "text": "Beispielkarte 10",
+        "categoryId": "category-5"
+      },
+      {
+        "id": "card-11",
+        "text": "Beispielkarte 11",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-12",
+        "text": "Beispielkarte 12",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-13",
+        "text": "Beispielkarte 13",
+        "categoryId": "category-3"
+      },
+      {
+        "id": "card-14",
+        "text": "Beispielkarte 14",
+        "categoryId": "category-4"
+      },
+      {
+        "id": "card-15",
+        "text": "Beispielkarte 15",
+        "categoryId": "category-5"
+      },
+      {
+        "id": "card-16",
+        "text": "Beispielkarte 16",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-17",
+        "text": "Beispielkarte 17",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-18",
+        "text": "Beispielkarte 18",
+        "categoryId": "category-3"
+      },
+      {
+        "id": "card-19",
+        "text": "Beispielkarte 19",
+        "categoryId": "category-4"
+      },
+      {
+        "id": "card-20",
+        "text": "Beispielkarte 20",
+        "categoryId": "category-5"
+      },
+      {
+        "id": "card-21",
+        "text": "Beispielkarte 21",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-22",
+        "text": "Beispielkarte 22",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-23",
+        "text": "Beispielkarte 23",
+        "categoryId": "category-3"
+      },
+      {
+        "id": "card-24",
+        "text": "Beispielkarte 24",
+        "categoryId": "category-4"
+      },
+      {
+        "id": "card-25",
+        "text": "Beispielkarte 25",
+        "categoryId": "category-5"
+      },
+      {
+        "id": "card-26",
+        "text": "Beispielkarte 26",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-27",
+        "text": "Beispielkarte 27",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-28",
+        "text": "Beispielkarte 28",
+        "categoryId": "category-3"
+      },
+      {
+        "id": "card-29",
+        "text": "Beispielkarte 29",
+        "categoryId": "category-4"
+      },
+      {
+        "id": "card-30",
+        "text": "Beispielkarte 30",
+        "categoryId": "category-5"
+      }
+    ]
+  }
+}

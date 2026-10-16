@@ -1,0 +1,75 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sort",
+  "id": "artikel-im-alltag",
+  "title": "Artikel im Alltag",
+  "targetLanguage": "de",
+  "instructions": "Ordne jede Karte der passenden Kategorie zu.",
+  "content": {
+    "categories": [
+      {
+        "id": "category-1",
+        "label": "der"
+      },
+      {
+        "id": "category-1",
+        "label": "die"
+      },
+      {
+        "id": "category-3",
+        "label": "das"
+      }
+    ],
+    "items": [
+      {
+        "id": "card-1",
+        "text": "Tisch",
+        "categoryId": "category-1",
+        "explanation": "Der Tisch ist maskulin."
+      },
+      {
+        "id": "card-2",
+        "text": "Lampe",
+        "categoryId": "category-2",
+        "explanation": "Die Lampe ist feminin."
+      },
+      {
+        "id": "card-3",
+        "text": "Fenster",
+        "categoryId": "category-3",
+        "explanation": "Das Fenster ist neutrum."
+      },
+      {
+        "id": "card-4",
+        "text": "Stuhl",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-5",
+        "text": "Tür",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-6",
+        "text": "Zimmer",
+        "categoryId": "category-3"
+      },
+      {
+        "id": "card-7",
+        "text": "Löffel",
+        "categoryId": "category-1"
+      },
+      {
+        "id": "card-8",
+        "text": "Gabel",
+        "categoryId": "category-2"
+      },
+      {
+        "id": "card-9",
+        "text": "Messer",
+        "categoryId": "category-3"
+      }
+    ]
+  }
+}

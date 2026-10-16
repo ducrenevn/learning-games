@@ -1,0 +1,33 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "memory",
+  "id": "tieng-viet-tu-vung",
+  "title": "Từ vựng song ngữ",
+  "targetLanguage": "vi",
+  "instructions": "Tìm các cặp từ có nghĩa giống nhau.",
+  "content": {
+    "pairs": [
+      {
+        "id": "pair-1",
+        "left": "Xin chào",
+        "right": "Hallo"
+      },
+      {
+        "id": "pair-2",
+        "left": "Cảm ơn",
+        "right": "Danke"
+      },
+      {
+        "id": "pair-3",
+        "left": "Nước",
+        "right": "Wasser"
+      },
+      {
+        "id": "pair-4",
+        "left": "Sách",
+        "right": "Buch"
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "memory",
+  "id": "english-word-pairs",
+  "title": "English matching",
+  "targetLanguage": "en",
+  "instructions": "Find matching synonyms.",
+  "content": {
+    "pairs": [
+      {
+        "id": "pair-1",
+        "left": "quiet",
+        "right": "silent"
+      },
+      {
+        "id": "pair-2",
+        "left": "quick",
+        "right": "fast"
+      },
+      {
+        "id": "pair-3",
+        "left": "smart",
+        "right": "clever"
+      },
+      {
+        "id": "pair-4",
+        "left": "happy",
+        "right": "glad"
+      }
+    ]
+  }
+}

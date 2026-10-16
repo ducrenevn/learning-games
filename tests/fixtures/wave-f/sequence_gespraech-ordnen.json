@@ -1,0 +1,39 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "sequence",
+  "id": "gespraech-ordnen",
+  "title": "Gespräch ordnen",
+  "targetLanguage": "de",
+  "instructions": "Bringe die Sätze in die richtige Reihenfolge.",
+  "content": {
+    "prompt": "Ordne ein kurzes Telefongespräch beim Arzt.",
+    "items": [
+      {
+        "id": "step-1",
+        "text": "Guten Tag, Praxis Dr. Müller."
+      },
+      {
+        "id": "step-2",
+        "text": "Ich möchte einen Termin vereinbaren."
+      },
+      {
+        "id": "step-3",
+        "text": "Wann haben Sie Zeit?"
+      },
+      {
+        "id": "step-4",
+        "text": "Am Dienstag um 10 Uhr."
+      },
+      {
+        "id": "step-5",
+        "text": "Das passt gut. Vielen Dank!"
+      },
+      {
+        "id": "step-6",
+        "text": "Sehr langer Kartentext ohne Leerzeichen-Trenner: DonaudampfschifffahrtsgesellschaftskapitänsmützenabzeichenDonaudampfschifffahrtsgesellschaftskapitänsmützenabzeichenDonaudampfschifffahrtsgesellschafts"
+      }
+    ],
+    "explanation": "Begrüßung, Anliegen, Terminfrage, Antwort, Abschied."
+  }
+}

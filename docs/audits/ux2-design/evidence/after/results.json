@@ -1,0 +1,372 @@
+[
+  {
+    "name": "sort play @1440x900 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sort play @1440x900 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sequence play @1440x900 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sequence play @1440x900 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective play @1440x900 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "detective play @1440x900 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sort play @1024x768 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sort play @1024x768 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sequence play @1024x768 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sequence play @1024x768 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective play @1024x768 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "detective play @1024x768 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sort play @768x1024 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sort play @768x1024 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sequence play @768x1024 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sequence play @768x1024 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective play @768x1024 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "detective play @768x1024 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sort play @390x844 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sort play @390x844 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sequence play @390x844 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sequence play @390x844 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective play @390x844 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "detective play @390x844 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sort play @360x740 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sort play @360x740 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sequence play @360x740 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sequence play @360x740 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective play @360x740 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "detective play @360x740 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sort play @1280x560 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sort play @1280x560 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sequence play @1280x560 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "sequence play @1280x560 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective play @1280x560 no horizontal scroll",
+    "ok": true,
+    "extra": "overflow 0px"
+  },
+  {
+    "name": "detective play @1280x560 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sort @390 categories left of bank",
+    "ok": true,
+    "extra": "bins 25..190 bank x 211"
+  },
+  {
+    "name": "sort @390 bank is its own scroll column",
+    "ok": true,
+    "extra": "auto"
+  },
+  {
+    "name": "sort @390 info popover opens and stays on screen",
+    "ok": true,
+    "extra": "x 10 w 370"
+  },
+  {
+    "name": "sort @390 tap-to-place moves \"Löffel\" out of the bank",
+    "ok": true,
+    "extra": "9 -> 8"
+  },
+  {
+    "name": "sort @390 placed card appears in a category",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sort @390 no horizontal scroll",
+    "ok": true,
+    "extra": "0px"
+  },
+  {
+    "name": "sort @390 30 cards: bank overflows its column",
+    "ok": true,
+    "extra": "{\"sh\":1600,\"ch\":818}"
+  },
+  {
+    "name": "sort @390 30 cards: bank scrolls, page stays put",
+    "ok": true,
+    "extra": "scrollTop 300, pageY 0"
+  },
+  {
+    "name": "sort @390 30 cards: no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sort @360 categories left of bank",
+    "ok": true,
+    "extra": "bins 25..175 bank x 196"
+  },
+  {
+    "name": "sort @360 bank is its own scroll column",
+    "ok": true,
+    "extra": "auto"
+  },
+  {
+    "name": "sort @360 info popover opens and stays on screen",
+    "ok": true,
+    "extra": "x 10 w 340"
+  },
+  {
+    "name": "sort @360 tap-to-place moves \"Tisch\" out of the bank",
+    "ok": true,
+    "extra": "9 -> 8"
+  },
+  {
+    "name": "sort @360 placed card appears in a category",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "sort @360 no horizontal scroll",
+    "ok": true,
+    "extra": "0px"
+  },
+  {
+    "name": "sort @360 30 cards: bank overflows its column",
+    "ok": true,
+    "extra": "{\"sh\":1604,\"ch\":714}"
+  },
+  {
+    "name": "sort @360 30 cards: bank scrolls, page stays put",
+    "ok": true,
+    "extra": "scrollTop 300, pageY 0"
+  },
+  {
+    "name": "sort @360 30 cards: no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @1440 one card per sentence",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @1440 Check enabled once all sentences answered",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @1440 aggregate counts sentences",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @1440 per-sentence badges",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @1440 no answer key before reveal",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @1440 no horizontal scroll",
+    "ok": true,
+    "extra": "0px"
+  },
+  {
+    "name": "detective v2 reveal shows each correction inside its card",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 Vietnamese interface, German authored text unchanged",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @1440 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @390 one card per sentence",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @390 Check enabled once all sentences answered",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @390 aggregate counts sentences",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @390 per-sentence badges",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @390 no answer key before reveal",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v2 @390 no horizontal scroll",
+    "ok": true,
+    "extra": "0px"
+  },
+  {
+    "name": "detective v2 @390 no page errors",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v1 plays as one passage (no sentence chrome)",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "detective v1 80-segment, 12-error boundary file imports and plays",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "name": "memory local play renders board",
+    "ok": true,
+    "extra": "12 cards"
+  },
+  {
+    "name": "memory local play has no page errors",
+    "ok": true,
+    "extra": ""
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "format": "learning-games.activity",
+  "schemaVersion": 1,
+  "activityType": "language-detective",
+  "id": "alles-richtig",
+  "title": "Alles richtig",
+  "targetLanguage": "de",
+  "instructions": "Gibt es Fehler?",
+  "content": {
+    "prompt": "Prüfe den Satz.",
+    "segments": [
+      {
+        "id": "c1",
+        "text": "Ich"
+      },
+      {
+        "id": "c2",
+        "text": "habe"
+      },
+      {
+        "id": "c3",
+        "text": "heute"
+      },
+      {
+        "id": "c4",
+        "text": "Zeit."
+      }
+    ],
+    "issues": []
+  }
+}
