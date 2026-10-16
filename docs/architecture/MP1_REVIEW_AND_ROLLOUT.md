@@ -1,5 +1,7 @@
 # MP1 review status — second Opus delta reconciled (2026-10-14)
 
+> **Historical review packet:** assignments, implementation/hosted gates and “next” actions below describe earlier milestones. Current integrated Preview acceptance and the preflight stop gate are in [CURRENT_STATE](../CURRENT_STATE.md), [IMMEDIATE_NEXT_PROMPT](../IMMEDIATE_NEXT_PROMPT.md) and [RELEASE_PREFLIGHT](../RELEASE_PREFLIGHT.md). Sort Individual and reveal lifecycle are installed per owner handoff; do not rerun these old implementation assignments or infer a new authorization.
+
 Opus reviewed v2 at `eedaa67` and returned **APPROVED WITH REQUIRED CORRECTIONS**, no new P0. The control room incorporated B1–B4/C1–C6 into [v3 contract](MP1_BACKEND_CONTRACT.md) and [finding reconciliation](../audits/2026-10-14-mp1-opus-v2-reconciliation.md). The prior reviews below are historical.
 
 **Next step (only after product-owner authorization):** isolated, disposable-only **MP1-AB-db**: minimal four-table Sort Individual room service, public VOLATILE INVOKER wrappers/private restricted DEFINER entries, SQL validator/scorer, cryptographically opaque IDs, bounded purge, and pgTAP + real local PostgREST proofs. Pay particular attention to room locks/revisions, retry lookup-before-lobby, CAS no-op order, Unicode parity and effective grants. No code implementation is authorized by this documentation alone.

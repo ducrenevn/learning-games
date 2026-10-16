@@ -1,4 +1,18 @@
-# Start Here — Learning Games (2026-10-14)
+# Start Here — Learning Games (2026-10-16)
+
+**Current authority:** [CURRENT_STATE](CURRENT_STATE.md) and [release preflight](RELEASE_PREFLIGHT.md). Frozen accepted Preview candidate: `8c14b845ee4ed7892a224e9e336852255612362f`. All four local games are implemented and accepted on Preview; Memory online is functional; Sort Individual online is classroom-accepted. Three Learning Games migrations, including the reveal lifecycle correction, are installed on shared SPP Supabase per owner release handoff. Production merge is still pending.
+
+**Current task boundary:** isolated local preflight corrections and verification, then a local commit and STOP for independent review. No push, merge, deployment, hosted writes, new rooms, SQL changes or SPP modifications. SPP PR #12 remains draft; migration-history reconciliation and legacy Memory clean-replay proof remain outstanding. Hosted DB security/function-parity probing belongs to the separate SPP control room.
+
+**Reading path:** [AGENTS](../AGENTS.md) → CURRENT_STATE → [SYSTEM_OVERVIEW](architecture/SYSTEM_OVERVIEW.md) / [BACKEND_BASELINE](architecture/BACKEND_BASELINE.md) → relevant source/tests. Release handoff: [IMMEDIATE_NEXT_PROMPT](IMMEDIATE_NEXT_PROMPT.md). Lesson planning still starts at [GAME_MAP](GAME_MAP.md) and the relevant `library/` entry.
+
+**Local checks (PowerShell):** `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `git diff --check`. Use `npm.cmd` when PowerShell blocks the `npm.ps1` shim. Online configuration needs only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`; never expose secret keys. Local games need no backend.
+
+---
+
+## Historical entrypoint — 2026-10-14 and earlier
+
+Everything below records earlier milestones and setup context. Its “current”, “next”, design-only, branch and authorization statements are historical and are superseded by the current authority above.
 
 **Authoritative current status:** MP0 frontend and hosted functional Memory QA **accepted on isolated Preview branch** `feat/lg-mp0-ux2-m3a-integration-20261013@b569d76`. NOT merged or Production-released. New MP1 backend is **design-only**. Read [CURRENT_STATE](CURRENT_STATE.md) and [MP0 hosted acceptance](audits/2026-10-14-mp0-hosted-acceptance.md).
 

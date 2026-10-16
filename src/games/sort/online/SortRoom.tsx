@@ -113,6 +113,8 @@ function ActiveSortRoom({ identity, studentLocale }: { identity: SortRoomIdentit
   const languageControl = state?.allowStudentLanguageChoice ? <RoomLanguageBar locale={locale} /> : null;
 
   function leave() {
+    if (isHost && state?.roomStatus !== 'finished' && state?.roomStatus !== 'expired' &&
+        !window.confirm(sortRoomText(locale, 'leaveHostWarning'))) return;
     clearSortRoomIdentity(roomCode);
     window.location.assign('/games/sort');
   }

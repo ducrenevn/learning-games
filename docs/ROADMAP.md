@@ -1,4 +1,18 @@
-# MP1 v3 roadmap update (2026-10-14)
+# Release roadmap — 2026-10-16
+
+1. **Accepted on Preview:** all four local games, functional Memory online and classroom-accepted Sort Individual online at frozen candidate `8c14b845ee4ed7892a224e9e336852255612362f`.
+2. **Installed per owner handoff:** three Learning Games migrations on shared SPP Supabase, including reveal lifecycle correction. Applied SQL remains immutable.
+3. **Current gate:** bounded local release-preflight corrections and verification, local commit, then STOP for focused independent correction review. See [release evidence/risk register](RELEASE_PREFLIGHT.md).
+4. **Separate dependencies/decisions:** SPP PR #12 remains draft with migration-history reconciliation outstanding; legacy Memory clean replay unproven; SPP control room owns the hosted read-only security/function-parity probe. Production merge/release still requires a separate owner decision.
+5. **Future only:** unrestricted-public hardening and quotas/retention/validation proof; further multiplayer modes and SPP Homework integration require separately scoped approval. No new backend implementation in this preflight.
+
+---
+
+## Historical roadmap — 2026-10-14 and earlier
+
+Earlier “next” steps, design-only status and authorization claims below are milestone records superseded by the current roadmap above.
+
+# MP1 v3 roadmap update (2026-10-14, historical)
 
 Opus second delta: APPROVED WITH REQUIRED CORRECTIONS (B1–B4, C1–C6). Documentation reconciled to [MP1 v3](architecture/MP1_BACKEND_CONTRACT.md). **Next gated work:** owner-authorized, disposable-only MP1-AB-db Sort Individual backend; local SQL and PostgREST security/race/corpus proof, then independent executable SQL review. No further contract design pass is required absent a blocker. No hosted access or frontend integration as part of that task.
 

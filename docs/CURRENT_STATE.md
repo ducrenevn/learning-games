@@ -1,4 +1,20 @@
-# Sort UI micro-polish — correction branch (2026-10-16)
+# Current state — integrated release candidate (2026-10-16)
+
+This section supersedes all earlier status and next-action statements below. The owner supplied an independent integrated release audit verdict of **CONDITIONAL PASS**; this bounded preflight does not repeat that audit.
+
+- **Frozen accepted candidate:** `fix/sort-ui-micro-polish-20261016@8c14b845ee4ed7892a224e9e336852255612362f`. All four local games (Memory, Sort, Sequence, Language Detective) are implemented and accepted on Preview. Memory online is functional. Sort Individual online is implemented and classroom-accepted. Acceptance is from the owner release handoff, not new classroom QA by this correction pass.
+- **Hosted backend:** three Learning Games migration files are installed on shared SPP Supabase, including the Memory language policy, Sort Individual foundation and reveal lifecycle correction. See [BACKEND_BASELINE](architecture/BACKEND_BASELINE.md). Installation is owner-reported; this pass does not probe the hosted database or replay SQL.
+- **Production merge pending:** remote `main` and Vercel Production were rechecked read-only at `f8ac534026b4fcdcfa0ffa15e61890a4e5389c62`. Accepted candidate Preview is READY at deployment `dpl_J1ZBC994GcqPYs5xMt4dg5wiC51z`. The preflight correction branch starts exactly at the frozen candidate; it is local only.
+- **Separate SPP lane:** SPP PR #12 remains draft, with migration-history reconciliation outstanding. Legacy Memory clean replay remains unproven. No SPP/Auth/Homework changes are included or authorized. The SPP control room owns the hosted security/function-parity probe.
+- **Current gate:** local preflight corrections → focused independent correction review arranged by the control room → separate owner release decision. No push, merge, deploy, hosted writes, new rooms or SQL changes in this pass. [Release evidence and risks](RELEASE_PREFLIGHT.md) · [next handoff](IMMEDIATE_NEXT_PROMPT.md).
+
+---
+
+## Historical milestones — retained for provenance
+
+The reports below keep their original dates, test counts and scope. Statements such as “current”, “next”, “design-only”, “not hosted” or “awaiting owner approval” describe that milestone only; they are not current task instructions.
+
+# Sort UI micro-polish — correction branch (2026-10-16, historical)
 
 Branch `fix/sort-ui-micro-polish-20261016`, based on `08800e8`. Local commit only; not pushed, not merged, not deployed. Awaiting owner visual approval.
 

@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter } from 'react-router-dom';
 import { App, appRoutes } from '../src/app/App';
-import { saveSortRoomIdentity } from '../src/games/sort/online/identity';
+import { loadSortRoomIdentity, saveSortRoomIdentity } from '../src/games/sort/online/identity';
+import { sortRoomText } from '../src/games/sort/online/sortRoomCopy';
 
 const rpcMock = vi.hoisted(() => vi.fn());
 vi.mock('../src/shared/lib/supabase', () => ({ getSupabase: () => ({ rpc: rpcMock }) }));
@@ -62,7 +63,7 @@ beforeEach(() => {
   rpcMock.mockReset();
   sessionStorage.clear();
 });
-afterEach(() => cleanup());
+afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 describe('Sort room language selector label', () => {
   it.each([
@@ -108,5 +109,59 @@ describe('Sort teacher action groups', () => {
     }
     expect(leave.className).toContain('subtle');
     expect(leave.className).not.toContain('stretch');
+  });
+});
+
+describe('Sort host leave confirmation', () => {
+  it.each(['lobby', 'active', 'review'] as const)('preserves the %s session and its controls when cancelled', async roomStatus => {
+    const identity = { roomCode, token, role: 'host' as const };
+    saveSortRoomIdentity(identity);
+    serve(hostState(roomStatus));
+    mountAt('/games/sort/room/' + roomCode);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const leave = await screen.findByRole('button', { name: 'Raum verlassen' });
+    const before = sessionStorage.getItem('learning-games:sort:' + roomCode);
+    const controls = leave.closest('.action-group')!.textContent;
+    rpcMock.mockClear();
+
+    fireEvent.click(leave);
+
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(sortRoomText('de', 'leaveHostWarning'));
+    expect(loadSortRoomIdentity(roomCode)).toEqual(identity);
+    expect(sessionStorage.getItem('learning-games:sort:' + roomCode)).toBe(before);
+    expect(leave.isConnected).toBe(true);
+    expect(leave.closest('.action-group')!.textContent).toBe(controls);
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['de', 'Raum verlassen', 'Du verlierst die Kontrolle'],
+    ['en', 'Leave room', 'You will lose control'],
+    ['vi', 'Rời phòng', 'Bạn sẽ mất quyền điều khiển'],
+  ] as const)('discards the host credential only after confirmation in %s', async (locale, label, warning) => {
+    saveSortRoomIdentity({ roomCode, token, role: 'host' });
+    serve({ ...hostState('active'), roomLanguage: locale });
+    mountAt('/games/sort/room/' + roomCode);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    // jsdom reports the existing full-page navigation as unsupported.
+    const leave = await screen.findByRole('button', { name: label });
+    rpcMock.mockClear();
+
+    fireEvent.click(leave);
+
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(sortRoomText(locale, 'leaveHostWarning'));
+    expect(confirm.mock.calls[0][0]).toContain(warning);
+    expect(loadSortRoomIdentity(roomCode)).toBeNull();
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  it.each(['host', 'student'] as const)('preserves the existing exit for a finished host or an active student (%s)', async role => {
+    saveSortRoomIdentity({ roomCode, token, role });
+    serve(role === 'host' ? hostState('finished') : studentState(false, 'de'));
+    mountAt('/games/sort/room/' + roomCode);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    fireEvent.click(await screen.findByRole('button', { name: 'Raum verlassen' }));
+    expect(confirm).not.toHaveBeenCalled();
+    expect(loadSortRoomIdentity(roomCode)).toBeNull();
   });
 });

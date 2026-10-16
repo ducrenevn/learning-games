@@ -1,5 +1,7 @@
 # MP1 Sort Individual — client foundation handoff
 
+> **Historical foundation handoff:** the wiring checklist and unverified-foundation status below predate the implemented, classroom-accepted integrated Preview at `8c14b845ee4ed7892a224e9e336852255612362f`. Current authority: [CURRENT_STATE](../CURRENT_STATE.md) and [release preflight](../RELEASE_PREFLIGHT.md). Preserve this record for module ownership and design provenance; do not repeat its completed implementation tasks.
+
 **Branch:** `feat/mp1-sort-client-foundation-20261014` (not merged; no deployment).
 **Base:** `a01fd13768bb21cc762353f59d421bfb93d14921`.
 **Scope:** Sort-only API/types, actor-scoped normalization, session identity, polling and contract tests. Memory files, application routes, hosted Supabase and UI remain unchanged.

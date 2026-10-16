@@ -1,4 +1,20 @@
-# Handoff — MP1-AB-db pending owner authorization (2026-10-14)
+# Handoff — integrated release preflight (2026-10-16)
+
+**Review target:** local branch `fix/release-preflight-20261016`, based exactly on accepted candidate `8c14b845ee4ed7892a224e9e336852255612362f`. Compare only the preflight correction diff. Do not repeat gameplay development or the 114-commit independent audit. Exact local commit, changed files and check results are returned in the task handoff; [RELEASE_PREFLIGHT](RELEASE_PREFLIGHT.md) holds the evidence and risk register.
+
+**Current product state:** all four local games accepted on Preview; Memory online functional; Sort Individual online classroom-accepted; three Learning Games migrations including reveal lifecycle installed per owner handoff. Production merge remains pending at baseline `f8ac534026b4fcdcfa0ffa15e61890a4e5389c62`. SPP PR #12 is draft; migration-history reconciliation and legacy Memory clean-replay proof are outstanding.
+
+**Control room next:** arrange focused independent review of documentation authority, the DE/EN/VI unfinished-host leave confirmation and cancellation preservation tests, test-worker stabilization, verification limits and pilot/public-rollout risks. Obtain the separate SPP control room's read-only hosted security/function-parity result; this branch must not duplicate that probe.
+
+**Stop gate:** no push, merge, deploy, hosted writes, new rooms, SQL migration edits or SPP modifications. Review acceptance is followed by a separate owner release decision, including disposition of the risk register. Existing installed migrations must not be replayed or rewritten.
+
+---
+
+## Historical handoffs — superseded task instructions
+
+Everything below is retained as milestone provenance. Do not execute its old “next”, approval requests or implementation assignments as the current task.
+
+# Handoff — MP1-AB-db pending owner authorization (2026-10-14, historical)
 
 **Accepted:** MP0 on isolated `b569d76` branch; hosted functional Memory QA completed. **Review state:** initial Opus APPROVE WITH CHANGES and second Opus APPROVED WITH REQUIRED CORRECTIONS. Control room updated [MP1 v3 backend contract](architecture/MP1_BACKEND_CONTRACT.md) and recorded [second reconciliation](audits/2026-10-14-mp1-opus-v2-reconciliation.md). No MP1 SQL, app code, local DB proof, hosted operation or merge has been performed.
 
