@@ -1,3 +1,25 @@
+# Learning Games — shipped game map (2026-10-16)
+
+**Production:** https://learning-games-rho.vercel.app · **Release:** [v1 closure](releases/2026-10-16-v1-production.md) · **Scope:** four local games, two supported online participation combinations.
+
+| Stable game ID | DE | EN | VI | Local presentation / practice | Hosted participation |
+| --- | --- | --- | --- | --- | --- |
+| `memory` | Memory | Memory | Memory | Available | **Turns** available |
+| `sort` | Was passt wohin? | Where Does It Go? | Thuộc nhóm nào? | Available | **Individual** available |
+| `sequence` | Der Reihe nach | Line It Up | Xếp đúng thứ tự | Available | Not implemented |
+| `language-detective` | Auf Fehlersuche | Spot the Mistake | Truy tìm lỗi sai | Available | Not implemented |
+
+The [V1 multiplayer contract](architecture/MULTIPLAYER_V1_CONTRACT.md) specifies **11 target combinations, not 11 released modes**. No hosted Memory Individual, Sort Collaborative/Teacher-paced, Sequence or Detective multiplayer has shipped. Do not expose unimplemented modes as active.
+
+**Teacher materials and AI-generated JSON:** consult [portable format](architecture/PORTABLE_ACTIVITY_FILES.md), the corresponding [game spec](games/) and [teaching library](../library/README.md). Local imported files do **not** automatically become available in online rooms. Authored target-language content is not silently translated when users switch the DE/EN/VI interface.
+
+**Candidate future games (unimplemented):** Conversation Cards, Information Gap, Quick Response Board, Listen & Reconstruct, Explain It, etc. See the [Product Catalog](PRODUCT_CATALOG.md). Classroom feedback should determine which is next.
+
+---
+
+## Archived earlier game-map snapshots (not current)
+The content below is preserved as dated provenance. Ignore its old "not yet built" claims for the present shipped platform.
+
 # Learning Games — current game status (2026-10-14)
 
 | Game | Local Presentation / Independent Practice | Hosted rooms |

@@ -1,6 +1,6 @@
 # System Overview
 
-**Current architecture (2026-10-16):** all four independent local games are implemented and accepted on Preview at candidate `8c14b845ee4ed7892a224e9e336852255612362f`. Online Memory uses the legacy `game_poc_memory_*` RPC family; Sort Individual uses `lg_v1_create`, `lg_v1_join`, `lg_v1_state` and `lg_v1_command`. Both use shared SPP Supabase with room capabilities, without SPP Auth. Three Learning Games migrations including reveal lifecycle are installed per owner handoff. Production merge is pending. [Current release state](../CURRENT_STATE.md) and [preflight risks](../RELEASE_PREFLIGHT.md) supersede older planning status.
+**Current Production architecture — 2026-10-16:** Learning Games v1 is live at `main@360f641ba05943f17b78d1993890f2ec865b5ea4` (Vercel, static Vite SPA). Four independent local engines are released; online Memory uses the legacy `public.game_poc_memory_*` RPC family (including `create_v2`), and online Sort Individual uses four `public.lg_v1_*` wrappers. Shared SPP Supabase `iizsyphqlezesbvaiztd` holds the already-installed three Learning Games migrations; the SPP Auth/Homework data model is **not integrated**. Room capabilities are guest bearer credentials, not persistent account identity. See [release closure](../releases/2026-10-16-v1-production.md) and [backend baseline](BACKEND_BASELINE.md). Previous "pending merge" statements have been superseded.
 
 ## Topology
 

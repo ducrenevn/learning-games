@@ -1,18 +1,18 @@
 # Prototype Backend Baseline
 
-## Current installed baseline — 2026-10-16
+## Shipped and independently inspected backend (2026-10-16)
 
-The owner release handoff reports **three Learning Games migrations installed on shared SPP Supabase**, including the reveal lifecycle correction. Frozen frontend candidate `8c14b845ee4ed7892a224e9e336852255612362f` has functional Memory online and classroom-accepted Sort Individual online on Preview; Production merge is pending. This preflight does not independently inspect hosted SQL, grants or migration history. The separate SPP control room owns the read-only security/function-parity probe.
+Learning Games v1 is in Production at `main@360f641ba05943f17b78d1993890f2ec865b5ea4`. Online Memory Turns and Sort Individual use the existing shared SPP Supabase project `iizsyphqlezesbvaiztd`; there are **no new hosted database changes in release PR #19**.
 
-| Installed migration source in this repository | Purpose |
-| --- | --- |
-| `20261011020958_lg_m3a_memory_room_language.sql` | Legacy Memory room-language policy / `game_poc_memory_create_v2` |
-| `20261014_001_mp1_ab_sort_individual.sql` | Sort Individual `lg_v1_*` foundation |
-| `20261015023239_mp1_reveal_lifecycle.sql` | Server-authoritative reveal lifecycle correction |
+| Installed migration source (immutable) | Ledger version | Purpose |
+| --- | --- | --- |
+| `20261011020958_lg_m3a_memory_room_language.sql` | `20261011020958` | Memory room-language policy / `create_v2` |
+| `20261014_001_mp1_ab_sort_individual.sql` | `20261014` | Sort Individual four tables + RPC |
+| `20261015023239_mp1_reveal_lifecycle.sql` | `20261015023239` | Results reveal lifecycle and finish guard |
 
-These files are immutable applied history: do not edit or replay them. Legacy Memory tables/functions predate this repository's migration chain; **a clean replay of the complete legacy Memory backend remains unproven**. SPP PR #12 remains draft, with the migration-history mirror/reconciliation outstanding. File presence here is not evidence of complete SPP migration history. See [release risks](../RELEASE_PREFLIGHT.md).
+Read-only connected Supabase audit confirmed **17 migration ledger entries**, exact committed/live function bodies for `lg_v1.state` and `lg_v1.command`, anonymous EXECUTE on intended four internal entries plus four public wrappers only, no anonymous table DML/SELECT grants, and RLS enabled on all four MP1 tables. A separate Supabase Dashboard browser inspection reloaded and confirmed Data API exposed schemas `public` and `graphql_public` only; `lg_v1` and `private` are **not exposed**. The Dashboard's "Automatically expose new tables" setting was enabled; track for the shared-project owner.
 
-The current application uses existing `game_poc_memory_*` and `lg_v1_*` public RPCs only. Anonymous room capabilities are not SPP identity. No hosted writes, new rooms, SQL changes or SPP/Auth/Homework modifications are authorized by this preflight.
+No historical migration files may be rewritten or replayed. Legacy Memory's original installation DDL is not wholly recoverable from the current migration chain; a clean install remains unproven. [SPP PR #12](https://github.com/ducrenevn/speak-practice-pro/pull/12) was still draft and missing the third migration on its remote branch at the last check; coordinate before any SPP `db push`. The ongoing exposure/retention/validation limitations are in [release closure](../releases/2026-10-16-v1-production.md) and [risk register](../RELEASE_PREFLIGHT.md).
 
 ## Legacy Memory inventory and safety rules
 

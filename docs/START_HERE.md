@@ -1,14 +1,23 @@
-# Start Here — Learning Games (2026-10-16)
+# Start Here — Learning Games (2026-10-16 release closure)
 
-**Current authority:** [CURRENT_STATE](CURRENT_STATE.md) and [release preflight](RELEASE_PREFLIGHT.md). Frozen accepted Preview candidate: `8c14b845ee4ed7892a224e9e336852255612362f`. All four local games are implemented and accepted on Preview; Memory online is functional; Sort Individual online is classroom-accepted. Three Learning Games migrations, including the reveal lifecycle correction, are installed on shared SPP Supabase per owner release handoff. Production merge is still pending.
+**V1 is live at https://learning-games-rho.vercel.app** (merge `main@360f641ba05943f17b78d1993890f2ec865b5ea4`; accepted source `b9b16d03ea9e0ef8ff5c27afc8d089f231144496`). See the [authoritative release closure](releases/2026-10-16-v1-production.md), [current state](CURRENT_STATE.md) and [short game map](GAME_MAP.md). Older milestone statements below are explicitly historical, even if they call a branch "current".
 
-**Current task boundary:** isolated local preflight corrections and verification, then a local commit and STOP for independent review. No push, merge, deployment, hosted writes, new rooms, SQL changes or SPP modifications. SPP PR #12 remains draft; migration-history reconciliation and legacy Memory clean-replay proof remain outstanding. Hosted DB security/function-parity probing belongs to the separate SPP control room.
+**Shipped:** four local games (Memory, Was passt wohin?, Der Reihe nach, Auf Fehlersuche), Memory online Turns and Sort online Individual; user-facing DE/EN/VI. Final Production smoke passed for home, localization, four interfaces, responsive views; the host-exit native dialog was not run on real Production. Source validation 490/490 tests + typecheck/build passed.
 
-**Reading path:** [AGENTS](../AGENTS.md) → CURRENT_STATE → [SYSTEM_OVERVIEW](architecture/SYSTEM_OVERVIEW.md) / [BACKEND_BASELINE](architecture/BACKEND_BASELINE.md) → relevant source/tests. Release handoff: [IMMEDIATE_NEXT_PROMPT](IMMEDIATE_NEXT_PROMPT.md). Lesson planning still starts at [GAME_MAP](GAME_MAP.md) and the relevant `library/` entry.
+**Next work:** classroom experience and teaching feedback, then one new game at a time when the owner chooses. [NEXT HANDOFF](IMMEDIATE_NEXT_PROMPT.md) and [ROADMAP](ROADMAP.md). Do not repeat v1 implementation, migrations or audit as an open task.
 
-**Local checks (PowerShell):** `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `git diff --check`. Use `npm.cmd` when PowerShell blocks the `npm.ps1` shim. Online configuration needs only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`; never expose secret keys. Local games need no backend.
+**Read by role:**
+- Teaching / exercise authoring: [GAME_MAP](GAME_MAP.md) → [library](../library/README.md) → relevant [game spec](games/).
+- Development: [AGENTS](../AGENTS.md) → CURRENT_STATE → [SYSTEM_OVERVIEW](architecture/SYSTEM_OVERVIEW.md) → specific source/tests.
+- Hosted/Supabase coordination: [BACKEND_BASELINE](architecture/BACKEND_BASELINE.md) → [preflight risks](RELEASE_PREFLIGHT.md); SPP approval needed for database changes.
+- Release history and rollback: [v1 closure](releases/2026-10-16-v1-production.md).
+
+**Local checks:** `npm run typecheck`, `npm test`, `npm run build` (PowerShell: `npm.cmd` as needed). Local modes do not require a backend; online rooms use only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. No browser service keys.
 
 ---
+
+## Historical entrypoint — 2026-10-16 preflight and earlier
+The material below is preserved for provenance; its release gates are already satisfied or superseded.
 
 ## Historical entrypoint — 2026-10-14 and earlier
 

@@ -1,3 +1,19 @@
+# Learning Games roadmap — after v1 Production release (2026-10-16)
+
+**v1 complete:** [Production release closure](releases/2026-10-16-v1-production.md) · `main@360f641b` · Memory (local + online Turns), Sort (local + online Individual), Sequence (local), Detective (local), each with DE/EN/VI interface. Six-step hosted Sort class acceptance and final Production Chromium smoke completed. Existing deployed SQL left unchanged.
+
+1. **Now — use in lessons:** collect real teacher and learner feedback; triage reproducible bugs, instructional friction and content demand. Do not restart v1 release engineering without a specific issue.
+2. **Next — choose an additional game:** prefer local-first teacher-led activities using current portable JSON, workspace and DE/EN/VI voice. Candidate ideas: Quick Response Board, Conversation Cards, Information Gap, Listen & Reconstruct, Explain It. Ideas are *not* approved implementation tickets.
+3. **Then — implement one bounded game at a time:** pedagogy and mechanics spec → isolated code → independent review → owner-led browser acceptance → explicit release decision. Reuse lessons from existing four games; don't force their state machines into a shared abstraction.
+4. **Separately — multiplayer expansion:** currently shipped only Memory Turns and Sort Individual; remaining [11-mode V1 matrix](architecture/MULTIPLAYER_V1_CONTRACT.md) is roadmap, not launched. Each new backend slice requires independent authorization and tests.
+5. **Operational debt:** shared SPP Supabase throttling/quota/retention/validation and 32-bit code exposure; SPP migration mirror PR #12, legacy Memory clean-replay, and the Data API auto-expose setting. See [risk register](RELEASE_PREFLIGHT.md). Never modify SPP or replay installed SQL as an incidental game task.
+6. **Later / separate:** optional SPP Homework/Classwork assignments or accounts. No implicit integration.
+
+---
+
+## Archived release-preflight and earlier roadmaps (historical only)
+Everything below is a dated record and does not override the shipped state or current sequencing.
+
 # Release roadmap — 2026-10-16
 
 1. **Accepted on Preview:** all four local games, functional Memory online and classroom-accepted Sort Individual online at frozen candidate `8c14b845ee4ed7892a224e9e336852255612362f`.

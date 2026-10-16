@@ -1,5 +1,9 @@
 # Product Catalog — Adult Language Activities
 
+> **Historical planning status (superseded 2026-10-16):** v1 is now released to Production; Memory, Sort, Sequence and Detective local modes are available, with Memory Turns and Sort Individual hosted. The early “unmerged Wave F”/“not released” statements below describe their original drafting period, not the current site. See [release closure](releases/2026-10-16-v1-production.md) and [GAME_MAP](GAME_MAP.md).
+
+
+
 **Status:** Strategic direction established 2026-10-09; three new local-first mechanics approved for development 2026-10-12, **implemented only on the unmerged Wave F branch and independently reviewed (see [CURRENT_STATE](CURRENT_STATE.md)); not released**. This plan is for future milestones and does not change the current Memory game, its vocabulary format, production deployment, or SPP/Supabase contracts.
 
 **Agent routing update 2026-10-12:** This is the strategic, longer-term catalog. Lesson-planning agents should read the short [Game Map](GAME_MAP.md) then [activity-library](../library/README.md) instead. LG-A1 is now generic **Sort** (categorization only); Sequence/ordering is a separate deferred mechanic. The old `sort-sequence` label is historical and not an approved JSON file type.

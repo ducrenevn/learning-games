@@ -1,3 +1,20 @@
+# Current state — Learning Games v1 released (2026-10-16)
+
+**Authoritative status:** v1 is in Production at https://learning-games-rho.vercel.app. [PR #19](https://github.com/ducrenevn/learning-games/pull/19) merged the accepted source `b9b16d03ea9e0ef8ff5c27afc8d089f231144496` through merge commit `360f641ba05943f17b78d1993890f2ec865b5ea4` on `main`; Vercel Production READY at matching SHA. Final Production Chromium smoke: **four available categories PASS** (home/navigation, localization, game interfaces, desktop/mobile); **host-exit native browser dialog NOT TESTED** (no hosted room created). Zero browser runtime errors/404s were reported. Earlier interactive Sort hosted classroom acceptance covered its full six-step lifecycle.
+
+**What ships:** Memory local + online Turns; Was passt wohin? local + online Individual; Der Reihe nach local; Auf Fehlersuche local. DE/EN/VI user-facing names and interface voice, teacher/learner workflows and layout polish are released. Final accepted typecheck, **490/490 Vitest**, build passed. The product owner authorized launch for real classroom learning and future game expansion.
+
+**Backend:** shared SPP Supabase `iizsyphqlezesbvaiztd`; installed Learning Games migrations `20261011020958`, `20261014`, `20261015023239`. Read-only hosted verification checked all 17 ledger entries, exact `state`/`command` body parity, expected anonymous execute grants and no direct table grants, four tables with RLS, and Dashboard exposed schemas `public`/`graphql_public` (not `lg_v1`/`private`). Do **not** rerun installed migrations or alter shared SPP without authorization.
+
+**Open but intentionally deferred:** no verified RPC throttling/quotas, 32-bit room code risk, retention cleanup, server validator parity, automatically-expose-new-tables config, legacy Memory clean replay, SPP migration mirror PR #12 (draft as last checked), native host-exit browser proof and physical-device/browser accessibility testing. This is a small-classroom start, not comprehensive security certification or broad-scale load proof.
+
+**NEXT:** use the four games in lessons; collect specific feedback; scope the next game with the owner. Keep games local-first when no new backend is needed; online expansions separately gated. [Full release closure](releases/2026-10-16-v1-production.md) · [Game map](GAME_MAP.md) · [Roadmap](ROADMAP.md) · [Risk register](RELEASE_PREFLIGHT.md).
+
+---
+
+## Archived release-candidate and earlier milestone notes (historical; superseded)
+The text below records what was true **before** the 2026-10-16 Production merge. Its older "current gate" and "not yet shipped" language is not an active instruction.
+
 # Current state — integrated release candidate (2026-10-16)
 
 This section supersedes all earlier status and next-action statements below. The owner supplied an independent integrated release audit verdict of **CONDITIONAL PASS**; this bounded preflight does not repeat that audit.
