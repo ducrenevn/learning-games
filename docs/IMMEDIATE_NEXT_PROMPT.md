@@ -1,3 +1,23 @@
+# Next control room — Learning Games after v1 release (2026-10-16)
+
+**v1 is CLOSED and LIVE:** `main@360f641ba05943f17b78d1993890f2ec865b5ea4`, https://learning-games-rho.vercel.app. Read [v1 release closure](releases/2026-10-16-v1-production.md), [CURRENT_STATE](CURRENT_STATE.md) and [GAME_MAP](GAME_MAP.md). Do not replay the old preflight or the six-step Sort acceptance without a concrete bug report.
+
+## Next working objective (owner to select scope)
+
+1. **Classroom feedback first.** Ask what actually happened with adult/vocational learners: which game, device, DE/EN/VI interface, lesson goal, learner confusion, result usefulness and reproducible problems.
+2. Classify follow-up as reproducible **bug**, small **UX/copy improvement**, new **teaching content**, or proposed **new game/mode**. Track real priorities and avoid speculative redesign.
+3. For a new game, propose its teaching goal, learner action, teacher workflow, local presentation/independent mode, content JSON, checking/reveal model and DE/EN/VI friendly voice before implementation. Read [PRODUCT_CATALOG](PRODUCT_CATALOG.md) and the matching [game spec](games/). Keep game engines independent.
+4. Prefer **local-first games** that need no new backend or identities. Multiplayer, private role data, media, new server state, SPP Homework, and database changes each require separate review and approval.
+5. Keep [release risks](RELEASE_PREFLIGHT.md) visible: shared Supabase with SPP, abuse throttling/quotas, data cleanup, short room codes and incomplete historical migration/replay evidence. Do not silently modify SPP PR #12 or existing installed migrations.
+6. Maintain simple acceptance: owner and AG browser gameplay, Sonnet independent code review for substantial changes, responsive + DE/EN/VI checks, typecheck/tests/build, then explicit merge/deployment authorization.
+
+**No specific new game is authorized by this handoff.** Stop for the owner's lesson goal and next-game choice before starting code. No work is currently pending on the v1 release.
+
+---
+
+## Archived release-preflight and MP1 prompts (superseded; do not execute)
+The text below documents earlier checkpoints and their authorization limits. It is not the next task after v1.
+
 # Handoff — integrated release preflight (2026-10-16)
 
 **Review target:** local branch `fix/release-preflight-20261016`, based exactly on accepted candidate `8c14b845ee4ed7892a224e9e336852255612362f`. Compare only the preflight correction diff. Do not repeat gameplay development or the 114-commit independent audit. Exact local commit, changed files and check results are returned in the task handoff; [RELEASE_PREFLIGHT](RELEASE_PREFLIGHT.md) holds the evidence and risk register.

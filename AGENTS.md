@@ -1,34 +1,26 @@
 # Learning Games — Working Rules
 
-1. Read `docs/START_HERE.md`, `docs/CURRENT_STATE.md`, `docs/architecture/SYSTEM_OVERVIEW.md`, `docs/ROADMAP.md` before substantial work.
-2. Working software outranks optimistic documentation. Verify code and tests; report unverified browser/hosted behavior explicitly.
-3. Keep game engines independent. Shared components are promoted only when two games actually need them.
-4. Never modify Speak Practice Pro's (SPP) speaking, Auth, Homework or database schema as an incidental game task. Hosted DDL requires separately approved migration.
-5. Online Memory uses installed `public.game_poc_memory_*` RPCs (including `create_v2`); Sort Individual uses installed `public.lg_v1_*` RPCs. No new backend work is implied. Anonymous capability tokens are not identity assurance or a permanent learning-record solution.
-6. No service-role keys in browser code; only public publishable keys. Avoid logging room capabilities or leaking them into QR URLs.
-7. Keep the working Canva Code version intact as a reference while the port reaches parity.
-8. Never claim tests, Vercel, Realtime, or SPP integration passed unless they were actually performed.
-9. Source changes should include relevant documentation updates and tests; review `docs/IMMEDIATE_NEXT_PROMPT.md` when handing off.
-10. Current release gate: integrated Preview accepted → bounded preflight corrections → owner-arranged independent correction review → separate release decision. SPP integration remains separately gated.
+## Current authority (2026-10-16)
 
-Preserve unrelated and uncommitted work. Commit, push, merge to `main` or other deployment-linked branches, deploy, or write to hosted systems only with explicit task approval; a push may initiate a Vercel production deployment.
+**V1 is merged and live in Production.** `main@360f641ba05943f17b78d1993890f2ec865b5ea4` (release PR #19), source candidate `b9b16d03ea9e0ef8ff5c27afc8d089f231144496`. The final Production smoke test passed for homepage, DE/EN/VI, four games, local examples and responsive layouts; the native unfinished-host exit confirmation was NOT browser-tested on live Production. This release is **closed**. Read [release closure](docs/releases/2026-10-16-v1-production.md), [CURRENT_STATE](docs/CURRENT_STATE.md) and [GAME_MAP](docs/GAME_MAP.md) before starting a new task.
 
-## Tool and environment entrypoint
+### Non-negotiable working rules
 
-- This Vercel site uses **SPP's shared Supabase** for legacy Memory and Sort Individual RPCs, not a separate database or Supabase Auth. Three Learning Games migrations, including the reveal lifecycle correction, are installed per owner handoff. No further SPP migration, Auth or Homework write is authorized; see `docs/architecture/BACKEND_BASELINE.md`.
-- Canva is a presentation/original prototype reference; do not assume a configured Canva coding-agent tool. Verify actual active tools and targets for hosted work.
+1. **Working software outranks optimistic documentation.** Independently verify source, Git refs and tests; distinguish reported acceptance from directly executed checks.
+2. **Do not reopen the v1 release without a concrete regression.** The next phase is classroom feedback and independently scoped new games, not unrequested polishing.
+3. Keep the four game engines separate. Share UI/workspace/localization only where two games genuinely need the same behavior. Preserve technical IDs and portable file types.
+4. The displayed game names and DE/EN/VI voice are documented in [GAME_MAP](docs/GAME_MAP.md). Target language content is teacher authored and independent of interface language and room-language policy.
+5. Hosted Memory uses the existing `public.game_poc_memory_*` RPC family (including `create_v2`). Hosted Sort Individual uses `public.lg_v1_*` create/join/state/command. Do not assume other multiplayer modes exist just because the [V1 matrix](docs/architecture/MULTIPLAYER_V1_CONTRACT.md) plans them.
+6. Guest bearer capabilities are **not** SPP user identities, account credentials, durable learning records, or suitable proof of an authenticated student. Never log or expose bearer tokens or service-role keys. Public frontend configuration only.
+7. Shared Supabase project `iizsyphqlezesbvaiztd` also serves SPP. **No SPP speaking/Auth/Homework/schema changes or hosted DDL, grants, cleanup, migrations or test-room writes without separate explicit owner approval.** Preserve the three installed Learning Games migration source files byte-for-byte.
+8. Keep Canva Code's original version as a reference; don't assume a configured Canva agent.
+9. Include appropriately scoped tests/documentation with source changes. Don't claim browser/hosted/security verifications that weren't run. Check responsive layout and all three interface languages for user-facing changes.
+10. Preserve unrelated or uncommitted work. Branch and inspect before edits; push/merge/Production deployments require explicit approval, as they may trigger Vercel. For new feature proposals, return to the owner for scope acceptance first.
 
-## Current release state (2026-10-16)
-- Frozen accepted candidate: `8c14b845ee4ed7892a224e9e336852255612362f`; all four local games accepted on Preview, Memory online functional, Sort Individual online classroom-accepted. Production merge is pending.
-- SPP PR #12 remains draft with migration-history reconciliation outstanding. Legacy Memory clean replay remains unproven. See `docs/CURRENT_STATE.md` and `docs/RELEASE_PREFLIGHT.md`.
-- This preflight permits local corrections, verification and a local commit only. No push, merge, deploy, hosted writes, new rooms, SQL or SPP changes. Preserve applied migration files byte-for-byte.
+## Agent and lesson routing
 
-## Agent routing
-- Start at `docs/START_HERE.md`. Lesson-planning agents read the **short** `docs/GAME_MAP.md` and a relevant `library/` entry, not all long game specifications.
-- `docs/games/` holds game mechanics and schema proposals; `library/<game>/` holds evolving lesson ideas and, after schema approval, real reusable JSON. No example is an app preset by default.
-
-## Historical authorizations — superseded status, not current instructions
-The following records describe earlier scope and do not reopen completed work or grant release/hosted permission. On 2026-10-12 LG-A1 initially had planning-only approval, with Sequence deferred; Memory M3a PR #10 then had a separate release lane. Later development and integrated Preview acceptance supersede those status claims.
-
-### Approved development wave (2026-10-12)
-The owner authorized **implementation** of three local-first games (LG-A1 Sort, LG-A2 Sequence, LG-A3 Language Detective), using two delivery experiences: teacher-guided Presentation and student Independent Mode. Follow `docs/architecture/LOCAL_FIRST_ACTIVITY_CONTRACT.md` and per-game specs. This does **not** authorize new Supabase objects, remote sync, merged/deployed refs or SPP/Auth/Homework changes. Implementation → owner-arranged Sonnet review/fixes → owner manual testing → separate release decision. Do not mistake authorization to develop on an isolated branch for production permission.
+- Implementation: [START_HERE](docs/START_HERE.md) → [CURRENT_STATE](docs/CURRENT_STATE.md) → [SYSTEM_OVERVIEW](docs/architecture/SYSTEM_OVERVIEW.md) → relevant game source/tests.
+- Lesson agents: [GAME_MAP](docs/GAME_MAP.md) → [teaching library](library/README.md) → specific lesson material, not the full release timeline.
+- New-game planning: [PRODUCT_CATALOG](docs/PRODUCT_CATALOG.md), [game specifications](docs/games/) and [portable activity files](docs/architecture/PORTABLE_ACTIVITY_FILES.md); do not equate planned ideas with built functionality.
+- Hosted/security work: [BACKEND_BASELINE](docs/architecture/BACKEND_BASELINE.md), [RELEASE_PREFLIGHT](docs/RELEASE_PREFLIGHT.md), release closure; coordinate with the SPP owner.
+- Handoff: [IMMEDIATE_NEXT_PROMPT](docs/IMMEDIATE_NEXT_PROMPT.md) describes *what to do next*, older milestone sections are historical.

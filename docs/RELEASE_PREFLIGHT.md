@@ -1,3 +1,5 @@
+> **Historical release-preflight evidence (2026-10-16):** This report documents the **pre-merge** state, including candidate `8c14b84` and the correction branch, and preserves the risk register. V1 **subsequently merged and went live** at `main@360f641ba05943f17b78d1993890f2ec865b5ea4`, with accepted source `b9b16d03`. Final Production smoke passed four applicable areas; host-exit native dialog was NOT tested live. See [v1 release closure](releases/2026-10-16-v1-production.md). Any "pending merge" or "STOP after local commit" instructions below are historical.
+
 # Integrated release preflight — 2026-10-16
 
 ## Scope and provenance
