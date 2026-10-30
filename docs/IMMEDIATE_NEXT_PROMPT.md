@@ -1,17 +1,14 @@
-# Next control room — Learning Games after v1 release (2026-10-16)
+# Immediate Next — Learning Games Usage-Driven Classroom Stabilization (2026-10-30)
 
-**v1 is CLOSED and LIVE:** `main@360f641ba05943f17b78d1993890f2ec865b5ea4`, https://learning-games-rho.vercel.app. Read [v1 release closure](releases/2026-10-16-v1-production.md), [CURRENT_STATE](CURRENT_STATE.md) and [GAME_MAP](GAME_MAP.md). Do not replay the old preflight or the six-step Sort acceptance without a concrete bug report.
+**CURRENT:** Four games are live in v1; Memory Turns and Sort Individual have hosted online modes. Production release accepted at `main@360f641b`; subsequent two commits through `14da6669` are release documentation only. No new game is authorized. Main's 3 Learning Games migration file blobs match SPP's copies exactly, and all are installed in the shared Supabase ledger (22 total installed migrations as of inspection). Shared backend configuration remains under joint safety boundaries.
 
-## Next working objective (owner to select scope)
+**Owner's operating model:** Learning Games is used **during German classes** for interactive group/teacher-led activities, while `ducrenevn/speak-practice-pro` is primarily the **between-class Homework, independent practice and review** app. Both are separate products; do not propose obligatory integration because of shared infrastructure.
 
-1. **Classroom feedback first.** Ask what actually happened with adult/vocational learners: which game, device, DE/EN/VI interface, lesson goal, learner confusion, result usefulness and reproducible problems.
-2. Classify follow-up as reproducible **bug**, small **UX/copy improvement**, new **teaching content**, or proposed **new game/mode**. Track real priorities and avoid speculative redesign.
-3. For a new game, propose its teaching goal, learner action, teacher workflow, local presentation/independent mode, content JSON, checking/reveal model and DE/EN/VI friendly voice before implementation. Read [PRODUCT_CATALOG](PRODUCT_CATALOG.md) and the matching [game spec](games/). Keep game engines independent.
-4. Prefer **local-first games** that need no new backend or identities. Multiplayer, private role data, media, new server state, SPP Homework, and database changes each require separate review and approval.
-5. Keep [release risks](RELEASE_PREFLIGHT.md) visible: shared Supabase with SPP, abuse throttling/quotas, data cleanup, short room codes and incomplete historical migration/replay evidence. Do not silently modify SPP PR #12 or existing installed migrations.
-6. Maintain simple acceptance: owner and AG browser gameplay, Sonnet independent code review for substantial changes, responsive + DE/EN/VI checks, typecheck/tests/build, then explicit merge/deployment authorization.
+**Next actions are conditional:** During ordinary classroom use, resolve concrete breakage, reproducible UX confusion, touch/mobile issues, missing/incorrect translations and important teaching friction. Validate fixes with scoped tests, browser evidence, DE/EN/VI and explicit release approval. Do not require fixed evaluation dates or formal observation forms. When an actual classroom need emerges, return to owner with the smallest possible new-game/mode/adapter option and its security/dependency implications; do not start the previous new-game roadmap automatically.
 
-**No specific new game is authorized by this handoff.** Stop for the owner's lesson goal and next-game choice before starting code. No work is currently pending on the v1 release.
+**Cleanup candidates from GitHub read-only audit:** 12 open PRs remain from v1 review. PRs **#12–18** are already reachable in `main` and are historical stacked-chain candidates for closure after per-PR review. PRs **#3, #5, #6, #9, #10** diverge from main and require individual inspection before any closure; do not merge stale sources into the released tree. Do not delete branches, reset worktrees, or perform blanket cleanup. The previously referenced SPP mirror PR #12 is CLOSED/unmerged, but its three corresponding migrations are independently proven byte-identical on both mains and installed, so no migration fix is needed. Keep the incomplete historical Memory clean-replay and hosted room quota/retention/abuse risks visible; this status does not authorize backend changes.
+
+**Stop conditions:** No cross-app Auth or user linking, no new Supabase migrations/RLS/privileged functions, no data deletes, room writes, production deploys, local worktree removals or speculative large refactors. Read `AGENTS.md` and `docs/START_HERE.md`, then relevant canonical docs for each future issue.
 
 ---
 

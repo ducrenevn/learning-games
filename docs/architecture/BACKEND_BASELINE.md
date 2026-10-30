@@ -1,5 +1,9 @@
 # Prototype Backend Baseline
 
+## Shared migration history reconciliation (read-only, 2026-10-30)
+
+All three Learning Games migrations present in `ducrenevn/learning-games@main` are **byte-identical by Git blob SHA** to corresponding committed files in `ducrenevn/speak-practice-pro@main`: `20261011020958`, `20261014`, `20261015023239`. The SPP mirror PR #12 is now **closed and unmerged**; its incomplete historical branch is **not** evidence that the mainline source is missing. The shared Supabase ledger has **22** migrations total, with these three included. This reconciles earlier release-era PR #12 TODO wording below; no SQL edit, reinstall, history repair or schema action is required. Legacy Memory reproducibility and runtime quota/retention controls remain separate, unproven/qualified risks.
+
 ## Shipped and independently inspected backend (2026-10-16)
 
 Learning Games v1 is in Production at `main@360f641ba05943f17b78d1993890f2ec865b5ea4`. Online Memory Turns and Sort Individual use the existing shared SPP Supabase project `iizsyphqlezesbvaiztd`; there are **no new hosted database changes in release PR #19**.

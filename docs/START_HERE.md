@@ -1,5 +1,7 @@
 # Start Here — Learning Games (2026-10-16 release closure)
 
+**Current operating mode (2026-10-30):** usage-driven stabilization. Learning Games is the **in-class interactive activity** companion to SPP's **homework/independent practice**. Bug fixes and observed UX problems remain active; new games/multiplayer/adapter development waits for classroom evidence and owner approval. Old stacked PRs/branches are retained until individually reviewed for closure; do not mistake them for pending release steps. See `CURRENT_STATE.md`, `ROADMAP.md` and `IMMEDIATE_NEXT_PROMPT.md`.
+
 **V1 is live at https://learning-games-rho.vercel.app** (merge `main@360f641ba05943f17b78d1993890f2ec865b5ea4`; accepted source `b9b16d03ea9e0ef8ff5c27afc8d089f231144496`). See the [authoritative release closure](releases/2026-10-16-v1-production.md), [current state](CURRENT_STATE.md) and [short game map](GAME_MAP.md). Older milestone statements below are explicitly historical, even if they call a branch "current".
 
 **Shipped:** four local games (Memory, Was passt wohin?, Der Reihe nach, Auf Fehlersuche), Memory online Turns and Sort online Individual; user-facing DE/EN/VI. Final Production smoke passed for home, localization, four interfaces, responsive views; the host-exit native dialog was not run on real Production. Source validation 490/490 tests + typecheck/build passed.

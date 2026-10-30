@@ -1,5 +1,11 @@
 # Learning Games — Working Rules
 
+## Operating decision — usage-driven stabilization (2026-10-30)
+
+The owner uses **Learning Games primarily for live interactive classroom activities** in small German classes; `ducrenevn/speak-practice-pro` serves homework, independent learner practice, feedback and lesson memory. The two repos are complementary and share Supabase infrastructure, **not** Auth/guest-capability/assignment authority. No automatic integration.
+
+**Pause speculative new game/mode development, not maintenance.** Fix reproducible bugs, access/security problems and friction observed in actual teaching; make bounded improvements with owner agreement when there is clear classroom value. A new game, multiplayer mode or SPP adapter should start only from a concrete teaching need and separate scope approval; no scheduled feature sprint or fixed freeze period. Avoid mandatory reporting/feedback bureaucracy. Preserve v1 production.
+
 ## Current authority (2026-10-16)
 
 **V1 is merged and live in Production.** `main@360f641ba05943f17b78d1993890f2ec865b5ea4` (release PR #19), source candidate `b9b16d03ea9e0ef8ff5c27afc8d089f231144496`. The final Production smoke test passed for homepage, DE/EN/VI, four games, local examples and responsive layouts; the native unfinished-host exit confirmation was NOT browser-tested on live Production. This release is **closed**. Read [release closure](docs/releases/2026-10-16-v1-production.md), [CURRENT_STATE](docs/CURRENT_STATE.md) and [GAME_MAP](docs/GAME_MAP.md) before starting a new task.
