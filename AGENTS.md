@@ -30,3 +30,9 @@ The owner uses **Learning Games primarily for live interactive classroom activit
 - New-game planning: [PRODUCT_CATALOG](docs/PRODUCT_CATALOG.md), [game specifications](docs/games/) and [portable activity files](docs/architecture/PORTABLE_ACTIVITY_FILES.md); do not equate planned ideas with built functionality.
 - Hosted/security work: [BACKEND_BASELINE](docs/architecture/BACKEND_BASELINE.md), [RELEASE_PREFLIGHT](docs/RELEASE_PREFLIGHT.md), release closure; coordinate with the SPP owner.
 - Handoff: [IMMEDIATE_NEXT_PROMPT](docs/IMMEDIATE_NEXT_PROMPT.md) describes *what to do next*, older milestone sections are historical.
+
+## Pending workspace housekeeping — 2026-11-27
+
+The Clientry H3 cross-project Windows inventory reported two external registered worktrees: `learning-games-m3a-review` (~116.8 MiB, clean at observation) and `learning-games-mp1-s1` (~14.4 MiB, one dirty entry). Preserve the dirty change, local-only Git objects/agent checkpoints, review evidence and `learning-games-wave-f-reviewed.bundle`. On next substantial project resumption, reverify Git identity, reachability, local changes, ignored artifacts and dependencies, then propose retirement only where redundant and explicitly approved. This is environment housekeeping, not reopening the accepted v1 release or a new feature campaign; shared Supabase remains protected.
+
+These are dated local-agent observations, not GitHub-verified current facts. Follow `ducrenevn/ai-agent-config/docs/EXECUTION_PROTOCOL.md`; surface a proportionate proposal without blocking unrelated small tasks. No removal, relocation, hosted mutation or deployment is authorized by this note. Detailed local evidence: H3C4_FINAL_GIT_RETIREMENT_AND_DOCKER_EVIDENCE_REPORT.md, section 9.4 (Clientry H3-B, 2026-11-27).
